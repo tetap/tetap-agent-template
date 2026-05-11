@@ -1,0 +1,44 @@
+{
+  "name": "@tetap/config",
+  "version": "1.0.1",
+  "description": "Shared environment and project configuration package.",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "files": [
+    "dist/**",
+    "env/**",
+    "tailwind.config.ts"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./node": {
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js"
+    },
+    "./vite": {
+      "types": "./dist/vite.d.ts",
+      "import": "./dist/vite.js"
+    },
+    "./tailwind.config.ts": "./tailwind.config.ts",
+    "./env": "./env"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "clean": "rimraf dist .turbo"
+  },
+  "dependencies": {
+    "tailwindcss": "^3.4.17"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2"
+  }
+}

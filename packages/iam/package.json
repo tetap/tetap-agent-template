@@ -1,0 +1,29 @@
+{
+  "name": "@tetap/iam",
+  "version": "1.0.1",
+  "description": "Shared IAM engines for auth, sessions, RBAC, field policy, data policy, PBAC, and audit.",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "files": [
+    "dist/**"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "clean": "rimraf dist .turbo"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2"
+  }
+}

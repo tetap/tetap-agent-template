@@ -1,0 +1,49 @@
+{
+  "name": "@tetap/schema",
+  "version": "1.0.1",
+  "description": "Shared Zod schemas for frontend and backend contracts.",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "files": [
+    "dist/**"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./form": {
+      "types": "./dist/form.d.ts",
+      "import": "./dist/form.js"
+    },
+    "./user": {
+      "types": "./dist/user.d.ts",
+      "import": "./dist/user.js"
+    },
+    "./backend": {
+      "types": "./dist/backend.d.ts",
+      "import": "./dist/backend.js"
+    },
+    "./admin-auth": {
+      "types": "./dist/admin-auth.d.ts",
+      "import": "./dist/admin-auth.js"
+    },
+    "./iam": {
+      "types": "./dist/iam.d.ts",
+      "import": "./dist/iam.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "clean": "rimraf dist .turbo"
+  },
+  "peerDependencies": {
+    "zod": "3.25.76"
+  }
+}

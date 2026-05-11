@@ -1,0 +1,49 @@
+{
+  "name": "@tetap/test-automation",
+  "version": "1.0.1",
+  "description": "Vitest automation package for unit and smoke tests.",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm test:smoke",
+    "test": "pnpm test:unit && pnpm test:browser && pnpm test:smoke",
+    "test:unit": "vitest run --config vitest.config.ts src/unit",
+    "test:smoke": "vitest run --config vitest.config.ts src/smoke",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "clean": "rimraf .turbo coverage",
+    "test:browser": "vitest run --config vitest.browser.config.ts",
+    "test:target": "tsx scripts/run-targeted-tests.ts",
+    "test:affected": "tsx scripts/run-targeted-tests.ts affected",
+    "test:unit:target": "tsx scripts/run-targeted-tests.ts unit",
+    "test:browser:target": "tsx scripts/run-targeted-tests.ts browser",
+    "test:smoke:target": "tsx scripts/run-targeted-tests.ts smoke"
+  },
+  "dependencies": {
+    "@tetap/config": "workspace:*",
+    "@tetap/hooks": "workspace:*",
+    "@tetap/i18n": "workspace:*",
+    "@tetap/iam": "workspace:*",
+    "@tetap/schema": "workspace:*",
+    "@tetap/ui": "workspace:*",
+    "backend": "workspace:*",
+    "backend-admin": "workspace:*",
+    "react-router": "^7.15.0",
+    "web-admin": "workspace:*"
+  },
+  "devDependencies": {
+    "@radix-ui/react-separator": "^1.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@radix-ui/react-tabs": "^1.1.13",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/browser-playwright": "^4.1.5",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "playwright": "^1.59.1",
+    "tailwind-merge": "^3.6.0",
+    "vitest": "^4.1.5",
+    "vitest-browser-react": "^2.2.0"
+  }
+}

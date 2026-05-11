@@ -1,0 +1,10 @@
+model MenuPermission {
+  menuId       BigInt     @map("menu_id")
+  permissionId BigInt     @map("permission_id")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  menu         Menu       @relation(fields: [menuId], references: [id], onDelete: Cascade)
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([menuId, permissionId])
+  @@map("menu_permissions")
+}

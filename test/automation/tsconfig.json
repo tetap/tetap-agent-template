@@ -1,0 +1,40 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "types": ["node", "vitest"],
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@tetap/config": ["../../packages/config/src/index.ts"],
+      "@tetap/config/node": ["../../packages/config/src/node.ts"],
+      "@tetap/i18n": ["../../packages/i18n/src/index.ts"],
+      "@tetap/i18n/node": ["../../packages/i18n/src/node.ts"],
+      "@tetap/i18n/locales": ["../../packages/i18n/src/locales/index.ts"],
+      "@tetap/i18n/react": ["../../packages/i18n/src/react.ts"],
+      "@tetap/i18n/public": ["../../packages/i18n/src/public.ts"],
+      "@tetap/i18n/admin": ["../../packages/i18n/src/admin.ts"],
+      "@tetap/i18n/backend": ["../../packages/i18n/src/backend.ts"],
+      "@tetap/i18n/backend-admin": ["../../packages/i18n/src/backend-admin.ts"],
+      "@tetap/iam": ["../../packages/iam/src/index.ts"],
+      "@tetap/schema": ["../../packages/schema/src/index.ts"],
+      "@tetap/schema/backend": ["../../packages/schema/src/backend.ts"],
+      "@tetap/schema/iam": ["../../packages/schema/src/iam.ts"],
+      "@tetap/schema/admin-auth": ["../../packages/schema/src/admin-auth.ts"],
+      "@tetap/ui": ["../../packages/ui/src/index.ts"],
+      "@tetap/hooks": ["../../packages/hooks/src/index.ts"]
+    }
+  },
+  "include": [
+    "src",
+    "vitest.config.ts",
+    "vitest.browser.config.ts",
+    "../../apps/backend/src/types/**/*.d.ts",
+    "scripts",
+    "../../apps/backend-admin/src/types/**/*.d.ts"
+  ]
+}

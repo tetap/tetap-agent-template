@@ -1,0 +1,26 @@
+{
+  "name": "web-admin",
+  "private": true,
+  "version": "1.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "pnpm type-check && vite build",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tetap/hooks": "workspace:*",
+    "@tetap/i18n": "workspace:*",
+    "@tetap/ui": "workspace:*",
+    "react-router": "^7.15.0",
+    "@tetap/schema": "workspace:*",
+    "lucide-react": "^0.562.0"
+  },
+  "devDependencies": {
+    "@tetap/config": "workspace:*"
+  },
+  "description": "Dedicated React admin web app for backend-admin management workflows."
+}

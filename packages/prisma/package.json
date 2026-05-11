@@ -1,0 +1,31 @@
+{
+  "name": "@tetap/prisma",
+  "version": "1.0.1",
+  "description": "Shared Prisma schema and generated Prisma client entrypoint.",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "main": "./index.js",
+  "types": "./index.d.ts",
+  "scripts": {
+    "build": "pnpm generate",
+    "generate": "pnpm schema:check && dotenv -e ../config/env/.env -e ../config/env/.env.development -- prisma generate --schema ./schema",
+    "validate": "pnpm schema:check && dotenv -e ../config/env/.env -e ../config/env/.env.development -- prisma validate --schema ./schema",
+    "push": "pnpm schema:check && dotenv -e ../config/env/.env -e ../config/env/.env.development -- prisma db push --schema ./schema",
+    "studio": "dotenv -e ../config/env/.env -e ../config/env/.env.development -- prisma studio --schema ./schema",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "clean": "rimraf .turbo node_modules/.prisma",
+    "schema:check": "node ./scripts/check-schema-structure.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.8.2",
+    "@tetap/config": "workspace:*",
+    "prisma": "^6.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "dotenv-cli": "^8.0.0"
+  }
+}

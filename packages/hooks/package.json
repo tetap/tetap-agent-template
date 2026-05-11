@@ -1,0 +1,44 @@
+{
+  "name": "@tetap/hooks",
+  "version": "1.0.1",
+  "description": "Centralized React hooks store for all apps and packages.",
+  "private": true,
+  "sideEffects": false,
+  "type": "module",
+  "files": [
+    "dist/**"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./store": {
+      "types": "./dist/store/index.d.ts",
+      "import": "./dist/store/index.js"
+    },
+    "./form": {
+      "types": "./dist/store/use-zod-form.d.ts",
+      "import": "./dist/store/use-zod-form.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "lint:fix": "pnpm lint --fix",
+    "clean": "rimraf dist .turbo"
+  },
+  "peerDependencies": {
+    "@hookform/resolvers": "5.2.2",
+    "react": "19.2.6",
+    "react-hook-form": "7.68.0",
+    "zod": "3.25.76"
+  },
+  "dependencies": {
+    "@tetap/i18n": "workspace:*",
+    "zustand": "^5.0.9"
+  }
+}

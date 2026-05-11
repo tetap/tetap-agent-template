@@ -1,0 +1,18 @@
+model Menu {
+  id          BigInt           @id @default(autoincrement())
+  name        String
+  path        String
+  component   String
+  icon        String
+  parentId    BigInt?          @map("parent_id")
+  order       Int              @default(0)
+  tenantId    String?          @map("tenant_id")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  parent      Menu?            @relation("MenuTree", fields: [parentId], references: [id])
+  children    Menu[]           @relation("MenuTree")
+  permissions MenuPermission[]
+
+  @@index([parentId])
+  @@map("menus")
+}

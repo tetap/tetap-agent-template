@@ -1,0 +1,45 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+.turbo
+.cache
+dist
+release
+dist-ssr
+coverage
+test/automation/.vitest-attachments/
+test/automation/src/browser/__screenshots__/
+*.local
+.env.local
+.env.*.local
+components.d.ts
+auto-imports.d.ts
+
+# Editor directories and files
+.vscode
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# migrations
+*.db
+*.sql
+*.zip
+migration_lock.toml
+
+.agents/
+skills-lock.json
+build
+.react-router
+.pnpm-store

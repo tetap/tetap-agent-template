@@ -1,0 +1,15 @@
+model Policy {
+  id          BigInt   @id @default(autoincrement())
+  resource    String
+  action      String
+  effect      String
+  conditions  Json
+  description String?
+  tenantId    String?  @map("tenant_id")
+  enabled     Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([resource, action])
+  @@map("policies")
+}

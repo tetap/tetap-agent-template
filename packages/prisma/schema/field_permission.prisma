@@ -1,0 +1,14 @@
+model FieldPermission {
+  id             BigInt   @id @default(autoincrement())
+  roleId         BigInt   @map("role_id")
+  resource       String
+  fieldName      String   @map("field_name")
+  permissionType String   @map("permission_type")
+  tenantId       String?  @map("tenant_id")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+  role           Role     @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, resource, fieldName])
+  @@map("field_permissions")
+}
