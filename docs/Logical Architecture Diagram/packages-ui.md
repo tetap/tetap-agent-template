@@ -6,21 +6,35 @@
 
 ## 公开入口
 
-| Export                     | Purpose                                             |
-| -------------------------- | --------------------------------------------------- |
-| `@tetap/ui`                | 主组件 barrel。                                     |
-| `@tetap/ui/brand-logo`     | TETAP SVG brand logo component。                    |
-| `@tetap/ui/styles.css`     | Tailwind + shadcn theme runtime CSS。               |
-| `@tetap/ui/button`         | Button direct export。                              |
-| `@tetap/ui/card`           | Card direct export。                                |
-| `@tetap/ui/badge`          | Badge direct export。                               |
-| `@tetap/ui/separator`      | Separator direct export。                           |
-| `@tetap/ui/tabs`           | Tabs direct export。                                |
-| `@tetap/ui/sidebar`        | Sidebar direct export for admin shell composition。 |
-| `@tetap/ui/dropdown-menu`  | Dropdown menu direct export。                       |
-| `@tetap/ui/dialog`         | Dialog direct export。                              |
-| `@tetap/ui/field`          | Field/form layout direct export。                   |
-| `@tetap/ui/password-input` | Password input direct export。                      |
+| Export                     | Purpose                                               |
+| -------------------------- | ----------------------------------------------------- |
+| `@tetap/ui`                | 主组件 barrel。                                       |
+| `@tetap/ui/brand-logo`     | TETAP SVG brand logo component。                      |
+| `@tetap/ui/styles.css`     | Tailwind + shadcn theme runtime CSS。                 |
+| `@tetap/ui/alert`          | Alert direct export。                                 |
+| `@tetap/ui/avatar`         | Avatar direct export。                                |
+| `@tetap/ui/badge`          | Badge direct export。                                 |
+| `@tetap/ui/button`         | Button direct export。                                |
+| `@tetap/ui/card`           | Card direct export。                                  |
+| `@tetap/ui/checkbox`       | Checkbox direct export。                              |
+| `@tetap/ui/collapsible`    | Collapsible direct export。                           |
+| `@tetap/ui/command`        | Command palette direct export。                       |
+| `@tetap/ui/dialog`         | Dialog direct export。                                |
+| `@tetap/ui/dropdown-menu`  | Dropdown menu direct export。                         |
+| `@tetap/ui/field`          | Field/form layout direct export。                     |
+| `@tetap/ui/input`          | Input direct export。                                 |
+| `@tetap/ui/label`          | Label direct export。                                 |
+| `@tetap/ui/password-input` | Password input direct export。                        |
+| `@tetap/ui/scroll-area`    | Scroll area direct export。                           |
+| `@tetap/ui/select`         | Select direct export for enum-only controls。         |
+| `@tetap/ui/separator`      | Separator direct export。                             |
+| `@tetap/ui/sheet`          | Sheet/drawer direct export。                          |
+| `@tetap/ui/sidebar`        | Sidebar direct export for admin shell composition。   |
+| `@tetap/ui/skeleton`       | Skeleton direct export。                              |
+| `@tetap/ui/sonner`         | Sonner `Toaster` and `toast` feedback direct export。 |
+| `@tetap/ui/table`          | Table direct export。                                 |
+| `@tetap/ui/tabs`           | Tabs direct export。                                  |
+| `@tetap/ui/tooltip`        | Tooltip direct export。                               |
 
 ## 内部结构
 
@@ -46,7 +60,9 @@
 
 - 不在 `apps/web` 或 `apps/web-admin` 创建 `components/ui`。
 - 不写 feature-level CSS 或 bespoke component styles。
-- 页面不硬编码 utility class；优先用现有 shadcn/ui 组件和 variants。
+- 页面不创建本地 UI 系统；优先用现有 shadcn/ui 组件和 variants。
+- 保存、错误等短反馈使用 `toast`；固定枚举使用 `Select`。
+- 大型表单使用 `DialogContent` 的 viewport 内滚动能力，避免弹窗超出 body。
 - 允许保留 shadcn/ui 生成的组件内部 class 和 design system runtime CSS。
 - 新组件要检查 accessibility、exports、peer dependency 和 docs。
 

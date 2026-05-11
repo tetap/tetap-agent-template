@@ -53,7 +53,7 @@ export const SearchCommand = () => {
         <CommandList>
           <ScrollArea>
             <CommandEmpty>{t('webAdmin.layout.search.empty')}</CommandEmpty>
-            <CommandGroup heading={t('webAdmin.navigation.groups.backendMenus')}>
+            <CommandGroup>
               {searchableMenus.map(menu => {
                 const label = getMenuLabel(menu);
 

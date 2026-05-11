@@ -77,7 +77,7 @@ const testMenus = [
 const testCapabilities = [
   'iam:read',
   'iam:manage',
-  'audit:read',
+  'operation-log:read',
   'field:read',
   'menu:read',
   'user:read',
@@ -180,7 +180,7 @@ const createOverviewResponse = () => ({
     fieldPermissions: [],
     policies: [],
     sessions: [],
-    auditLogs: [],
+    operationLogs: [],
   },
 });
 

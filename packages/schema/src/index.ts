@@ -18,14 +18,14 @@ export type { CreateUserInput, UpdateUserInput, User } from './user.js';
 export { healthDataSchema, healthResponseSchema } from './backend.js';
 export type { HealthData, HealthResponse } from './backend.js';
 export {
-  auditActionSchema,
-  auditLogSchema,
+  operationActionSchema,
+  operationLogSchema,
   dataConstraintSchema,
   dataScopeTypeSchema,
   deviceTypeSchema,
   fieldPermissionSchema,
   fieldPermissionTypeSchema,
-  iamAuditLogsResponseSchema,
+  iamOperationLogsResponseSchema,
   iamBootstrapDataSchema,
   iamCurrentUserResponseSchema,
   iamFieldPermissionsResponseSchema,
@@ -63,7 +63,7 @@ export {
   userIdParamsSchema,
 } from './iam.js';
 export type {
-  AuditLog,
+  OperationLog,
   FieldPermission,
   IamBootstrapData,
   IamLoginData,

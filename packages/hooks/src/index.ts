@@ -1,5 +1,7 @@
 export {
   useAdminSessionStore,
+  useAdminThemeEffect,
+  useAdminThemeStore,
   useAdminI18n,
   useAdminT,
   useDisclosure,
@@ -15,4 +17,5 @@ export type {
   AdminSessionUser,
   UseDisclosureOptions,
   UseZodFormOptions,
+  AdminTheme,
 } from './store/index.js';

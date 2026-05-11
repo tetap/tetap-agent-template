@@ -18,6 +18,17 @@
 | `@tetap/i18n/node`          | Accept-Language parsing、request locale helper。  |
 | `@tetap/i18n/locales`       | locale constants、message key types。             |
 
+## 关键 helper
+
+| Helper                                                        | Purpose                                                 |
+| ------------------------------------------------------------- | ------------------------------------------------------- |
+| `createI18n` / `createAppI18n`                                | Core translator factory and full-app legacy translator. |
+| `createPublicI18n` / `PublicI18nProvider`                     | Public web scoped translator and React provider.        |
+| `createAdminI18n` / `AdminI18nProvider`                       | Admin web scoped translator and React provider.         |
+| `createSiteI18n`                                              | VitePress site scoped translator.                       |
+| `createBackendI18n` / `createBackendAdminI18n`                | Backend response translators scoped by service.         |
+| `parseAcceptLanguage` / `resolveLocale` / `createRequestI18n` | Node request locale resolving helpers.                  |
+
 ## 内部结构
 
 | Path                   | Responsibility                                 |

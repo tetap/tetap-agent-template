@@ -8,7 +8,7 @@ model Role {
   tenantId         String?          @map("tenant_id")
   createdAt        DateTime         @default(now()) @map("created_at")
   updatedAt        DateTime         @updatedAt @map("updated_at")
-  users            UserRole[]
+  users            AdminUserRole[]
   permissions      RolePermission[]
   fieldPermissions FieldPermission[]
 

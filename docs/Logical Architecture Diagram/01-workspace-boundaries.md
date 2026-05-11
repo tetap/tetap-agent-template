@@ -15,21 +15,21 @@ flowchart TD
 
 ## Ownership Matrix
 
-| Workspace            | Owns                                                                                    | Must Not Own                                                                                                         |
-| -------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `apps/site`          | VitePress 宣传/文档站 runtime、custom theme、静态页面组合。                             | 公共业务页面、后台管理页面、UI primitive、custom hooks、schema definitions、env policy。                             |
-| `apps/web`           | React runtime、router、page composition、浏览器入口。                                   | Admin pages、UI primitive、app-local CSS system、custom hooks、locale resources、schema definitions、env policy。    |
-| `apps/web-admin`     | Admin React runtime、admin router、admin page composition、浏览器管理端入口。           | Public pages、UI primitive、app-local CSS system、custom hooks、locale resources、schema definitions、env policy。   |
-| `apps/backend`       | Public Fastify runtime、plugins、routes registration、services、backend helpers。       | Admin APIs、Zod contract package、Prisma schema、route-level business logic、app-local env loader。                  |
-| `apps/backend-admin` | Admin Fastify runtime、admin routes registration、admin services、admin helpers。       | Public API responsibilities、Zod contract package、Prisma schema、route-level business logic、app-local env loader。 |
-| `packages/config`    | env 文件目录、env parser、typed `AppEnv`、Node/Vite/Tailwind config entrypoints。       | feature-specific runtime logic、app-local secret policy。                                                            |
-| `packages/hooks`     | React custom hooks、form helper、hooks barrel exports。                                 | UI components、locale resources、schema definitions、runtime pages。                                                 |
-| `packages/i18n`      | locale tree、translation core、React provider、site translator、Node request helper。   | 业务流程、layout、API handler。                                                                                      |
-| `packages/iam`       | IAM engines、session/token policy、RBAC/ABAC/PBAC、field/data policy、audit redaction。 | HTTP route、Prisma schema、env loading、React page。                                                                 |
-| `packages/prisma`    | Prisma schema 文件、schema structure checks、client generate/validate scripts。         | HTTP contract schema、service business logic、alternate ORM。                                                        |
-| `packages/schema`    | Zod request/response/entity/form contracts、统一响应 schema helper。                    | persistence、business orchestration、runtime side effects。                                                          |
-| `packages/ui`        | shadcn/ui source components、design-system runtime CSS、UI exports。                    | app pages、feature copy、app-local routing、business CSS。                                                           |
-| `test/automation`    | Vitest unit/browser/smoke tests、affected test selector、smoke design。                 | production runtime code、business implementation。                                                                   |
+| Workspace            | Owns                                                                                            | Must Not Own                                                                                                         |
+| -------------------- | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `apps/site`          | VitePress 宣传/文档站 runtime、custom theme、静态页面组合。                                     | 公共业务页面、后台管理页面、UI primitive、custom hooks、schema definitions、env policy。                             |
+| `apps/web`           | React runtime、router、page composition、浏览器入口。                                           | Admin pages、UI primitive、app-local CSS system、custom hooks、locale resources、schema definitions、env policy。    |
+| `apps/web-admin`     | Admin React runtime、admin router、admin page composition、浏览器管理端入口。                   | Public pages、UI primitive、app-local CSS system、custom hooks、locale resources、schema definitions、env policy。   |
+| `apps/backend`       | Public Fastify runtime、plugins、routes registration、services、backend helpers。               | Admin APIs、Zod contract package、Prisma schema、route-level business logic、app-local env loader。                  |
+| `apps/backend-admin` | Admin Fastify runtime、admin routes registration、admin services、admin helpers。               | Public API responsibilities、Zod contract package、Prisma schema、route-level business logic、app-local env loader。 |
+| `packages/config`    | env 文件目录、env parser、typed `AppEnv`、Node/Vite/Tailwind config entrypoints。               | feature-specific runtime logic、app-local secret policy。                                                            |
+| `packages/hooks`     | React custom hooks、form helper、hooks barrel exports。                                         | UI components、locale resources、schema definitions、runtime pages。                                                 |
+| `packages/i18n`      | locale tree、translation core、React provider、site translator、Node request helper。           | 业务流程、layout、API handler。                                                                                      |
+| `packages/iam`       | IAM engines、session/token policy、RBAC/ABAC/PBAC、field/data policy、operation-log redaction。 | HTTP route、Prisma schema、env loading、React page。                                                                 |
+| `packages/prisma`    | Prisma schema 文件、schema structure checks、client generate/validate scripts。                 | HTTP contract schema、service business logic、alternate ORM。                                                        |
+| `packages/schema`    | Zod request/response/entity/form contracts、统一响应 schema helper。                            | persistence、business orchestration、runtime side effects。                                                          |
+| `packages/ui`        | shadcn/ui source components、design-system runtime CSS、UI exports。                            | app pages、feature copy、app-local routing、business CSS。                                                           |
+| `test/automation`    | Vitest unit/browser/smoke tests、affected test selector、smoke design。                         | production runtime code、business implementation。                                                                   |
 
 ## 允许的依赖
 

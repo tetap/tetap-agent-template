@@ -1,10 +1,10 @@
 import type { AdminMessageKey } from '@tetap/i18n/admin';
 
 export const adminMenuTitleKeyMap: Partial<Record<string, AdminMessageKey>> = {
-  audit: 'webAdmin.navigation.audit',
   dashboard: 'webAdmin.navigation.dashboard',
   fields: 'webAdmin.navigation.fields',
   menus: 'webAdmin.navigation.menus',
+  'operation-logs': 'webAdmin.navigation.operationLogs',
   permissions: 'webAdmin.navigation.permissions',
   policies: 'webAdmin.navigation.policies',
   roles: 'webAdmin.navigation.roles',

@@ -1,7 +1,7 @@
 {
   "name": "@tetap/iam",
   "version": "1.0.1",
-  "description": "Shared IAM engines for auth, sessions, RBAC, field policy, data policy, PBAC, and audit.",
+  "description": "Shared IAM engines for auth, admin sessions, frontend online sessions, RBAC, field policy, data policy, PBAC, and operation logs.",
   "private": true,
   "sideEffects": false,
   "type": "module",

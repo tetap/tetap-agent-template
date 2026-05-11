@@ -1,7 +1,7 @@
 {
   "name": "@tetap/schema",
   "version": "1.0.1",
-  "description": "Shared Zod schemas for frontend and backend contracts.",
+  "description": "Shared Zod contracts for API responses, admin auth, IAM, users, and form parsing.",
   "private": true,
   "sideEffects": false,
   "type": "module",

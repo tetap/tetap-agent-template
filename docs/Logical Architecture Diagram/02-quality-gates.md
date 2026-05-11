@@ -45,7 +45,7 @@ flowchart TD
 | `pnpm test:browser:target -- ui-components`                            | 只跑共享 UI Browser Mode target。                         |
 | `pnpm test:browser:target -- web-admin-dashboard`                      | 只跑后台管理页面 Browser Mode target。                    |
 | `pnpm test:smoke:target -- backend-admin-iam`                          | 只跑后台管理 IAM 登录、鉴权、强制下线 smoke。             |
-| `pnpm test:unit:target -- iam-engine`                                  | 只跑 IAM 权限、字段、数据、审计核心单元测试。             |
+| `pnpm test:unit:target -- iam-engine`                                  | 只跑 IAM 权限、字段、数据、操作日志核心单元测试。         |
 | `pnpm test:smoke:target -- backend-health`                             | 只跑某个冒烟测试。                                        |
 
 影响映射由 `test/automation/src/support/test-selection.ts` 维护。新增模块、测试文件或影响关系时必须更新它。
@@ -104,6 +104,7 @@ pnpm format:fix
 
 - 是否更新或说明 unit/browser/smoke 测试？
 - 是否更新 `test/automation/src/support/test-selection.ts`？
+- 是否同步最近的 README、package 方法/导出列表和相关架构文档？
 - 是否运行 `pnpm lint:fix`、`pnpm format:fix`？
 - 是否运行 `pnpm check`？
 - 是否根据影响范围运行 `pnpm test:browser` / `pnpm test:smoke`？

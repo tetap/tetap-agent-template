@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider, useLocation } from 'react-router';
-import { useAdminSessionStore, useAdminI18n } from '@tetap/hooks';
+import { useAdminSessionStore, useAdminI18n, useAdminThemeEffect } from '@tetap/hooks';
 import { fetchAdminBootstrap } from './api/backend-admin.js';
 import { AdminShell } from './layout/admin-shell.js';
 import { OtpPage } from './pages/auth/otp.js';
@@ -8,10 +8,9 @@ import { SignInPage } from './pages/auth/sign-in.js';
 import { toSessionMenus } from './pages/auth/auth-session.js';
 import { AdminDashboardPage } from './pages/dashboard.js';
 import {
-  AdminAuditPage,
   AdminFieldPermissionsPage,
-  AdminIamOverviewPage,
   AdminMenusPage,
+  AdminOperationLogsPage,
   AdminPermissionsPage,
   AdminPoliciesPage,
   AdminRolesPage,
@@ -19,6 +18,7 @@ import {
   AdminUsersPage,
 } from './pages/iam.js';
 import { AdminStatePage } from './pages/state-page.js';
+import { AdminSettingsPage } from './pages/settings.js';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
@@ -165,18 +165,10 @@ const router = createBrowserRouter([
         element: <Navigate replace to="/system/permission" />,
       },
       {
-        path: 'security/overview',
+        path: 'security/operation-logs',
         element: (
-          <PermissionRoute permission="iam:read">
-            <AdminIamOverviewPage />
-          </PermissionRoute>
-        ),
-      },
-      {
-        path: 'security/audit',
-        element: (
-          <PermissionRoute permission="audit:read">
-            <AdminAuditPage />
+          <PermissionRoute permission="operation-log:read">
+            <AdminOperationLogsPage />
           </PermissionRoute>
         ),
       },
@@ -215,6 +207,26 @@ const router = createBrowserRouter([
             <AdminPoliciesPage />
           </PermissionRoute>
         ),
+      },
+      {
+        path: 'settings',
+        element: <Navigate replace to="/settings/account" />,
+      },
+      {
+        path: 'settings/account',
+        element: <AdminSettingsPage section="account" />,
+      },
+      {
+        path: 'settings/appearance',
+        element: <AdminSettingsPage section="appearance" />,
+      },
+      {
+        path: 'settings/display',
+        element: <AdminSettingsPage section="display" />,
+      },
+      {
+        path: 'settings/notifications',
+        element: <AdminSettingsPage section="notifications" />,
       },
       {
         path: 'errors/unauthorized',
@@ -283,6 +295,8 @@ const router = createBrowserRouter([
 
 function App() {
   const { locale, t } = useAdminI18n();
+
+  useAdminThemeEffect();
 
   useEffect(() => {
     document.documentElement.lang = locale;

@@ -13,7 +13,6 @@ import {
 import type { AppEnv } from '@tetap/config';
 import { describe, expect, it } from 'vitest';
 import { buildBackendAdminApp } from '../../../../apps/backend-admin/src/app.js';
-import { ErrorCode } from '../../../../apps/backend-admin/src/shared/error-code.js';
 
 const smokeEnv = {
   NODE_ENV: 'test',
@@ -238,7 +237,7 @@ describe('backend-admin smoke: IAM auth and forced offline', () => {
       expect(revokeResponse.statusCode).toBe(200);
       expect(revokeBody.data.revokedSessions[0]?.status).toBe('REVOKED');
 
-      const expiredResponse = await app.inject({
+      const stillAuthenticatedResponse = await app.inject({
         headers: {
           authorization,
           'accept-language': 'en-US',
@@ -247,11 +246,7 @@ describe('backend-admin smoke: IAM auth and forced offline', () => {
         url: '/auth/me',
       });
 
-      expect(expiredResponse.statusCode).toBe(401);
-      expect(expiredResponse.json()).toMatchObject({
-        code: ErrorCode.LoginExpired,
-        message: 'Your session has expired. Please sign in again.',
-      });
+      expect(stillAuthenticatedResponse.statusCode).toBe(200);
     } finally {
       await app.close();
     }

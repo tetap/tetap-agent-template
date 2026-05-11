@@ -81,7 +81,7 @@ flowchart LR
 | [packages-config.md](packages-config.md)                 | env、typed config、Vite/Node 入口设计。                    |
 | [packages-hooks.md](packages-hooks.md)                   | hooks 集中仓库、form helper 和导出约束。                   |
 | [packages-i18n.md](packages-i18n.md)                     | locale 资源、翻译核心、site/React/Node i18n。              |
-| [packages-iam.md](packages-iam.md)                       | IAM 权限、会话、策略、字段、数据和审计核心。               |
+| [packages-iam.md](packages-iam.md)                       | IAM 权限、会话、策略、字段、数据和操作日志核心。           |
 | [packages-prisma.md](packages-prisma.md)                 | Prisma schema 拆分、生成、数据库脚本和边界。               |
 | [packages-schema.md](packages-schema.md)                 | Zod 契约、统一响应 schema、前后端交互模型。                |
 | [packages-ui.md](packages-ui.md)                         | shadcn/ui 共享组件库和设计系统 runtime CSS。               |
@@ -90,6 +90,7 @@ flowchart LR
 ## 修改文档时的规则
 
 - 修改某个 workspace 的职责时，同步更新根 [README.md](../../README.md)、[AGENTS.md](../../AGENTS.md) 和对应设计文档。
+- 修改 package 导出、工具方法、service 方法、schema、Prisma model 或脚本时，同步更新对应 package README 的公开入口和方法说明。
 - 新增 workspace 时，补充本文档索引、workspace boundaries、quality gates 中的相关说明。
 - 新增约束时，优先放到根 README 的规则章节，再从 AGENTS.md 链接过去。
 - 新增计划类工作时，必须同步 `docs/todolists` 的执行计划。

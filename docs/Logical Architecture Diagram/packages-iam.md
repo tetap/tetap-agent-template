@@ -8,12 +8,27 @@
 
 - JWT HMAC sign/verify helper。
 - Stateful session manager、token id、token version、clock-aware expiry、forced-offline invalidation、token blacklist cleanup。
+- Admin user sessions and frontend user online sessions are separate; online-user management only exposes frontend sessions。
 - RBAC capability resolution and route permission checks。
 - Dynamic menu filtering。
 - Field permission filtering and masking。
 - Data-scope query constraint builder。
 - ABAC/PBAC policy condition evaluation。
-- Audit event creation and sensitive-field redaction。
+- Operation-log creation and sensitive-field redaction。
+
+## 主要公开方法
+
+| Method Group                                                                                          | Capability                                                                           |
+| ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `login` / `refresh` / `logout` / `verifyAccessToken`                                                  | JWT + stateful session lifecycle with token id and token version checks.             |
+| `createUser` / `updateUser` / `deleteUser`                                                            | Admin-user management, uniqueness, protected super-admin checks, token invalidation. |
+| `createRole` / `updateRole` / `deleteRole`                                                            | Role management, permission-code validation, dependent relationship updates.         |
+| `createPermission` / `updatePermission` / `deletePermission`                                          | Permission-code lifecycle and dependent role/menu rewrites.                          |
+| `createMenu` / `updateMenu` / `deleteMenu` / `getMenuTree`                                            | Dynamic menu management and capability filtering.                                    |
+| `createFieldPermission` / `updateFieldPermission` / `deleteFieldPermission` / `applyFieldPermissions` | Field policy management and backend response masking/hiding.                         |
+| `createPolicy` / `updatePolicy` / `deletePolicy` / `evaluatePolicy`                                   | ABAC/PBAC management and default-deny policy evaluation.                             |
+| `listSessions` / `revokeSession` / `revokeUserSessions`                                               | Frontend online-session listing and forced-offline behavior.                         |
+| `recordOperation` / `redactSensitive` / `maskField`                                                   | Operation logging, sensitive-data redaction, and field masking.                      |
 
 ## 边界
 

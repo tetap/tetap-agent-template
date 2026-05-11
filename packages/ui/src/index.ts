@@ -67,6 +67,18 @@ export { Label } from './components/ui/label.js';
 export { PasswordInput } from './components/ui/password-input.js';
 export type { PasswordInputProps } from './components/ui/password-input.js';
 export { ScrollArea, ScrollBar } from './components/ui/scroll-area.js';
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from './components/ui/select.js';
 export { Separator } from './components/ui/separator.js';
 export {
   Sheet,
@@ -105,6 +117,7 @@ export {
   useSidebar,
 } from './components/ui/sidebar.js';
 export { Skeleton } from './components/ui/skeleton.js';
+export { Toaster, toast } from './components/ui/sonner.js';
 export {
   Table,
   TableBody,

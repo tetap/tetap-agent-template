@@ -19,7 +19,7 @@ const createClockedService = (nowRef: { current: Date }, ttl: { access: number; 
   });
 
 describe('IAM engines', () => {
-  it('signs in, resolves capabilities, and invalidates forced-offline sessions', async () => {
+  it('signs in, resolves capabilities, and keeps admin sessions out of online users', async () => {
     const iam = createService();
     const login = await iam.login({
       username: 'admin',
@@ -32,12 +32,9 @@ describe('IAM engines', () => {
     expect(login.capabilities).toContain('session:revoke');
     expect(iam.verifyAccessToken(login.accessToken).user.username).toBe('admin');
 
-    const [session] = iam.listSessions();
+    expect(iam.listSessions().every(session => session.userId.startsWith('front-'))).toBe(true);
 
-    expect(session?.status).toBe('ONLINE');
-
-    iam.revokeSession(session.id, 'unit-test', login.user.id);
-
+    iam.logout(login.accessToken);
     expect(() => iam.verifyAccessToken(login.accessToken)).toThrow();
   });
 
@@ -56,7 +53,6 @@ describe('IAM engines', () => {
 
     expect(() => iam.verifyAccessToken(login.accessToken)).toThrow('Session expired.');
     expect(() => iam.refresh(login.refreshToken)).toThrow('Token expired.');
-    expect(iam.listSessions()[0]?.status).toBe('EXPIRED');
   });
 
   it('applies field policies and data constraints for scoped roles', async () => {
@@ -99,7 +95,7 @@ describe('IAM engines', () => {
     expect(iam.evaluatePolicy(actor!, 'unknown', 'write').allowed).toBe(false);
   });
 
-  it('mutates users, roles, permissions, field permissions, and policies with audit trails', () => {
+  it('mutates users, roles, permissions, field permissions, and policies with operation trails', () => {
     const iam = createService();
     const permission = iam.createPermission({
       code: 'report:read',
@@ -146,10 +142,10 @@ describe('IAM engines', () => {
     iam.deleteUser(user.id);
     iam.deleteFieldPermission(fieldPermission.id);
     iam.deletePolicy(policy.id);
-    expect(iam.audit.some(event => event.action === 'IAM_MUTATION' && event.resource === 'user')).toBe(true);
+    expect(iam.operations.some(event => event.operation === 'IAM_MUTATION' && event.resource === 'user')).toBe(true);
   });
 
-  it('redacts sensitive audit detail recursively', () => {
+  it('redacts sensitive operation detail recursively', () => {
     expect(
       redactSensitive({
         password: 'secret',

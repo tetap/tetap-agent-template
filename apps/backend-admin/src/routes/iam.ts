@@ -13,9 +13,9 @@ import {
   deleteRole,
   deleteUser,
   getIamOverview,
-  listAuditLogs,
   listFieldPermissions,
   listMenus,
+  listOperationLogs,
   listPermissions,
   listPolicies,
   listRoles,
@@ -467,11 +467,11 @@ export const registerIamRoutes = (app: FastifyInstance) => {
     revokeUserSessions,
   );
   app.get(
-    '/iam/audit-logs',
+    '/iam/operation-logs',
     {
-      config: { auth: { permission: 'audit:read' }, skipSecurity: true },
+      config: { auth: { permission: 'operation-log:read' }, skipSecurity: true },
       schema: { response: { 200: responseSchema } },
     },
-    listAuditLogs,
+    listOperationLogs,
   );
 };

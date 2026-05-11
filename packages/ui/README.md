@@ -9,21 +9,45 @@
 
 ## Public Entrypoints
 
-| Export                     | Purpose                          |
-| -------------------------- | -------------------------------- |
-| `@tetap/ui`                | Main component barrel.           |
-| `@tetap/ui/brand-logo`     | TETAP SVG brand logo component.  |
-| `@tetap/ui/styles.css`     | Tailwind + shadcn theme runtime. |
-| `@tetap/ui/button`         | Button direct export.            |
-| `@tetap/ui/card`           | Card direct export.              |
-| `@tetap/ui/badge`          | Badge direct export.             |
-| `@tetap/ui/separator`      | Separator direct export.         |
-| `@tetap/ui/tabs`           | Tabs direct export.              |
-| `@tetap/ui/sidebar`        | Sidebar shell primitives.        |
-| `@tetap/ui/field`          | Form field layout primitives.    |
-| `@tetap/ui/dialog`         | Dialog primitives.               |
-| `@tetap/ui/dropdown-menu`  | Dropdown menu primitives.        |
-| `@tetap/ui/password-input` | Shared password input.           |
+| Export                     | Purpose                                        |
+| -------------------------- | ---------------------------------------------- |
+| `@tetap/ui`                | Main component barrel.                         |
+| `@tetap/ui/brand-logo`     | TETAP SVG brand logo component.                |
+| `@tetap/ui/styles.css`     | Tailwind + shadcn theme runtime.               |
+| `@tetap/ui/alert`          | Alert direct export.                           |
+| `@tetap/ui/avatar`         | Avatar direct export.                          |
+| `@tetap/ui/badge`          | Badge direct export.                           |
+| `@tetap/ui/button`         | Button direct export.                          |
+| `@tetap/ui/card`           | Card direct export.                            |
+| `@tetap/ui/checkbox`       | Checkbox direct export.                        |
+| `@tetap/ui/collapsible`    | Collapsible direct export.                     |
+| `@tetap/ui/command`        | Command palette direct export.                 |
+| `@tetap/ui/dialog`         | Dialog primitives.                             |
+| `@tetap/ui/dropdown-menu`  | Dropdown menu primitives.                      |
+| `@tetap/ui/field`          | Form field layout primitives.                  |
+| `@tetap/ui/input`          | Input direct export.                           |
+| `@tetap/ui/label`          | Label direct export.                           |
+| `@tetap/ui/password-input` | Shared password input.                         |
+| `@tetap/ui/scroll-area`    | ScrollArea and ScrollBar direct export.        |
+| `@tetap/ui/select`         | Radix Select primitives for enum-only choices. |
+| `@tetap/ui/separator`      | Separator direct export.                       |
+| `@tetap/ui/sheet`          | Sheet/drawer direct export.                    |
+| `@tetap/ui/sidebar`        | Sidebar shell primitives.                      |
+| `@tetap/ui/skeleton`       | Skeleton loading direct export.                |
+| `@tetap/ui/sonner`         | Sonner `Toaster` and `toast` feedback API.     |
+| `@tetap/ui/tabs`           | Tabs direct export.                            |
+| `@tetap/ui/table`          | Table primitives direct export.                |
+| `@tetap/ui/tooltip`        | Tooltip primitives direct export.              |
+
+## Current Shared Primitives
+
+The main `@tetap/ui` barrel exports brand logo, layout, overlay, feedback, form, navigation, and data-display primitives:
+
+`Alert`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Command`, `Dialog`, `DropdownMenu`, `Field`, `Input`, `Label`, `PasswordInput`, `ScrollArea`, `Select`, `Separator`, `Sheet`, `Sidebar`, `Skeleton`, `Table`, `Tabs`, `Tooltip`, `Toaster`, and `toast`.
+
+Use `Select` for fixed enum fields such as permission type, field permission type, policy effect, and data scope. Use `toast` from `@tetap/ui` for save/error feedback instead of page-local alert state.
+
+`DialogContent` is constrained to the viewport and scrolls internally, so large create/edit forms should stay in dialogs instead of overflowing the document body.
 
 ## Rules
 

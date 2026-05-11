@@ -9,13 +9,32 @@
 
 ## Public Entrypoints
 
-| Export                             | Purpose                                  |
-| ---------------------------------- | ---------------------------------------- |
-| `@tetap/config`                    | env paths, `readAppEnv`, `AppEnv` types. |
-| `@tetap/config/node`               | Node env loading and typed getter.       |
-| `@tetap/config/vite`               | Vite env dir helper.                     |
-| `@tetap/config/tailwind.config.ts` | Shared Tailwind config.                  |
-| `@tetap/config/env`                | Unified env directory.                   |
+| Export                             | Purpose                                          |
+| ---------------------------------- | ------------------------------------------------ |
+| `@tetap/config`                    | env paths, `readAppEnv`, `AppEnv` types.         |
+| `@tetap/config/node`               | Node env loading, typed getter, env-dir helpers. |
+| `@tetap/config/vite`               | Vite `envDir` helper.                            |
+| `@tetap/config/tailwind.config.ts` | Shared Tailwind config.                          |
+| `@tetap/config/env`                | Unified env directory.                           |
+
+## Public Helpers
+
+| Helper / Type          | Purpose                                                                  |
+| ---------------------- | ------------------------------------------------------------------------ |
+| `loadConfigEnv`        | Load `.env`, mode-specific env, and optional `.env.local` for Node apps. |
+| `getAppEnv`            | Read typed runtime config from `process.env` after loading env files.    |
+| `readAppEnv`           | Parse and validate typed runtime env values from any source object.      |
+| `configEnvDir`         | Shared Vite `envDir` value for browser apps.                             |
+| `configBaseEnvFile`    | Absolute path to the base `packages/config/env/.env`.                    |
+| `configLocalEnvFile`   | Absolute path to optional `packages/config/env/.env.local`.              |
+| `getConfigEnvFile`     | Resolve mode-specific env file such as `.env.development`.               |
+| `AppEnv` / `EnvSource` | Typed runtime config and input source types.                             |
+
+## Current Env Shape
+
+`AppEnv` currently includes service ports, database, optional Redis, CORS origins, body/rate limits, app secrets, auth token TTLs, AES keys, demo seed toggle, and skipped route patterns:
+
+`NODE_ENV`, `HOST`, `PORT`, `BACKEND_ADMIN_HOST`, `BACKEND_ADMIN_PORT`, `DATABASE_URL`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_KEY_PREFIX`, `CORS_ORIGINS`, `BODY_LIMIT_BYTES`, `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW`, `APP_ID`, `APP_SECRET`, `AUTH_SECRET`, `REFRESH_AUTH_SECRET`, `AUTH_SALT`, `AUTH_ACCESS_TOKEN_TTL_SECONDS`, `AUTH_REFRESH_TOKEN_TTL_SECONDS`, `AES_SECRET_KEY`, `AES_IV`, `ENABLE_DEMO_SEED`, and `SKIP_ROUTES`.
 
 ## Rules
 

@@ -2,12 +2,12 @@
 
 ## 定位
 
-`apps/web-admin` 是后台管理专用浏览器应用，使用 React、Vite 和 React Router 负责后台管理页面 runtime、路由和页面组合。它与 `apps/backend-admin` 形成管理端前后端边界；公共用户页面仍属于 `apps/web`。管理端已包含 IAM 页面，用于展示权限总览、用户/角色/权限码、在线会话、字段策略、动态策略和审计数据。
+`apps/web-admin` 是后台管理专用浏览器应用，使用 React、Vite 和 React Router 负责后台管理页面 runtime、路由和页面组合。它与 `apps/backend-admin` 形成管理端前后端边界；公共用户页面仍属于 `apps/web`。管理端已包含控制台、设置、IAM 页面，用于展示用户/角色/权限码、前台在线会话、字段策略、动态策略和操作日志数据。
 
 ## 参考来源
 
 - Reference repository: [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin)
-- Adopted patterns: authenticated layout shell, collapsible sidebar, team switcher, profile dropdown, command search, auth pages, admin dashboard entry, navigation groups, KPI cards, tabs, and security/activity panel。
+- Adopted patterns: authenticated layout shell, collapsible sidebar, profile dropdown, command search, auth pages, settings/theme controls, admin dashboard entry, navigation groups, KPI cards, tabs, and security/activity panel。
 - Rejected patterns: app-local `components/ui`、app-local hooks、feature CSS、TanStack Router migration、direct dependency version drift。
 
 ## 职责
@@ -28,15 +28,17 @@
 
 ## 内部结构
 
-| Path             | Responsibility                                                                                                              |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `src/main.tsx`   | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                                              |
-| `src/App.tsx`    | React Router、auth routes、protected admin routes 和 app shell 级组合。                                                     |
-| `src/layout/*`   | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。                                    |
-| `src/pages/auth` | 后台登录和 OTP 页面；后台账号只能由已授权管理员在用户管理中创建，schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。 |
-| `src/pages/*`    | Admin 页面组合；只拼装共享能力，不定义共享 primitives。                                                                     |
-| `vite.config.ts` | Vite 插件和 `@tetap/config/vite` env 目录配置。                                                                             |
-| `tsconfig*.json` | Admin web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                                                                 |
+| Path                     | Responsibility                                                                                                              |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`           | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                                              |
+| `src/App.tsx`            | React Router、auth routes、protected admin routes 和 app shell 级组合。                                                     |
+| `src/layout/*`           | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。                                    |
+| `src/pages/auth`         | 后台登录和 OTP 页面；后台账号只能由已授权管理员在用户管理中创建，schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。 |
+| `src/pages/iam.tsx`      | 用户、角色、权限码、菜单、字段权限、策略、前台在线用户和操作日志页面；所有数据来自 backend-admin。                          |
+| `src/pages/settings.tsx` | 账号、外观、显示和通知设置页面，主题状态来自 `@tetap/hooks`。                                                               |
+| `src/pages/*`            | Admin 页面组合；只拼装共享能力，不定义共享 primitives。                                                                     |
+| `vite.config.ts`         | Vite 插件和 `@tetap/config/vite` env 目录配置。                                                                             |
+| `tsconfig*.json`         | Admin web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                                                                 |
 
 ## 页面渲染流
 
@@ -68,6 +70,8 @@ sequenceDiagram
 - 使用 `@tetap/hooks` 暴露的 hooks。
 - 使用 `@tetap/schema` 做后台管理表单或 API contract 校验。
 - 引入 `@tetap/ui/styles.css` 作为设计系统 runtime CSS。
+- 使用 `@tetap/ui/sonner` toast 处理保存和错误反馈。
+- 对 enum 字段使用 `Select`，对 role/menu/permission/department 等 ID 关联使用可搜索分页选择器。
 
 ## 禁止
 
@@ -78,6 +82,7 @@ sequenceDiagram
 - 本地读取 `.env` 或绕过 `@tetap/config/vite`。
 - 调用公共 `apps/backend` 实现后台管理接口；admin APIs 必须走 `apps/backend-admin`。
 - 导入 public/backend i18n scope。
+- 引入团队空间/工作区切换、升级专业版、计费或前台注册入口。
 
 ## 扩展步骤
 

@@ -22,5 +22,5 @@
     "@tetap/schema": "workspace:*",
     "fastify": "^5.3.3"
   },
-  "description": "Dedicated Fastify backend for admin management APIs."
+  "description": "Dedicated Fastify backend for real admin auth, IAM management APIs, operation logs, and admin security."
 }

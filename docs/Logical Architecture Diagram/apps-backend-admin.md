@@ -2,7 +2,7 @@
 
 ## 定位
 
-`apps/backend-admin` 是后台管理专用 Fastify 服务。所有后台管理接口必须在此服务端实现，公共用户 API 留在 `apps/backend`。当前管理端 IAM API 包括登录、刷新、退出、当前用户、权限总览、用户/角色/权限码、菜单、字段权限、策略、在线会话、强制下线和审计日志。
+`apps/backend-admin` 是后台管理专用 Fastify 服务。所有后台管理接口必须在此服务端实现，公共用户 API 留在 `apps/backend`。当前管理端 IAM API 包括登录、刷新、退出、当前用户、权限总览、用户/角色/权限码、菜单、字段权限、策略、前台在线会话、强制下线和操作日志。
 
 ## 服务边界
 
@@ -16,7 +16,7 @@
 ```mermaid
 flowchart TD
   Main[src/main.ts\nload env + listen admin port] --> App[src/app.ts\nbuild Fastify]
-  App --> Plugins[src/plugins/*\ni18n / security / error handler]
+  App --> Plugins[src/plugins/*\ni18n / security / error handler / operation log]
   App --> Routes[src/routes/*\nadmin registration only]
   Routes --> Services[src/services/*\nadmin logic + schema + response]
   Services --> Schema[@tetap/schema]
@@ -62,7 +62,10 @@ Admin 文案使用 `@tetap/i18n/backend-admin` 中的 `backendAdmin.*` key。
 - Protected route 通过 `config.auth.permission` 声明权限码。
 - `/auth/login` 和 `/auth/refresh` 是显式 public route。
 - 在线会话和 token id 由 `@tetap/iam` 管理，强制下线会让旧 token 返回 `40101`。
+- 在线用户只包含前台用户会话；后台管理员 session 不进入在线用户表格或强制下线列表。
+- Operation-log plugin 记录每个非 health、非 OPTIONS 后端操作的操作人、事项、详情、时间和 IP。
 - Fastify runtime 启用 body limit、helmet、CORS allowlist、rate-limit 和日志脱敏。
+- `ENABLE_DEMO_SEED=true` 时仅用于本地开发的默认管理员是 `admin@tetap.local` / `password1`，生产环境必须通过受控流程创建管理员并替换 demo secrets。
 
 ## 扩展流程
 

@@ -27,6 +27,15 @@ export type IamUser = {
   tokenVersion: number;
 };
 
+export type IamFrontendUser = {
+  id: string;
+  username: string;
+  email: string;
+  status: UserStatus;
+  deptId: string;
+  tenantId: string;
+};
+
 export type IamRole = {
   id: string;
   name: string;
@@ -107,6 +116,8 @@ export type IamPolicy = {
 export type IamSession = {
   id: string;
   userId: string;
+  username?: string;
+  email?: string;
   tokenId: string;
   deviceType: DeviceType;
   ip: string;
@@ -119,7 +130,8 @@ export type IamSession = {
   revokedReason?: string;
 };
 
-export type AuditAction =
+export type OperationAction =
+  | 'BACKEND_OPERATION'
   | 'LOGIN'
   | 'REFRESH'
   | 'LOGOUT'
@@ -130,17 +142,19 @@ export type AuditAction =
   | 'IAM_READ'
   | 'IAM_MUTATION';
 
-export type AuditLog = {
+export type OperationLog = {
   id: string;
-  actorUserId?: string;
-  action: AuditAction;
+  operator: string;
+  operatorUserId?: string;
+  operation: OperationAction;
+  operationItem: string;
+  operationDetail: Record<string, unknown>;
+  operationTime: string;
+  operationIp?: string;
   resource: string;
   resourceId?: string;
-  ip?: string;
   userAgent?: string;
   result: 'SUCCESS' | 'FAILURE';
-  detail: Record<string, unknown>;
-  createdAt: string;
 };
 
 export type JwtTokenType = 'access' | 'refresh';
@@ -188,7 +202,9 @@ export type LoginResult = AuthTokenPair & {
 };
 
 export type IamDataSet = {
-  users: IamUser[];
+  adminUsers: IamUser[];
+  frontendUsers: IamFrontendUser[];
+  frontendSessions: IamSession[];
   roles: IamRole[];
   permissions: IamPermission[];
   menus: IamMenu[];

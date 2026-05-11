@@ -41,7 +41,7 @@ export const NavGroup = ({ title, titleKey, items }: AdminNavGroup) => {
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{titleKey ? t(titleKey) : title}</SidebarGroupLabel>
+      {titleKey || title ? <SidebarGroupLabel>{titleKey ? t(titleKey) : title}</SidebarGroupLabel> : null}
       <SidebarMenu>
         {items.map(item => {
           const key = `${getLabel(item)}-${item.url}`;

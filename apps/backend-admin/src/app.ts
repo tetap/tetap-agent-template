@@ -5,6 +5,7 @@ import fastify from 'fastify';
 import { registerAuthMiddleware } from './plugins/auth.js';
 import { registerErrorHandler } from './plugins/error-handler.js';
 import { registerI18nMiddleware } from './plugins/i18n.js';
+import { registerOperationLogMiddleware } from './plugins/operation-log.js';
 import { registerSecurityMiddleware } from './plugins/security.js';
 import { registerRoutes } from './routes/index.js';
 import { createIamService } from './shared/iam-service.js';
@@ -35,6 +36,7 @@ export const buildBackendAdminApp = async ({ env }: BuildBackendAdminAppOptions)
   registerI18nMiddleware(app);
   registerSecurityMiddleware(app, env);
   registerAuthMiddleware(app);
+  registerOperationLogMiddleware(app);
 
   await app.register(helmet, {
     global: true,

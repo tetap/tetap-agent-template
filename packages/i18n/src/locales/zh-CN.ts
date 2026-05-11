@@ -148,7 +148,7 @@ export const zhCN = {
       },
       iam: {
         title: 'IAM 核心',
-        description: 'RBAC、PBAC、字段权限、会话失效和审计原语统一进入 @tetap/iam。',
+        description: 'RBAC、PBAC、字段权限、会话失效和操作日志原语统一进入 @tetap/iam。',
         link: '查看权限模型',
         code: 'policyEngine.can()',
       },
@@ -214,7 +214,7 @@ export const zhCN = {
       forbidden: '无权限',
       notFound: '未找到',
       internalError: '服务错误',
-      audit: '审计日志',
+      operationLogs: '操作日志',
       roles: '角色权限',
       iam: '权限中台',
       permissions: '权限码',
@@ -224,7 +224,6 @@ export const zhCN = {
       sessions: '在线用户',
       systemManagement: '系统管理',
       account: '账号',
-      billing: '计费',
       appearance: '外观',
       display: '显示',
       helpCenter: '帮助中心',
@@ -254,22 +253,9 @@ export const zhCN = {
         placeholder: '输入命令或搜索页面...',
         empty: '没有找到结果。',
       },
-      teams: {
-        label: '团队',
-        add: '添加工作区',
-        core: {
-          name: 'TETAP Admin',
-          plan: '管理后台',
-        },
-        security: {
-          name: '安全中心',
-          plan: '审计工作区',
-        },
-      },
       user: {
         name: '管理员',
         email: 'admin@tetap.local',
-        upgrade: '升级专业版',
         signOut: '退出登录',
       },
       signOut: {
@@ -317,13 +303,13 @@ export const zhCN = {
     },
     dashboard: {
       title: '控制台',
-      description: '展示后台管理运行概况、权限资产数量、在线会话和最新审计事件。',
+      description: '展示后台管理运行概况、权限资产数量、前台在线用户和最新操作日志。',
       actions: {
         refresh: '刷新数据',
       },
       overview: {
         title: '权限资产概览',
-        description: '从 backend-admin 实时读取用户、角色、权限、菜单、策略和审计统计。',
+        description: '从 backend-admin 实时读取用户、角色、权限、菜单、策略和操作日志统计。',
       },
       metrics: {
         activeUsers: {
@@ -337,30 +323,30 @@ export const zhCN = {
           trend: '来自 IAM 角色配置',
         },
         securityEvents: {
-          label: '审计事件',
+          label: '操作日志',
           value: '0',
-          trend: '来自后端审计日志',
+          trend: '来自后端操作日志',
         },
         backendStatus: {
-          label: '在线会话',
+          label: '前台在线用户',
           value: '0',
-          trend: '来自可失效登录会话',
+          trend: '仅包含前台用户可失效登录会话',
         },
       },
       states: {
         loadFailed: '后台首页数据加载失败，请确认 backend-admin 服务已启动。',
       },
       activity: {
-        title: '安全与审计动态',
-        description: '展示 backend-admin 返回的最新审计事件。',
+        title: '操作动态',
+        description: '展示 backend-admin 返回的最新后端操作记录。',
         timestamp: '刚刚更新',
-        empty: '暂无审计事件。',
+        empty: '暂无操作日志。',
       },
     },
     iam: {
       badge: 'IAM',
       title: '权限中台',
-      description: '集中管理用户、角色、权限码、字段策略、动态策略、在线会话和审计轨迹。',
+      description: '集中管理后台用户、角色、权限码、字段策略、动态策略、前台在线用户和操作日志。',
       tabs: {
         overview: '总览',
         users: '用户',
@@ -371,12 +357,12 @@ export const zhCN = {
         policy: '策略',
         fields: '字段权限',
         policies: '动态策略',
-        audit: '审计',
+        operationLogs: '操作日志',
       },
       pages: {
         overview: {
           title: '权限概览',
-          description: '查看用户、角色、权限码和审计事件的总体状态。',
+          description: '查看用户、角色、权限码和操作日志的总体状态。',
         },
         users: {
           title: '用户管理',
@@ -406,9 +392,9 @@ export const zhCN = {
           title: '策略管理',
           description: '维护 ABAC/PBAC 动态策略条件。',
         },
-        audit: {
-          title: '审计日志',
-          description: '查看登录、权限拒绝、策略拒绝、强制下线和 IAM 变更记录。',
+        operationLogs: {
+          title: '操作日志',
+          description: '查看后端操作人、操作事项、操作详情、操作时间和操作 IP。',
         },
       },
       actions: {
@@ -443,7 +429,7 @@ export const zhCN = {
         lastActiveTime: '最后活跃',
         name: '名称',
         order: '排序',
-        parentId: '父级菜单 ID',
+        parentMenu: '父级菜单',
         password: '密码',
         path: '路径',
         permissionCodes: '权限码',
@@ -453,8 +439,21 @@ export const zhCN = {
         roleCodes: '角色编码',
         status: '状态',
         type: '类型',
-        userId: '用户 ID',
+        userId: '前台用户',
         username: '用户名',
+      },
+      selection: {
+        description: '搜索并按页选择候选项。',
+        empty: '没有匹配项。',
+        defaultDept: '默认部门',
+        defaultDeptDescription: '由后端使用默认部门规则。',
+        department: '部门 {{deptId}}',
+        next: '下一页',
+        placeholder: '请选择',
+        prev: '上一页',
+        rootDescription: '作为一级菜单展示。',
+        rootMenu: '一级菜单',
+        search: '搜索',
       },
       dataScopes: {
         all: '全部数据权限',
@@ -535,7 +534,7 @@ export const zhCN = {
         users: '用户',
         roles: '角色',
         permissions: '权限码',
-        audit: '审计事件',
+        operationLogs: '操作日志',
       },
       tables: {
         usersTitle: '用户列表',
@@ -547,12 +546,19 @@ export const zhCN = {
         menusTitle: '菜单列表',
         menusDescription: '后端返回并由前端渲染的菜单配置。',
         sessionsTitle: '在线会话',
-        sessionsDescription: '当前仍可用的登录会话和设备状态。',
+        sessionsDescription: '仅展示前台用户当前仍可用的登录会话和设备状态。',
       },
       policy: {
         fieldDescription: '字段规则在后端裁剪或脱敏敏感字段。',
         policyDescription: '动态策略用于 ABAC/PBAC 条件判断。',
-        auditDescription: '审计事件记录登录、拒绝、下线和权限读取行为。',
+        operationLogDescription: '操作日志记录后端操作人、操作事项、详情、时间和 IP。',
+      },
+      operationLogs: {
+        detail: '操作详情',
+        ip: '操作 IP',
+        item: '操作事项',
+        operator: '操作人',
+        time: '操作时间',
       },
       states: {
         loadFailed: '权限数据加载失败，请确认 backend-admin 服务已启动。',
@@ -562,6 +568,35 @@ export const zhCN = {
         noSessions: '暂无在线会话',
         noSessionsDescription: '用户登录后会话会出现在这里。',
         revokeFailed: '强制下线失败，请稍后重试。',
+      },
+    },
+    settings: {
+      description: '维护当前后台账号、主题和显示偏好。',
+      account: {
+        title: '账号设置',
+        description: '查看当前后台账号和角色信息。',
+      },
+      appearance: {
+        title: '外观设置',
+        description: '配置后台管理界面的明暗主题。',
+      },
+      display: {
+        title: '显示设置',
+        description: '调整后台管理界面显示偏好。',
+      },
+      notifications: {
+        title: '通知设置',
+        description: '查看后台系统通知策略。',
+        enabled: '已启用',
+        system: '系统通知',
+        systemDescription: '接收后台权限和系统状态相关通知。',
+      },
+      theme: {
+        title: '主题',
+        description: '选择浅色、深色或跟随系统。',
+        dark: '深色',
+        light: '浅色',
+        system: '跟随系统',
       },
     },
     statePages: {
@@ -599,7 +634,7 @@ export const zhCN = {
       refreshOk: '登录状态刷新成功。',
     },
     iam: {
-      auditLogsOk: '审计日志获取成功。',
+      operationLogsOk: '操作日志获取成功。',
       fieldPermissionCreated: '字段权限已创建。',
       fieldPermissionDeleted: '字段权限已删除。',
       fieldPermissionUpdated: '字段权限已更新。',

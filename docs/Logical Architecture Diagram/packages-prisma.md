@@ -30,7 +30,7 @@
 - 不引入其他 ORM 或 app-local SQL schema。
 - 后端需要持久化时通过 shared Prisma boundary 消费，不绕过 `@tetap/prisma`。
 - env 来源仍然使用 `packages/config/env`。
-- IAM model 包括 user、role、permission、menu、policy、field permission、session、token blacklist、department 和 audit log。
+- IAM model 包括前台 user、admin user、role、permission、menu、policy、field permission、前台 session、admin session、token blacklist、department 和 operation log。
 
 ## 影响测试
 

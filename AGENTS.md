@@ -11,6 +11,7 @@
 | 工作区边界和依赖方向           | [docs/Logical Architecture Diagram/01-workspace-boundaries.md](docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md) |
 | 质量门禁、测试、构建规则       | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               |
 | 多步骤计划与 todolist 记忆     | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     |
+| README 同步记忆                | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       |
 | 测试策略与定向测试记忆         | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               |
 
 ## 2. 标准执行流程
@@ -19,9 +20,10 @@
 2. **同步计划**：凡是多步骤任务，必须在 `docs/todolists` 创建或更新 checkbox 执行计划。
 3. **最小变更**：只改与任务直接相关的文件，不顺手重构无关模块。
 4. **遵守边界**：apps 只做 runtime/feature composition，跨切面能力放入 `packages/*`。
-5. **先定向验证**：开发中优先跑 `pnpm test:affected` 或 `pnpm test:*:target`。
-6. **最终收口**：修改文件后执行 `pnpm lint:fix`、`pnpm format:fix`，再跑相关校验。
-7. **关闭计划**：任务完成后关闭对应 todolist，记录验证命令和结果。
+5. **同步文档**：代码、导出、接口、模型、脚本或行为变化后，同步最近的 README 和相关架构文档；package README 必须准确列出当前工具、方法、导出和验证命令。
+6. **先定向验证**：开发中优先跑 `pnpm test:affected` 或 `pnpm test:*:target`。
+7. **最终收口**：修改文件后执行 `pnpm lint:fix`、`pnpm format:fix`，再跑相关校验。
+8. **关闭计划**：任务完成后关闭对应 todolist，记录验证命令和结果。
 
 ## 3. 约束索引
 
@@ -38,6 +40,7 @@
 | Dependencies | React、React DOM、TypeScript、Zod、RHF、resolver 版本由根目录统一控制。                                        | [README.zh-CN.md#dependency-规则](README.zh-CN.md#dependency-规则)                                                                                   |
 | Testing      | 功能完成必须考虑单元、Browser Mode UI、冒烟和影响映射；自动化测试统一用 Vitest。                               | [README.zh-CN.md#testing-规则](README.zh-CN.md#testing-规则)、[testing-workflow.md](docs/memory/testing-workflow.md)                                 |
 | Planning     | 每个多步骤计划都要同步 `docs/todolists`，完成后关闭。                                                          | [README.zh-CN.md#planning-规则](README.zh-CN.md#planning-规则)、[plan-workflow.md](docs/memory/plan-workflow.md)                                     |
+| Docs         | 代码、导出、接口、模型、脚本或行为变化必须同步最近 README、package 方法/导出列表、根 README 和相关架构文档。   | [README.zh-CN.md#documentation-规则](README.zh-CN.md#documentation-规则)、[readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)             |
 | TypeScript   | TypeScript 错误不得交付；最终至少通过 `pnpm check`。                                                           | [README.zh-CN.md#typescript-门禁](README.zh-CN.md#typescript-门禁)、[02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md) |
 | Release      | 生产 build 会统一 bump 版本；版本 bump 必须独立提交和 tag。                                                    | [README.zh-CN.md#release-规则](README.zh-CN.md#release-规则)                                                                                         |
 
@@ -53,7 +56,7 @@
 | `packages/config`    | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       | 统一 env、typed runtime config、Vite/Node 配置入口。             |
 | `packages/hooks`     | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         | React hooks 与表单 helper 集中仓库。                             |
 | `packages/i18n`      | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           | locale 资源、翻译核心、site/React/Node helper。                  |
-| `packages/iam`       | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             | IAM 权限、会话、策略、字段、数据和审计核心。                     |
+| `packages/iam`       | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             | IAM 权限、会话、策略、字段、数据和操作日志核心。                 |
 | `packages/prisma`    | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       | Prisma schema 拆分规则、生成和 DB 脚本。                         |
 | `packages/schema`    | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       | 前后端共享 Zod 契约。                                            |
 | `packages/ui`        | [packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)               | shadcn/ui 共享组件库、设计系统样式和品牌资产。                   |

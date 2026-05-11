@@ -7,7 +7,8 @@ export const dataScopeTypeSchema = z.enum(['ALL', 'DEPT', 'DEPT_AND_CHILD', 'SEL
 export const policyEffectSchema = z.enum(['ALLOW', 'DENY']);
 export const sessionStatusSchema = z.enum(['ONLINE', 'OFFLINE', 'REVOKED', 'EXPIRED']);
 export const deviceTypeSchema = z.enum(['WEB', 'IOS', 'ANDROID', 'DESKTOP', 'UNKNOWN']);
-export const auditActionSchema = z.enum([
+export const operationActionSchema = z.enum([
+  'BACKEND_OPERATION',
   'LOGIN',
   'REFRESH',
   'LOGOUT',
@@ -119,6 +120,8 @@ export const iamPolicySchema = z.object({
 export const iamSessionSchema = z.object({
   id: z.string().min(1),
   userId: z.string().min(1),
+  username: z.string().min(1).optional(),
+  email: z.string().email().optional(),
   tokenId: z.string().min(1),
   deviceType: deviceTypeSchema,
   ip: z.string().min(1),
@@ -131,17 +134,19 @@ export const iamSessionSchema = z.object({
   revokedReason: z.string().optional(),
 });
 
-export const auditLogSchema = z.object({
+export const operationLogSchema = z.object({
   id: z.string().min(1),
-  actorUserId: z.string().min(1).optional(),
-  action: auditActionSchema,
+  operator: z.string().min(1),
+  operatorUserId: z.string().min(1).optional(),
+  operation: operationActionSchema,
+  operationItem: z.string().min(1),
+  operationDetail: z.record(z.unknown()),
+  operationTime: isoDatetimeSchema,
+  operationIp: z.string().optional(),
   resource: z.string().min(1),
   resourceId: z.string().min(1).optional(),
-  ip: z.string().optional(),
   userAgent: z.string().optional(),
   result: z.enum(['SUCCESS', 'FAILURE']),
-  detail: z.record(z.unknown()),
-  createdAt: isoDatetimeSchema,
 });
 
 export const iamLoginRequestSchema = z.object({
@@ -301,7 +306,7 @@ export const iamOverviewDataSchema = z.object({
   fieldPermissions: z.array(fieldPermissionSchema),
   policies: z.array(iamPolicySchema),
   sessions: z.array(iamSessionSchema),
-  auditLogs: z.array(auditLogSchema),
+  operationLogs: z.array(operationLogSchema),
 });
 
 export const iamSessionRevokeDataSchema = z.object({
@@ -325,7 +330,7 @@ export const iamFieldPermissionsResponseSchema = createApiResponseSchema(z.array
 export const iamPolicyMutationResponseSchema = createApiResponseSchema(iamPolicySchema);
 export const iamPoliciesResponseSchema = createApiResponseSchema(z.array(iamPolicySchema));
 export const iamSessionsResponseSchema = createApiResponseSchema(z.array(iamSessionSchema));
-export const iamAuditLogsResponseSchema = createApiResponseSchema(z.array(auditLogSchema));
+export const iamOperationLogsResponseSchema = createApiResponseSchema(z.array(operationLogSchema));
 export const iamSessionRevokeResponseSchema = createApiResponseSchema(iamSessionRevokeDataSchema);
 
 export type IamPermission = z.output<typeof iamPermissionSchema>;
@@ -334,7 +339,7 @@ export type IamUser = z.output<typeof iamUserSchema>;
 export type FieldPermission = z.output<typeof fieldPermissionSchema>;
 export type IamPolicy = z.output<typeof iamPolicySchema>;
 export type IamSession = z.output<typeof iamSessionSchema>;
-export type AuditLog = z.output<typeof auditLogSchema>;
+export type OperationLog = z.output<typeof operationLogSchema>;
 export type IamLoginRequest = z.input<typeof iamLoginRequestSchema>;
 export type IamCreateUserRequest = z.input<typeof iamCreateUserRequestSchema>;
 export type IamUpdateUserRequest = z.input<typeof iamUpdateUserRequestSchema>;

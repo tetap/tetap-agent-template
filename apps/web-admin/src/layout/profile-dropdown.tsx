@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { BadgeCheck, Bell, CreditCard, LogOut, Sparkles } from 'lucide-react';
+import { BadgeCheck, Bell, LogOut } from 'lucide-react';
 import {
   Avatar,
   AvatarFallback,
@@ -48,23 +48,10 @@ export const ProfileDropdown = () => {
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Sparkles />
-              {t('webAdmin.layout.user.upgrade')}
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
             <DropdownMenuItem asChild>
               <Link to="/settings/account">
                 <BadgeCheck />
                 {t('webAdmin.navigation.account')}
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/settings/billing">
-                <CreditCard />
-                {t('webAdmin.navigation.billing')}
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem asChild>

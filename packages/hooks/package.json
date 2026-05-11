@@ -1,7 +1,7 @@
 {
   "name": "@tetap/hooks",
   "version": "1.0.1",
-  "description": "Centralized React hooks store for all apps and packages.",
+  "description": "Centralized React hooks for admin session state, theme state, i18n helpers, responsive helpers, and Zod forms.",
   "private": true,
   "sideEffects": false,
   "type": "module",

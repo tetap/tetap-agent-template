@@ -28,20 +28,48 @@
 
 ## Internal Structure
 
-| Path                  | Responsibility                                                                                      |
-| --------------------- | --------------------------------------------------------------------------------------------------- |
-| `src/main.tsx`        | React mount, providers, shared UI stylesheet import.                                                |
-| `src/App.tsx`         | Admin protected router, auth routes, and app-level composition.                                     |
-| `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                       |
-| `src/pages/auth`      | Sign-in, sign-up, forgot-password, and OTP pages backed by `@tetap/schema` + zustand session state. |
-| `src/pages/iam.tsx`   | IAM management overview wired to backend-admin auth/IAM APIs.                                       |
-| `src/pages/dashboard` | Admin dashboard page composition with shared packages.                                              |
-| `vite.config.ts`      | Vite plugin setup and `@tetap/config/vite` env dir.                                                 |
-| `tsconfig*.json`      | Admin web TypeScript configs without deprecated `baseUrl`.                                          |
+| Path                  | Responsibility                                                                                                                |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`        | React mount, providers, shared UI stylesheet import.                                                                          |
+| `src/App.tsx`         | Admin protected router, auth routes, and app-level composition.                                                               |
+| `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                                                 |
+| `src/pages/auth`      | Sign-in and OTP pages backed by real backend-admin auth APIs and zustand session state.                                       |
+| `src/pages/iam.tsx`   | IAM management pages wired to backend-admin users, roles, permissions, menus, sessions, policies, fields, and operation logs. |
+| `src/pages/settings`  | Account, appearance, display, and notification settings surfaces.                                                             |
+| `src/pages/dashboard` | Control-console dashboard using backend-admin overview data and operation activity.                                           |
+| `vite.config.ts`      | Vite plugin setup and `@tetap/config/vite` env dir.                                                                           |
+| `tsconfig*.json`      | Admin web TypeScript configs without deprecated `baseUrl`.                                                                    |
 
 ## Reference Adaptation
 
-This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin) for authenticated layout, sidebar navigation, team/profile dropdowns, command search, auth pages, KPI cards, tabs, and security/activity panels. It does not copy that repo's app-local UI system; all primitives come from `@tetap/ui`, session state comes from `@tetap/hooks`, and form contracts come from `@tetap/schema`.
+This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin) for authenticated layout, sidebar navigation, profile dropdowns, command search, auth pages, settings/theme controls, KPI cards, tabs, and security/activity panels. It does not copy that repo's app-local UI system; all primitives come from `@tetap/ui`, session/theme state comes from `@tetap/hooks`, and form/API contracts come from `@tetap/schema`.
+
+## Admin Behavior
+
+- Login uses real `backend-admin` APIs. Admin accounts are created by authorized administrators, not public registration.
+- Sidebar menus come from backend IAM dynamic menus. Dashboard is the top-level home route.
+- IAM create flows open dialogs from action buttons; oversized dialogs and pickers are scrollable.
+- Enum inputs such as permission type, field permission type, policy effect, and data scope use `Select`.
+- Role, permission, menu parent, and department selections use searchable paged pickers instead of raw ID inputs.
+- Online users mean frontend user sessions only. Admin login sessions are not shown or kicked from this UI.
+- Save and error feedback uses `toast` from `@tetap/ui/sonner`.
+
+## Current Pages
+
+| Route                    | Page                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| `/sign-in`               | Admin sign-in only; no social login, registration, forgot-password, or public self-service account creation. |
+| `/otp`                   | Admin OTP form shell backed by shared auth schemas.                                                          |
+| `/`                      | Dashboard/control console with IAM metrics and operation activity.                                           |
+| `/settings`              | Account, appearance, display, and notification settings with theme controls.                                 |
+| `/iam/users`             | Admin-user management backed by `GET/POST/PATCH/DELETE /iam/users`.                                          |
+| `/iam/roles`             | Role/data-scope management backed by role APIs.                                                              |
+| `/iam/permissions`       | Permission-code management with enum `Select` for permission type.                                           |
+| `/iam/menus`             | Tree menu management with searchable parent picker.                                                          |
+| `/iam/field-permissions` | Field hide/mask/readonly/readwrite rules.                                                                    |
+| `/iam/policies`          | Dynamic ABAC/PBAC policy rules.                                                                              |
+| `/iam/online-users`      | Frontend online sessions and forced-offline actions only.                                                    |
+| `/iam/operation-logs`    | Operation logs from backend-admin lifecycle and IAM service events.                                          |
 
 ## Scripts
 

@@ -1,5 +1,4 @@
 import {
-  iamAuditLogsResponseSchema,
   iamCreateFieldPermissionRequestSchema,
   iamCreateMenuRequestSchema,
   iamCreatePermissionRequestSchema,
@@ -12,6 +11,7 @@ import {
   iamMenusResponseSchema,
   iamOverviewDataSchema,
   iamOverviewResponseSchema,
+  iamOperationLogsResponseSchema,
   iamPermissionMutationResponseSchema,
   iamPermissionsResponseSchema,
   iamPolicyMutationResponseSchema,
@@ -94,12 +94,13 @@ export const getIamOverview = async (request: FastifyRequest, reply: FastifyRepl
     fieldPermissions: request.server.iam.fieldPermissions,
     policies: request.server.iam.policies,
     sessions: request.server.iam.listSessions(),
-    auditLogs: request.server.iam.audit,
+    operationLogs: request.server.iam.operations,
   });
 
-  request.server.iam.recordAudit({
+  request.server.iam.recordOperation({
     actorUserId: actor.id,
-    action: 'IAM_READ',
+    operation: 'IAM_READ',
+    operationItem: 'iam:overview',
     resource: 'iam',
     result: 'SUCCESS',
     detail: { view: 'overview' },
@@ -382,9 +383,10 @@ export const revokeSession = async (request: FastifyRequest, reply: FastifyReply
   );
 
   if (!decision.allowed) {
-    request.server.iam.recordAudit({
+    request.server.iam.recordOperation({
       actorUserId: actor.id,
-      action: 'POLICY_DENIED',
+      operation: 'POLICY_DENIED',
+      operationItem: `session:${params.sessionId}`,
       resource: 'session',
       resourceId: params.sessionId,
       result: 'FAILURE',
@@ -422,9 +424,10 @@ export const revokeUserSessions = async (request: FastifyRequest, reply: Fastify
   );
 
   if (!decision.allowed) {
-    request.server.iam.recordAudit({
+    request.server.iam.recordOperation({
       actorUserId: actor.id,
-      action: 'POLICY_DENIED',
+      operation: 'POLICY_DENIED',
+      operationItem: `user:${params.userId}`,
       resource: 'session',
       resourceId: params.userId,
       result: 'FAILURE',
@@ -446,5 +449,11 @@ export const revokeUserSessions = async (request: FastifyRequest, reply: Fastify
   );
 };
 
-export const listAuditLogs = async (request: FastifyRequest, reply: FastifyReply) =>
-  sendSuccess(reply, request, iamAuditLogsResponseSchema, request.server.iam.audit, 'backendAdmin.iam.auditLogsOk');
+export const listOperationLogs = async (request: FastifyRequest, reply: FastifyReply) =>
+  sendSuccess(
+    reply,
+    request,
+    iamOperationLogsResponseSchema,
+    request.server.iam.operations,
+    'backendAdmin.iam.operationLogsOk',
+  );

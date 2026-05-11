@@ -161,7 +161,8 @@ export const enUS = {
       },
       iam: {
         title: 'IAM core',
-        description: 'RBAC, PBAC, field permissions, session invalidation, and audit primitives live in @tetap/iam.',
+        description:
+          'RBAC, PBAC, field permissions, session invalidation, and operation-log primitives live in @tetap/iam.',
         link: 'View permission model',
         code: 'policyEngine.can()',
       },
@@ -227,7 +228,7 @@ export const enUS = {
       forbidden: 'Forbidden',
       notFound: 'Not Found',
       internalError: 'Internal Server Error',
-      audit: 'Audit logs',
+      operationLogs: 'Operation logs',
       roles: 'Roles',
       iam: 'IAM',
       permissions: 'Permissions',
@@ -237,7 +238,6 @@ export const enUS = {
       sessions: 'Online users',
       systemManagement: 'System management',
       account: 'Account',
-      billing: 'Billing',
       appearance: 'Appearance',
       display: 'Display',
       helpCenter: 'Help Center',
@@ -267,22 +267,9 @@ export const enUS = {
         placeholder: 'Type a command or search pages...',
         empty: 'No results found.',
       },
-      teams: {
-        label: 'Teams',
-        add: 'Add workspace',
-        core: {
-          name: 'TETAP Admin',
-          plan: 'Management console',
-        },
-        security: {
-          name: 'Security Center',
-          plan: 'Audit workspace',
-        },
-      },
       user: {
         name: 'Administrator',
         email: 'admin@tetap.local',
-        upgrade: 'Upgrade to Pro',
         signOut: 'Sign out',
       },
       signOut: {
@@ -330,13 +317,13 @@ export const enUS = {
     },
     dashboard: {
       title: 'Dashboard',
-      description: 'View admin runtime status, IAM asset counts, online sessions, and recent audit events.',
+      description: 'View admin runtime status, IAM asset counts, frontend online users, and recent operation logs.',
       actions: {
         refresh: 'Refresh data',
       },
       overview: {
         title: 'IAM asset overview',
-        description: 'Live user, role, permission, menu, policy, and audit statistics from backend-admin.',
+        description: 'Live user, role, permission, menu, policy, and operation log statistics from backend-admin.',
       },
       metrics: {
         activeUsers: {
@@ -350,31 +337,31 @@ export const enUS = {
           trend: 'Loaded from IAM role configuration',
         },
         securityEvents: {
-          label: 'Audit events',
+          label: 'Operation logs',
           value: '0',
-          trend: 'Loaded from backend audit logs',
+          trend: 'Loaded from backend operation logs',
         },
         backendStatus: {
-          label: 'Online sessions',
+          label: 'Frontend online users',
           value: '0',
-          trend: 'Loaded from revocable login sessions',
+          trend: 'Frontend revocable login sessions only',
         },
       },
       states: {
         loadFailed: 'Failed to load dashboard data. Confirm the backend-admin service is running.',
       },
       activity: {
-        title: 'Security and audit activity',
-        description: 'Shows the latest audit events returned by backend-admin.',
+        title: 'Operation activity',
+        description: 'Shows the latest backend operation records returned by backend-admin.',
         timestamp: 'Updated just now',
-        empty: 'No audit events yet.',
+        empty: 'No operation logs yet.',
       },
     },
     iam: {
       badge: 'IAM',
       title: 'Identity and access',
       description:
-        'Manage users, roles, permission codes, field policy, dynamic policy, online sessions, and audit trails.',
+        'Manage admin users, roles, permission codes, field policy, dynamic policy, frontend online users, and operation logs.',
       tabs: {
         overview: 'Overview',
         users: 'Users',
@@ -385,12 +372,12 @@ export const enUS = {
         policy: 'Policy',
         fields: 'Field permissions',
         policies: 'Dynamic policies',
-        audit: 'Audit',
+        operationLogs: 'Operation logs',
       },
       pages: {
         overview: {
           title: 'IAM overview',
-          description: 'Review the overall state of users, roles, permission codes, and audit events.',
+          description: 'Review the overall state of users, roles, permission codes, and operation logs.',
         },
         users: {
           title: 'User management',
@@ -420,9 +407,9 @@ export const enUS = {
           title: 'Policy management',
           description: 'Manage ABAC/PBAC dynamic policy conditions.',
         },
-        audit: {
-          title: 'Audit logs',
-          description: 'Review sign-in, permission denial, policy denial, forced logout, and IAM mutation events.',
+        operationLogs: {
+          title: 'Operation logs',
+          description: 'Review operator, operation item, details, time, and IP for backend operations.',
         },
       },
       actions: {
@@ -457,7 +444,7 @@ export const enUS = {
         lastActiveTime: 'Last active',
         name: 'Name',
         order: 'Order',
-        parentId: 'Parent menu ID',
+        parentMenu: 'Parent menu',
         password: 'Password',
         path: 'Path',
         permissionCodes: 'Permission codes',
@@ -467,8 +454,21 @@ export const enUS = {
         roleCodes: 'Role codes',
         status: 'Status',
         type: 'Type',
-        userId: 'User ID',
+        userId: 'Frontend user',
         username: 'Username',
+      },
+      selection: {
+        description: 'Search candidates and choose from a paged list.',
+        empty: 'No matching items.',
+        defaultDept: 'Default department',
+        defaultDeptDescription: 'Let the backend apply the default department rule.',
+        department: 'Department {{deptId}}',
+        next: 'Next',
+        placeholder: 'Select',
+        prev: 'Previous',
+        rootDescription: 'Show as a top-level menu.',
+        rootMenu: 'Top-level menu',
+        search: 'Search',
       },
       dataScopes: {
         all: 'All data',
@@ -549,7 +549,7 @@ export const enUS = {
         users: 'Users',
         roles: 'Roles',
         permissions: 'Permission codes',
-        audit: 'Audit events',
+        operationLogs: 'Operation logs',
       },
       tables: {
         usersTitle: 'Users',
@@ -561,12 +561,19 @@ export const enUS = {
         menusTitle: 'Menus',
         menusDescription: 'Backend-provided menu configuration rendered by the admin app.',
         sessionsTitle: 'Online sessions',
-        sessionsDescription: 'Current usable login sessions and device states.',
+        sessionsDescription: 'Only current usable frontend user login sessions and device states.',
       },
       policy: {
         fieldDescription: 'Field rules trim or mask sensitive fields on the backend.',
         policyDescription: 'Dynamic policies power ABAC/PBAC condition checks.',
-        auditDescription: 'Audit events track sign-in, denial, forced logout, and permission reads.',
+        operationLogDescription: 'Operation logs track the backend operator, item, details, time, and IP.',
+      },
+      operationLogs: {
+        detail: 'Operation detail',
+        ip: 'Operation IP',
+        item: 'Operation item',
+        operator: 'Operator',
+        time: 'Operation time',
       },
       states: {
         loadFailed: 'Failed to load IAM data. Confirm the backend-admin service is running.',
@@ -576,6 +583,35 @@ export const enUS = {
         noSessions: 'No online sessions',
         noSessionsDescription: 'Signed-in user sessions will appear here.',
         revokeFailed: 'Failed to force the session offline. Please try again.',
+      },
+    },
+    settings: {
+      description: 'Maintain the current admin account, theme, and display preferences.',
+      account: {
+        title: 'Account settings',
+        description: 'Review the current admin account and roles.',
+      },
+      appearance: {
+        title: 'Appearance settings',
+        description: 'Configure the admin light and dark theme.',
+      },
+      display: {
+        title: 'Display settings',
+        description: 'Adjust admin display preferences.',
+      },
+      notifications: {
+        title: 'Notification settings',
+        description: 'Review admin system notification behavior.',
+        enabled: 'Enabled',
+        system: 'System notifications',
+        systemDescription: 'Receive permission and system status notifications.',
+      },
+      theme: {
+        title: 'Theme',
+        description: 'Choose light, dark, or system theme.',
+        dark: 'Dark',
+        light: 'Light',
+        system: 'System',
       },
     },
     statePages: {
@@ -613,7 +649,7 @@ export const enUS = {
       refreshOk: 'Session refreshed.',
     },
     iam: {
-      auditLogsOk: 'Audit logs loaded.',
+      operationLogsOk: 'Operation logs loaded.',
       fieldPermissionCreated: 'Field permission created.',
       fieldPermissionDeleted: 'Field permission deleted.',
       fieldPermissionUpdated: 'Field permission updated.',

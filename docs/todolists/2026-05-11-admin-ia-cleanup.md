@@ -7,7 +7,7 @@ Task: Rework `apps/web-admin` into a normal backend administration console with 
 ## Execution Plan
 
 - [x] Replace demo dashboard navigation/actions with real admin overview and module shortcuts.
-- [x] Split visible IAM UI into dedicated pages for users, roles, permissions, menus, field permissions, policies, sessions, and audit.
+- [x] Split visible IAM UI into dedicated pages for users, roles, permissions, menus, field permissions, policies, sessions, and operation logs.
 - [x] Rebuild backend-provided demo menu tree into normal admin groups and routes.
 - [x] Use table-style admin lists for resource management where appropriate.
 - [x] Update admin i18n copy and Browser Mode tests for the cleaned information architecture.

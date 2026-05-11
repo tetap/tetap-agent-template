@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Activity, KeyRound, RefreshCw, Settings, ShieldCheck, Sun, Users } from 'lucide-react';
+import { Activity, KeyRound, RefreshCw, ShieldCheck, Users } from 'lucide-react';
 import { useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
   Alert,
@@ -21,6 +21,8 @@ import { AdminHeader } from '../layout/header.js';
 import { AdminMain } from '../layout/main.js';
 import { ProfileDropdown } from '../layout/profile-dropdown.js';
 import { SearchCommand } from '../layout/search-command.js';
+import { ConfigDrawer } from '../layout/config-drawer.js';
+import { ThemeSwitch } from '../layout/theme-switch.js';
 
 export const AdminDashboardPage = () => {
   const t = useAdminT();
@@ -69,7 +71,7 @@ export const AdminDashboardPage = () => {
     {
       icon: ShieldCheck,
       label: t('webAdmin.dashboard.metrics.securityEvents.label'),
-      value: overview?.auditLogs.length ?? 0,
+      value: overview?.operationLogs.length ?? 0,
       trend: t('webAdmin.dashboard.metrics.securityEvents.trend'),
     },
     {
@@ -88,7 +90,7 @@ export const AdminDashboardPage = () => {
         overview.fieldPermissions.length,
         overview.policies.length,
         overview.sessions.length,
-        overview.auditLogs.length,
+        overview.operationLogs.length,
       ]
     : [];
   const chartMax = Math.max(...chartValues, 1);
@@ -98,14 +100,8 @@ export const AdminDashboardPage = () => {
       <AdminHeader>
         <div className="me-auto" />
         <SearchCommand />
-        <Button size="icon" variant="ghost">
-          <Sun />
-          <span className="sr-only">{t('webAdmin.layout.themeToggle')}</span>
-        </Button>
-        <Button size="icon" variant="ghost">
-          <Settings />
-          <span className="sr-only">{t('webAdmin.layout.configToggle')}</span>
-        </Button>
+        <ThemeSwitch />
+        <ConfigDrawer />
         <ProfileDropdown />
       </AdminHeader>
       <AdminMain>
@@ -181,20 +177,20 @@ export const AdminDashboardPage = () => {
                     <Skeleton className="h-12 w-full" />
                   </>
                 ) : (
-                  (overview?.auditLogs.slice(0, 3) ?? []).map((activity, index) => (
+                  (overview?.operationLogs.slice(0, 3) ?? []).map((activity, index) => (
                     <div className="flex items-center gap-4" key={activity.id}>
                       <Avatar className="size-9">
                         <AvatarFallback>{`0${index + 1}`}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-1 flex-col gap-1">
-                        <p className="text-sm font-medium leading-none">{`${activity.action}:${activity.result}`}</p>
-                        <p className="text-sm text-muted-foreground">{activity.createdAt}</p>
+                        <p className="text-sm font-medium leading-none">{`${activity.operation}:${activity.result}`}</p>
+                        <p className="text-sm text-muted-foreground">{activity.operationTime}</p>
                       </div>
                       <Badge variant="secondary">{activity.resource}</Badge>
                     </div>
                   ))
                 )}
-                {!isLoading && !overview?.auditLogs.length ? (
+                {!isLoading && !overview?.operationLogs.length ? (
                   <p className="text-sm text-muted-foreground">{t('webAdmin.dashboard.activity.empty')}</p>
                 ) : null}
               </CardContent>

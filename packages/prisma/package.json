@@ -1,7 +1,7 @@
 {
   "name": "@tetap/prisma",
   "version": "1.0.1",
-  "description": "Shared Prisma schema and generated Prisma client entrypoint.",
+  "description": "Shared Prisma schema package with split IAM, admin-user, frontend-user, session, and operation-log models.",
   "private": true,
   "sideEffects": false,
   "type": "module",

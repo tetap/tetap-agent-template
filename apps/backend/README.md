@@ -13,6 +13,7 @@
 
 - Fastify app creation and startup。
 - Plugins for i18n, security, and error handling。
+- Public auth and permission-denial operation logging through `@tetap/iam`。
 - Registration-only routes。
 - Services for business logic, validation orchestration, response building。
 - Backend-local shared helpers such as `ErrorCode` and `AppError`。
@@ -34,6 +35,21 @@
 | `src/routes/*`   | Route registration only.                                   |
 | `src/services/*` | Input/output schema validation and business orchestration. |
 | `src/shared/*`   | Backend shared errors, responses, security helpers.        |
+
+## Current Public APIs
+
+```text
+GET /health
+```
+
+The public backend currently exposes only the health route. Non-public routes added later must declare Fastify `schema`, auth/public policy metadata, and required permission metadata where applicable. The auth plugin already supports `Authorization: Bearer ...`, session/token-version validation, and permission-denial operation logging through `@tetap/iam`.
+
+## Security Baseline
+
+- `@fastify/helmet`, `@fastify/cors`, and `@fastify/rate-limit` are registered globally.
+- `BODY_LIMIT_BYTES`, rate limit, and CORS origins come from `@tetap/config`.
+- Request logs redact authorization, cookie, password, token, access-token, and refresh-token fields.
+- SSRF and upload safety helpers live in `src/shared/security.ts` and are covered by `backend-security` unit tests.
 
 ## Scripts
 

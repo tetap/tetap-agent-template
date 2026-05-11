@@ -8,13 +8,21 @@ import {
   UserCog,
   Users,
 } from 'lucide-react';
-import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from '@tetap/ui';
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
+  TetapLogo,
+} from '@tetap/ui';
 import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
-import { adminTeams } from './data/team-data.js';
 import { adminMenuTitleKeyMap } from './menu-labels.js';
 import { NavGroup } from './nav-group.js';
 import { NavUser } from './nav-user.js';
-import { TeamSwitcher } from './team-switcher.js';
 import type { AdminNavItem } from './types.js';
 
 const menuIconMap = {
@@ -39,14 +47,7 @@ const toNavItem = (menu: AdminSessionMenuNode): AdminNavItem => ({
 export const AppSidebar = () => {
   const t = useAdminT();
   const menus = useAdminSessionStore(state => state.auth.menus);
-  const navGroups = menus.length
-    ? [
-        {
-          titleKey: 'webAdmin.navigation.groups.backendMenus' as const,
-          items: menus.map(toNavItem),
-        },
-      ]
-    : [];
+  const navGroups = menus.length ? [{ items: menus.map(toNavItem) }] : [];
 
   return (
     <Sidebar
@@ -56,11 +57,23 @@ export const AppSidebar = () => {
       mobileTitle={t('webAdmin.layout.sidebarTitle')}
       variant="inset">
       <SidebarHeader>
-        <TeamSwitcher teams={adminTeams} />
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton size="lg">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+                <TetapLogo className="size-4" />
+              </div>
+              <div className="grid flex-1 text-start text-sm leading-tight">
+                <span className="truncate font-semibold">{t('webAdmin.title')}</span>
+                <span className="truncate text-xs">{t('webAdmin.badge')}</span>
+              </div>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navGroups.map(group => (
-          <NavGroup {...group} key={group.titleKey} />
+        {navGroups.map((group, index) => (
+          <NavGroup {...group} key={index} />
         ))}
       </SidebarContent>
       <SidebarFooter>

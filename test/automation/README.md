@@ -17,6 +17,22 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 | Smoke tests      | `src/smoke/**/*.smoke.test.ts`      | `pnpm test:smoke`    | `pnpm test:smoke:target -- backend-health`        |
 | Affected tests   | Git changed files                   | `pnpm test:affected` | `pnpm test:affected -- packages/ui/src/index.ts`  |
 
+## Current Targets
+
+| Target                 | Type    | Scope                                                                        |
+| ---------------------- | ------- | ---------------------------------------------------------------------------- |
+| `config-env`           | Unit    | Shared env parsing and config defaults.                                      |
+| `schema-response`      | Unit    | Unified responses, admin auth schemas, IAM response schemas.                 |
+| `iam-engine`           | Unit    | IAM auth, RBAC, menu, field, data-scope, policy, sessions, operation logs.   |
+| `backend-security`     | Unit    | SSRF/upload helpers, canonical paths, HMAC/body hash helpers.                |
+| `test-selection`       | Unit    | Target and affected-test selection logic.                                    |
+| `i18n-site`            | Unit    | VitePress site i18n scope.                                                   |
+| `ui-components`        | Browser | Shared UI primitives.                                                        |
+| `web-admin-dashboard`  | Browser | Real admin shell/dashboard/sign-in/settings/IAM UI behavior.                 |
+| `backend-health`       | Smoke   | Public Fastify health runtime.                                               |
+| `backend-admin-health` | Smoke   | Admin Fastify health runtime.                                                |
+| `backend-admin-iam`    | Smoke   | Admin auth, IAM CRUD, protected deletion, frontend sessions, forced offline. |
+
 ## Targeted Commands
 
 Use targeted commands during development so each change runs only the module tests it can affect.
@@ -38,6 +54,9 @@ pnpm test:target -- --list
 ## Coverage Notes
 
 - `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard tab interaction, and sign-in form session storage.
+- `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend session revocation.
+- `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.
+- `unit:backend-security` covers shared backend SSRF/upload/HMAC utility behavior.
 - `unit:i18n-site` covers the VitePress promotional site copy scope.
 - `unit:schema-response` also covers admin auth form schemas from `@tetap/schema/admin-auth`.
 
@@ -45,18 +64,20 @@ pnpm test:target -- --list
 
 The affected runner uses `src/support/test-selection.ts` as the single source of truth.
 
-| Changed Area                                  | Tests Selected                                           |
-| --------------------------------------------- | -------------------------------------------------------- |
-| `packages/config/**`                          | `unit:config-env`                                        |
-| `packages/schema/**`                          | `unit:schema-response`, `smoke:backend-health`           |
-| `apps/backend/**`                             | `smoke:backend-health`                                   |
-| `apps/backend-admin/**`, `packages/prisma/**` | `smoke:backend-admin-health`                             |
-| `apps/web/**`                                 | `browser:ui-components`                                  |
-| `apps/web-admin/**`                           | `browser:web-admin-dashboard`                            |
-| `apps/site/**`                                | `unit:i18n-site`                                         |
-| `packages/hooks/**`, `packages/ui/**`         | `browser:ui-components`, `browser:web-admin-dashboard`   |
-| `packages/i18n/**`                            | `unit:i18n-site`, browser targets, backend smoke targets |
-| `test/automation/src/**` test files           | The changed test file only.                              |
+| Changed Area                          | Tests Selected                                                                               |
+| ------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `packages/config/**`                  | `unit:config-env`                                                                            |
+| `packages/schema/**`                  | `unit:schema-response`, `unit:iam-engine`, `smoke:backend-health`, `smoke:backend-admin-iam` |
+| `packages/iam/**`                     | `unit:iam-engine`, `smoke:backend-admin-iam`                                                 |
+| `apps/backend/**`                     | `unit:backend-security`, `smoke:backend-health`                                              |
+| `apps/backend-admin/**`               | `unit:backend-security`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`             |
+| `packages/prisma/**`                  | `smoke:backend-health`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`              |
+| `apps/web/**`                         | `browser:ui-components`                                                                      |
+| `apps/web-admin/**`                   | `browser:web-admin-dashboard`                                                                |
+| `apps/site/**`                        | `unit:i18n-site`                                                                             |
+| `packages/hooks/**`, `packages/ui/**` | `browser:ui-components`, `browser:web-admin-dashboard`                                       |
+| `packages/i18n/**`                    | `unit:i18n-site`, browser targets, backend smoke targets                                     |
+| `test/automation/src/**` test files   | The changed test file only.                                                                  |
 
 ## Rules
 

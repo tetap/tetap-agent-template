@@ -73,7 +73,7 @@ sequenceDiagram
 - `apps/web-admin` 是后台管理页面唯一浏览器入口，不拥有 UI 库、hooks、i18n 资源、schema 定义或 env 策略。
 - `apps/backend` 不拥有 schema package、Prisma schema，也不允许在 routes 写业务逻辑。
 - `apps/backend-admin` 是后台管理接口唯一服务端入口，公共 backend 不承载 admin APIs。
-- `packages/iam` 拥有权限、会话、策略、字段、数据和审计核心算法，apps 只编排调用。
+- `packages/iam` 拥有权限、会话、策略、字段、数据和操作日志核心算法，apps 只编排调用。
 - `packages/*` 不依赖 `apps/*`，避免共享包反向绑定具体 runtime。
 - `test/automation` 是唯一允许同时验证 apps 和 packages 的集中测试 workspace。
 

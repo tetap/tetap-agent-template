@@ -12,14 +12,14 @@ const permissions = [
   ['policy:read', 'Read policies', 'API', 'policy', 'read'],
   ['policy:update', 'Update policies', 'API', 'policy', 'update'],
   ['session:read', 'Read online sessions', 'API', 'session', 'read'],
-  ['session:revoke', 'Revoke sessions', 'API', 'session', 'revoke'],
-  ['audit:read', 'Read audit logs', 'API', 'audit', 'read'],
+  ['session:revoke', 'Revoke frontend user sessions', 'API', 'session', 'revoke'],
+  ['operation-log:read', 'Read operation logs', 'API', 'operation-log', 'read'],
   ['field:read', 'Read field permissions', 'FIELD', 'field', 'read'],
   ['data:read', 'Read data scopes', 'DATA', 'data', 'read'],
 ] as const;
 
 export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
-  users: [
+  adminUsers: [
     {
       id: '1',
       username: 'admin',
@@ -45,6 +45,50 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       tokenVersion: 1,
     },
   ],
+  frontendUsers: [
+    {
+      id: 'front-1',
+      username: 'demo-user',
+      email: 'demo-user@tetap.local',
+      status: 'ACTIVE',
+      deptId: '300',
+      tenantId: 'tenant-default',
+    },
+    {
+      id: 'front-2',
+      username: 'mobile-user',
+      email: 'mobile-user@tetap.local',
+      status: 'ACTIVE',
+      deptId: '301',
+      tenantId: 'tenant-default',
+    },
+  ],
+  frontendSessions: [
+    {
+      id: 'front-session-1',
+      userId: 'front-1',
+      tokenId: 'front-token-1',
+      deviceType: 'WEB',
+      ip: '203.0.113.10',
+      userAgent: 'Mozilla/5.0 Frontend Web',
+      loginTime: new Date('2026-05-11T00:00:00.000Z').toISOString(),
+      lastActiveTime: new Date('2026-05-11T00:05:00.000Z').toISOString(),
+      expiresAt: new Date('2026-05-18T00:00:00.000Z').toISOString(),
+      status: 'ONLINE',
+    },
+    {
+      id: 'front-session-2',
+      userId: 'front-2',
+      tokenId: 'front-token-2',
+      deviceType: 'ANDROID',
+      ip: '203.0.113.11',
+      userAgent: 'Tetap Android',
+      loginTime: new Date('2026-05-11T00:10:00.000Z').toISOString(),
+      lastActiveTime: new Date('2026-05-11T00:15:00.000Z').toISOString(),
+      expiresAt: new Date('2026-05-18T00:10:00.000Z').toISOString(),
+      status: 'ONLINE',
+    },
+  ],
   roles: [
     {
       id: '1',
@@ -58,14 +102,14 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       id: '2',
       name: 'Security Auditor',
       code: 'security-auditor',
-      description: 'Read-only security and audit visibility.',
+      description: 'Read-only security and operation log visibility.',
       permissionCodes: [
         'iam:read',
         'user:read',
         'role:read',
         'policy:read',
         'session:read',
-        'audit:read',
+        'operation-log:read',
         'field:read',
         'data:read',
       ],
@@ -169,13 +213,13 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       order: 22,
     },
     {
-      id: 'audit',
-      name: 'Audit Logs',
-      path: '/security/audit',
-      component: 'AdminAuditPage',
+      id: 'operation-logs',
+      name: 'Operation Logs',
+      path: '/security/operation-logs',
+      component: 'AdminOperationLogsPage',
       icon: 'LockKeyhole',
       parentId: 'security',
-      permissionCodes: ['audit:read'],
+      permissionCodes: ['operation-log:read'],
       order: 23,
     },
     {

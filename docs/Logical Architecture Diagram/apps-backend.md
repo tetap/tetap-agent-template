@@ -72,6 +72,14 @@ Services 层负责：
 
 错误信息必须通过 `@tetap/i18n/backend` 或统一 response helper 返回本地化文案；`@tetap/i18n/node` 只用于解析 request locale。
 
+## 当前路由
+
+```text
+GET /health
+```
+
+当前公共 backend 只暴露 health route。后续新增非 public API 时必须显式声明 route schema、auth/public policy 和 permission metadata。
+
 ## 安全中间件
 
 安全中间件负责 request-level 安全验证。新增安全策略时：

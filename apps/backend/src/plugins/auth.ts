@@ -39,9 +39,10 @@ export const registerAuthMiddleware = (app: FastifyInstance) => {
       authConfig && typeof authConfig === 'object' ? (authConfig.permission as PermissionCode | undefined) : undefined;
 
     if (permission && !request.auth.capabilities.includes(permission) && !request.auth.user.isSuperAdmin) {
-      request.server.iam.recordAudit({
+      request.server.iam.recordOperation({
         actorUserId: request.auth.user.id,
-        action: 'PERMISSION_DENIED',
+        operation: 'PERMISSION_DENIED',
+        operationItem: permission,
         resource: permission,
         result: 'FAILURE',
         detail: { permission },

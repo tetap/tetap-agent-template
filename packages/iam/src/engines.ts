@@ -1,8 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { signJwt, verifyJwt } from './jwt.js';
 import type {
-  AuditAction,
-  AuditLog,
   AuthenticatedUserContext,
   AuthTokenPair,
   CreateFieldPermissionInput,
@@ -22,6 +20,8 @@ import type {
   IamUser,
   LoginInput,
   LoginResult,
+  OperationAction,
+  OperationLog,
   PermissionCode,
   PolicyCondition,
   PolicyConditions,
@@ -187,12 +187,16 @@ export const redactSensitive = (input: unknown): unknown => {
 export class IamService {
   private readonly data: IamDataSet;
   private readonly options: Required<IamServiceOptions>;
-  private readonly sessions = new Map<string, IamSession>();
+  private readonly adminSessions = new Map<string, IamSession>();
+  private readonly frontendSessions = new Map<string, IamSession>();
   private readonly blacklistedTokenIds = new Map<string, string>();
-  private readonly auditLogs: AuditLog[] = [];
+  private readonly operationLogs: OperationLog[] = [];
 
   constructor(data: IamDataSet, options: IamServiceOptions) {
     this.data = data;
+    for (const session of data.frontendSessions) {
+      this.frontendSessions.set(session.id, session);
+    }
     this.options = {
       accessTokenSecret: options.accessTokenSecret,
       refreshTokenSecret: options.refreshTokenSecret,
@@ -204,7 +208,7 @@ export class IamService {
   }
 
   get users() {
-    return this.data.users.map(omitPasswordHash);
+    return this.data.adminUsers.map(omitPasswordHash);
   }
 
   get roles() {
@@ -223,18 +227,18 @@ export class IamService {
     return this.data.fieldPermissions;
   }
 
-  get audit() {
-    return [...this.auditLogs].sort((left, right) => right.createdAt.localeCompare(left.createdAt));
+  get operations() {
+    return [...this.operationLogs].sort((left, right) => right.operationTime.localeCompare(left.operationTime));
   }
 
   createUser(input: CreateUserInput, meta: IamMutationMeta = {}) {
     ensureNoDuplicate(
-      this.data.users,
+      this.data.adminUsers,
       user => normalizeComparable(user.username) === normalizeComparable(input.username),
       'Username already exists.',
     );
     ensureNoDuplicate(
-      this.data.users,
+      this.data.adminUsers,
       user => normalizeComparable(user.email) === normalizeComparable(input.email),
       'Email already exists.',
     );
@@ -253,7 +257,7 @@ export class IamService {
       tokenVersion: 1,
     };
 
-    this.data.users.push(user);
+    this.data.adminUsers.push(user);
     this.recordIamMutation('user', user.id, 'create', meta, {
       username: user.username,
       roleCodes: user.roleCodes,
@@ -271,7 +275,7 @@ export class IamService {
 
     if (nextUsername) {
       ensureNoDuplicate(
-        this.data.users,
+        this.data.adminUsers,
         item => item.id !== userId && normalizeComparable(item.username) === normalizeComparable(nextUsername),
         'Username already exists.',
       );
@@ -279,7 +283,7 @@ export class IamService {
 
     if (nextEmail) {
       ensureNoDuplicate(
-        this.data.users,
+        this.data.adminUsers,
         item => item.id !== userId && normalizeComparable(item.email) === normalizeComparable(nextEmail),
         'Email already exists.',
       );
@@ -308,7 +312,7 @@ export class IamService {
     });
 
     if (shouldInvalidateSessions) {
-      this.revokeUserSessions(user.id, 'user-security-state-changed', meta.actorUserId);
+      this.revokeAdminUserSessions(user.id, 'admin-security-state-changed', meta.actorUserId);
     }
 
     this.recordIamMutation('user', user.id, 'update', meta, {
@@ -328,8 +332,8 @@ export class IamService {
     }
 
     this.assertSuperAdminStillExists(user, { isSuperAdmin: false, status: 'DISABLED' });
-    this.data.users = this.data.users.filter(item => item.id !== userId);
-    const revokedSessions = this.revokeUserSessions(userId, 'user-deleted', meta.actorUserId);
+    this.data.adminUsers = this.data.adminUsers.filter(item => item.id !== userId);
+    const revokedSessions = this.revokeAdminUserSessions(userId, 'admin-user-deleted', meta.actorUserId);
 
     this.recordIamMutation('user', userId, 'delete', meta, {
       username: user.username,
@@ -389,7 +393,7 @@ export class IamService {
     });
 
     if (role.code !== oldCode) {
-      for (const user of this.data.users) {
+      for (const user of this.data.adminUsers) {
         user.roleCodes = user.roleCodes.map(code => (code === oldCode ? role.code : code));
       }
 
@@ -408,7 +412,7 @@ export class IamService {
   deleteRole(roleId: string, meta: IamMutationMeta = {}) {
     const role = this.findRoleOrThrow(roleId);
 
-    if (this.data.users.some(user => user.roleCodes.includes(role.code))) {
+    if (this.data.adminUsers.some(user => user.roleCodes.includes(role.code))) {
       throw new IamDomainError('PROTECTED_RESOURCE', 'Assigned roles cannot be deleted.');
     }
 
@@ -687,14 +691,14 @@ export class IamService {
   }
 
   findUserByUsername(username: string) {
-    return this.data.users.find(
+    return this.data.adminUsers.find(
       user =>
         user.username.toLowerCase() === username.toLowerCase() || user.email.toLowerCase() === username.toLowerCase(),
     );
   }
 
   getUserById(userId: string) {
-    return this.data.users.find(user => user.id === userId);
+    return this.data.adminUsers.find(user => user.id === userId);
   }
 
   getRolesForUser(user: IamUser) {
@@ -831,8 +835,9 @@ export class IamService {
     const user = this.findUserByUsername(input.username);
 
     if (!user || user.status !== 'ACTIVE' || !this.verifyPassword(user, input.password)) {
-      this.recordAudit({
-        action: 'LOGIN',
+      this.recordOperation({
+        operation: 'LOGIN',
+        operationItem: 'auth:login',
         resource: 'auth',
         result: 'FAILURE',
         detail: { username: input.username },
@@ -846,9 +851,10 @@ export class IamService {
     const capabilities = this.getCapabilitiesForUser(user);
     const menus = this.getMenuTree(user);
 
-    this.recordAudit({
+    this.recordOperation({
       actorUserId: user.id,
-      action: 'LOGIN',
+      operation: 'LOGIN',
+      operationItem: 'auth:login',
       resource: 'auth',
       result: 'SUCCESS',
       detail: { tokenId: tokenPair.tokenId, deviceType: input.deviceType ?? 'UNKNOWN' },
@@ -878,10 +884,11 @@ export class IamService {
       userAgent: context.session.userAgent,
     });
 
-    this.revokeSession(context.session.id, 'refresh-rotated', context.user.id);
-    this.recordAudit({
+    this.revokeAdminSession(context.session.id, 'refresh-rotated', context.user.id);
+    this.recordOperation({
       actorUserId: context.user.id,
-      action: 'REFRESH',
+      operation: 'REFRESH',
+      operationItem: 'auth:refresh',
       resource: 'auth',
       result: 'SUCCESS',
       detail: { oldTokenId: payload.tokenId, tokenId: tokenPair.tokenId },
@@ -912,17 +919,27 @@ export class IamService {
 
   logout(accessToken: string) {
     const context = this.verifyAccessToken(accessToken);
-    this.revokeSession(context.session.id, 'logout', context.user.id);
+    this.revokeAdminSession(context.session.id, 'logout', context.user.id);
 
     return { revoked: true };
   }
 
   listSessions() {
-    return [...this.sessions.values()].sort((left, right) => right.lastActiveTime.localeCompare(left.lastActiveTime));
+    return [...this.frontendSessions.values()]
+      .map(session => {
+        const user = this.data.frontendUsers.find(item => item.id === session.userId);
+
+        return {
+          ...session,
+          email: user?.email,
+          username: user?.username,
+        };
+      })
+      .sort((left, right) => right.lastActiveTime.localeCompare(left.lastActiveTime));
   }
 
   revokeSession(sessionId: string, reason = 'admin-forced-offline', actorUserId?: string) {
-    const session = this.sessions.get(sessionId);
+    const session = this.frontendSessions.get(sessionId);
 
     if (!session) {
       return undefined;
@@ -936,12 +953,13 @@ export class IamService {
       revokedReason: reason,
     };
 
-    this.sessions.set(sessionId, revokedSession);
+    this.frontendSessions.set(sessionId, revokedSession);
     this.blacklistedTokenIds.set(session.tokenId, revokedSession.expiresAt);
     this.pruneExpiredBlacklistedTokenIds();
-    this.recordAudit({
+    this.recordOperation({
       actorUserId,
-      action: reason === 'logout' ? 'LOGOUT' : 'FORCE_LOGOUT',
+      operation: reason === 'logout' ? 'LOGOUT' : 'FORCE_LOGOUT',
+      operationItem: `session:${sessionId}`,
       resource: 'session',
       resourceId: sessionId,
       result: 'SUCCESS',
@@ -963,9 +981,53 @@ export class IamService {
       });
   }
 
-  recordAudit(input: {
+  private revokeAdminSession(sessionId: string, reason = 'admin-forced-offline', actorUserId?: string) {
+    const session = this.adminSessions.get(sessionId);
+
+    if (!session) {
+      return undefined;
+    }
+
+    const now = toIso(this.options.now());
+    const revokedSession = {
+      ...session,
+      status: 'REVOKED' as const,
+      revokedAt: now,
+      revokedReason: reason,
+    };
+
+    this.adminSessions.set(sessionId, revokedSession);
+    this.blacklistedTokenIds.set(session.tokenId, revokedSession.expiresAt);
+    this.pruneExpiredBlacklistedTokenIds();
+    this.recordOperation({
+      actorUserId,
+      operation: reason === 'logout' ? 'LOGOUT' : 'FORCE_LOGOUT',
+      operationItem: `admin-session:${sessionId}`,
+      resource: 'admin-session',
+      resourceId: sessionId,
+      result: 'SUCCESS',
+      detail: { userId: session.userId, tokenId: session.tokenId, reason },
+      ip: session.ip,
+      userAgent: session.userAgent,
+    });
+
+    return revokedSession;
+  }
+
+  private revokeAdminUserSessions(userId: string, reason = 'admin-forced-offline', actorUserId?: string) {
+    return [...this.adminSessions.values()]
+      .filter(session => session.userId === userId && session.status === 'ONLINE')
+      .flatMap(session => {
+        const revokedSession = this.revokeAdminSession(session.id, reason, actorUserId);
+
+        return revokedSession ? [revokedSession] : [];
+      });
+  }
+
+  recordOperation(input: {
     actorUserId?: string;
-    action: AuditAction;
+    operation: OperationAction;
+    operationItem: string;
     resource: string;
     resourceId?: string;
     ip?: string;
@@ -973,26 +1035,38 @@ export class IamService {
     result: 'SUCCESS' | 'FAILURE';
     detail: Record<string, unknown>;
   }) {
-    const event: AuditLog = {
+    const event: OperationLog = {
       id: randomUUID(),
-      actorUserId: input.actorUserId,
-      action: input.action,
+      operator: this.resolveOperator(input.actorUserId),
+      operatorUserId: input.actorUserId,
+      operation: input.operation,
+      operationItem: input.operationItem,
+      operationDetail: redactSensitive(input.detail) as Record<string, unknown>,
+      operationTime: toIso(this.options.now()),
+      operationIp: input.ip,
       resource: input.resource,
       resourceId: input.resourceId,
-      ip: input.ip,
       userAgent: input.userAgent,
       result: input.result,
-      detail: redactSensitive(input.detail) as Record<string, unknown>,
-      createdAt: toIso(this.options.now()),
     };
 
-    this.auditLogs.unshift(event);
+    this.operationLogs.unshift(event);
 
     return event;
   }
 
+  private resolveOperator(actorUserId: string | undefined) {
+    if (!actorUserId) {
+      return 'anonymous';
+    }
+
+    const actor = this.data.adminUsers.find(user => user.id === actorUserId);
+
+    return actor?.username ?? actorUserId;
+  }
+
   private findUserOrThrow(userId: string) {
-    const user = this.data.users.find(item => item.id === userId);
+    const user = this.data.adminUsers.find(item => item.id === userId);
 
     if (!user) {
       throw new IamDomainError('NOT_FOUND', 'User not found.');
@@ -1087,7 +1161,7 @@ export class IamService {
       return;
     }
 
-    const remainingSuperAdmins = this.data.users.filter(
+    const remainingSuperAdmins = this.data.adminUsers.filter(
       user => user.id !== targetUser.id && user.isSuperAdmin && user.status === 'ACTIVE',
     );
 
@@ -1103,9 +1177,10 @@ export class IamService {
     meta: IamMutationMeta,
     detail: Record<string, unknown>,
   ) {
-    this.recordAudit({
+    this.recordOperation({
       actorUserId: meta.actorUserId,
-      action: 'IAM_MUTATION',
+      operation: 'IAM_MUTATION',
+      operationItem: `${resource}:${resourceId}`,
       resource,
       resourceId,
       result: 'SUCCESS',
@@ -1154,7 +1229,7 @@ export class IamService {
       status: 'ONLINE',
     };
 
-    this.sessions.set(session.id, session);
+    this.adminSessions.set(session.id, session);
 
     return {
       accessToken: signJwt(accessPayload, this.options.accessTokenSecret),
@@ -1172,13 +1247,13 @@ export class IamService {
       throw new Error('Token revoked.');
     }
 
-    const user = this.data.users.find(item => item.id === payload.sub);
+    const user = this.data.adminUsers.find(item => item.id === payload.sub);
 
     if (!user || user.status !== 'ACTIVE' || user.tokenVersion !== payload.tokenVersion) {
       throw new Error('Token user is invalid.');
     }
 
-    const session = [...this.sessions.values()].find(
+    const session = [...this.adminSessions.values()].find(
       item => item.tokenId === payload.tokenId && item.userId === user.id && item.status === 'ONLINE',
     );
 
@@ -1187,7 +1262,7 @@ export class IamService {
     }
 
     if (isIsoExpired(session.expiresAt, this.options.now())) {
-      this.sessions.set(session.id, {
+      this.adminSessions.set(session.id, {
         ...session,
         status: 'EXPIRED',
       });
@@ -1210,13 +1285,13 @@ export class IamService {
   }
 
   private touchSession(sessionId: string) {
-    const session = this.sessions.get(sessionId);
+    const session = this.adminSessions.get(sessionId);
 
     if (!session || session.status !== 'ONLINE') {
       return;
     }
 
-    this.sessions.set(sessionId, {
+    this.adminSessions.set(sessionId, {
       ...session,
       lastActiveTime: toIso(this.options.now()),
     });

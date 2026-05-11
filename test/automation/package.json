@@ -1,7 +1,7 @@
 {
   "name": "@tetap/test-automation",
   "version": "1.0.1",
-  "description": "Vitest automation package for unit and smoke tests.",
+  "description": "Vitest automation package for unit, Browser Mode UI, targeted affected, and smoke tests.",
   "private": true,
   "sideEffects": false,
   "type": "module",

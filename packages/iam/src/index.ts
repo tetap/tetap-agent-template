@@ -10,8 +10,6 @@ export {
 export { createDemoIamData } from './demo-data.js';
 export { signJwt, verifyJwt } from './jwt.js';
 export type {
-  AuditAction,
-  AuditLog,
   AuthenticatedUserContext,
   AuthTokenPair,
   CreateFieldPermissionInput,
@@ -39,6 +37,8 @@ export type {
   JwtTokenType,
   LoginInput,
   LoginResult,
+  OperationAction,
+  OperationLog,
   PermissionCode,
   PermissionType,
   PolicyCondition,

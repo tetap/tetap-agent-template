@@ -20,7 +20,7 @@ TETAP Agent Template is an open-source full-stack monorepo template for AI-assis
 
 ## Highlights
 
-- **Enterprise IAM foundation**: JWT, RBAC, PBAC, field permissions, dynamic menus, session invalidation, forced logout, and audit primitives.
+- **Enterprise IAM foundation**: JWT, RBAC, PBAC, field permissions, dynamic menus, session invalidation, forced logout, and operation logs.
 - **Contract-first development**: request, response, and form contracts live in `@tetap/schema` and use Zod.
 - **Scoped i18n**: site, public web, admin web, public backend, and backend-admin use isolated i18n entrypoints.
 - **VitePress promotional site**: `apps/site` provides a polished technical landing page, continuous scroll story, GitHub Pages deployment, and site-scoped copy.
@@ -57,21 +57,21 @@ pnpm build
 
 ## Workspaces
 
-| Workspace            | Type    | Responsibility                                                       | Design Doc                                                                           |
-| -------------------- | ------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `apps/site`          | App     | VitePress promotional/docs site runtime and static page composition. | [apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                   |
-| `apps/web`           | App     | Public React + Vite runtime, routing, and page composition.          | [apps-web.md](docs/Logical%20Architecture%20Diagram/apps-web.md)                     |
-| `apps/web-admin`     | App     | Admin React + Vite runtime and admin pages.                          | [apps-web-admin.md](docs/Logical%20Architecture%20Diagram/apps-web-admin.md)         |
-| `apps/backend`       | App     | Public Fastify runtime, plugins, route registration, services.       | [apps-backend.md](docs/Logical%20Architecture%20Diagram/apps-backend.md)             |
-| `apps/backend-admin` | App     | Admin Fastify runtime and admin APIs.                                | [apps-backend-admin.md](docs/Logical%20Architecture%20Diagram/apps-backend-admin.md) |
-| `packages/config`    | Package | Env file location, typed env, Node/Vite config entrypoints.          | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       |
-| `packages/hooks`     | Package | Shared React hooks and form helpers.                                 | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         |
-| `packages/i18n`      | Package | Locale resources, translation core, site/React/Node helpers.         | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
-| `packages/iam`       | Package | IAM permissions, sessions, policies, fields, data, and audit core.   | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             |
-| `packages/prisma`    | Package | Prisma schema splitting, validation, generation, and DB scripts.     | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       |
-| `packages/schema`    | Package | Zod request/response/entity/form contracts.                          | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       |
-| `packages/ui`        | Package | shadcn/ui components, design-system styles, and brand SVG.           | [packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)               |
-| `test/automation`    | Test    | Vitest unit, Browser Mode UI, smoke, and targeted tests.             | [test-automation.md](docs/Logical%20Architecture%20Diagram/test-automation.md)       |
+| Workspace            | Type    | Responsibility                                                         | Design Doc                                                                           |
+| -------------------- | ------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `apps/site`          | App     | VitePress promotional/docs site runtime and static page composition.   | [apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                   |
+| `apps/web`           | App     | Public React + Vite runtime, routing, and page composition.            | [apps-web.md](docs/Logical%20Architecture%20Diagram/apps-web.md)                     |
+| `apps/web-admin`     | App     | Admin React + Vite runtime and admin pages.                            | [apps-web-admin.md](docs/Logical%20Architecture%20Diagram/apps-web-admin.md)         |
+| `apps/backend`       | App     | Public Fastify runtime, plugins, route registration, services.         | [apps-backend.md](docs/Logical%20Architecture%20Diagram/apps-backend.md)             |
+| `apps/backend-admin` | App     | Admin Fastify runtime and admin APIs.                                  | [apps-backend-admin.md](docs/Logical%20Architecture%20Diagram/apps-backend-admin.md) |
+| `packages/config`    | Package | Env file location, typed env, Node/Vite config entrypoints.            | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       |
+| `packages/hooks`     | Package | Shared React hooks and form helpers.                                   | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         |
+| `packages/i18n`      | Package | Locale resources, translation core, site/React/Node helpers.           | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
+| `packages/iam`       | Package | IAM permissions, sessions, policies, fields, data, and operation logs. | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             |
+| `packages/prisma`    | Package | Prisma schema splitting, validation, generation, and DB scripts.       | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       |
+| `packages/schema`    | Package | Zod request/response/entity/form contracts.                            | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       |
+| `packages/ui`        | Package | shadcn/ui components, design-system styles, and brand SVG.             | [packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)               |
+| `test/automation`    | Test    | Vitest unit, Browser Mode UI, smoke, and targeted tests.               | [test-automation.md](docs/Logical%20Architecture%20Diagram/test-automation.md)       |
 
 ## Architecture
 
@@ -116,17 +116,18 @@ flowchart LR
 
 ## Documentation
 
-| Document                                                                                                                         | Purpose                                                          |
-| -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| [AGENTS.md](AGENTS.md)                                                                                                           | Agent operating guide, constraints, and common validation flow.  |
-| [docs/Logical Architecture Diagram/README.md](docs/Logical%20Architecture%20Diagram/README.md)                                   | Logical architecture overview and module design index.           |
-| [docs/Logical Architecture Diagram/00-system-overview.md](docs/Logical%20Architecture%20Diagram/00-system-overview.md)           | Runtime flow, design principles, and key scenarios.              |
-| [docs/Logical Architecture Diagram/01-workspace-boundaries.md](docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md) | Workspace boundaries, dependency direction, and forbidden edges. |
-| [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | Quality gates, test strategy, build, and delivery rules.         |
-| [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress promotional site architecture and boundaries.          |
-| [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | Long-term memory for syncing multi-step plans to todolists.      |
-| [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | Unit, Browser, smoke, and targeted testing memory.               |
-| [docs/todolists](docs/todolists)                                                                                                 | Checkbox execution records for planned tasks.                    |
+| Document                                                                                                                         | Purpose                                                                                |
+| -------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [AGENTS.md](AGENTS.md)                                                                                                           | Agent operating guide, constraints, and common validation flow.                        |
+| [docs/Logical Architecture Diagram/README.md](docs/Logical%20Architecture%20Diagram/README.md)                                   | Logical architecture overview and module design index.                                 |
+| [docs/Logical Architecture Diagram/00-system-overview.md](docs/Logical%20Architecture%20Diagram/00-system-overview.md)           | Runtime flow, design principles, and key scenarios.                                    |
+| [docs/Logical Architecture Diagram/01-workspace-boundaries.md](docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md) | Workspace boundaries, dependency direction, and forbidden edges.                       |
+| [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | Quality gates, test strategy, build, and delivery rules.                               |
+| [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress promotional site architecture and boundaries.                                |
+| [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | Long-term memory for syncing multi-step plans to todolists.                            |
+| [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | Long-term memory for keeping README and architecture docs accurate after code changes. |
+| [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | Unit, Browser, smoke, and targeted testing memory.                                     |
+| [docs/todolists](docs/todolists)                                                                                                 | Checkbox execution records for planned tasks.                                          |
 
 ## Scripts
 
@@ -137,7 +138,7 @@ flowchart LR
 | `pnpm build`                            | Run `pnpm check`, bump versions, then build all workspaces with Turbo.      |
 | `pnpm type-check`                       | Run TypeScript checks for every workspace.                                  |
 | `pnpm --filter site dev`                | Start the VitePress promotional site.                                       |
-| `pnpm lint` / `pnpm lint:fix`           | Run or fix ESLint, plus version/hooks/backend architecture checks.          |
+| `pnpm lint` / `pnpm lint:fix`           | Run or fix ESLint, plus version/hooks/i18n/backend architecture checks.     |
 | `pnpm format` / `pnpm format:fix`       | Check or format repository files.                                           |
 | `pnpm test`                             | Run unit, browser, and smoke tests.                                         |
 | `pnpm test:unit`                        | Run Vitest unit tests.                                                      |
@@ -199,7 +200,7 @@ flowchart LR
 
 ### IAM Rules
 
-- Permission, session, policy, field permission, data permission, and audit algorithms live in `@tetap/iam`.
+- Permission, session, policy, field permission, data permission, and operation-log algorithms live in `@tetap/iam`.
 - HTTP request/response contracts still start in `@tetap/schema`.
 - Persistence models are maintained only through `@tetap/prisma`.
 - Frontend capabilities only control UI visibility; backend auth hooks and policy engine make final decisions.
@@ -248,6 +249,14 @@ flowchart LR
 - Search for existing related todolists before creating a new one.
 - Update todolist status as the plan changes.
 - Close the todolist with closure date and validation notes when complete.
+
+### Documentation Rules
+
+- Code, export, API, schema, Prisma model, script, or behavior changes must update the nearest app/package README.
+- Repository-wide changes must also update root README, localized README files, AGENTS, and the relevant architecture docs.
+- Package READMEs must accurately list current public entrypoints, tools, helper methods, scripts, and validation commands.
+- Before handoff, compare package READMEs against `package.json#exports`, `src/index.ts`, route lists, Prisma model files, and important service/store methods.
+- Follow [README Sync Memory](docs/memory/readme-sync-workflow.md) before handoff.
 
 ### TypeScript Gate
 

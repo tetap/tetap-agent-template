@@ -1,7 +1,7 @@
 {
   "name": "@tetap/i18n",
   "version": "1.0.1",
-  "description": "Shared internationalization utilities for React web and Node.js backends.",
+  "description": "Scoped internationalization utilities for site, public web, admin web, public backend, and backend-admin.",
   "private": true,
   "sideEffects": false,
   "type": "module",

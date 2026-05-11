@@ -1,0 +1,20 @@
+model OperationLog {
+  id               BigInt     @id @default(autoincrement())
+  operator         String
+  operatorAdminUserId BigInt? @map("operator_admin_user_id")
+  operation        String
+  operationItem    String     @map("operation_item")
+  operationDetail  Json       @map("operation_detail")
+  operationTime    DateTime   @default(now()) @map("operation_time")
+  operationIp      String?    @map("operation_ip")
+  resource         String
+  resourceId       String?    @map("resource_id")
+  userAgent        String?    @map("user_agent")
+  result           String
+  tenantId         String?    @map("tenant_id")
+  operatorAdminUser AdminUser? @relation(fields: [operatorAdminUserId], references: [id], onDelete: SetNull)
+
+  @@index([operation, resource])
+  @@index([operationTime])
+  @@map("admin_operation_logs")
+}

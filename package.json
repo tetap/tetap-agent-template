@@ -1,7 +1,7 @@
 {
   "name": "tetap-agent-template",
   "version": "1.0.1",
-  "description": "Open-source enterprise full-stack monorepo for AI-assisted development with React, Fastify, TypeScript, IAM, scoped i18n, Prisma, and automated quality gates.",
+  "description": "Open-source enterprise full-stack monorepo for AI-assisted development with React, Fastify, TypeScript, IAM operation controls, scoped i18n, Prisma, shadcn/ui, and automated quality gates.",
   "author": "TETAP",
   "license": "MIT",
   "private": true,

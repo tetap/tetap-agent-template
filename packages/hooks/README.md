@@ -9,21 +9,36 @@
 
 ## Public Entrypoints
 
-| Export                         | Purpose                             |
-| ------------------------------ | ----------------------------------- |
-| `@tetap/hooks`                 | Main barrel.                        |
-| `@tetap/hooks/store`           | Store hooks barrel.                 |
-| `@tetap/hooks/form`            | Zod form helper.                    |
-| `useAdminSessionStore`         | zustand admin session store.        |
-| `useAdminT` / `useAdminI18n`   | Admin scoped i18n hooks.            |
-| `usePublicT` / `usePublicI18n` | Public scoped i18n hooks.           |
-| `useIsMobile`                  | shared responsive media-query hook. |
+| Export                         | Purpose                                                              |
+| ------------------------------ | -------------------------------------------------------------------- |
+| `@tetap/hooks`                 | Main barrel.                                                         |
+| `@tetap/hooks/store`           | Store hooks barrel.                                                  |
+| `@tetap/hooks/form`            | Zod form helper.                                                     |
+| `useAdminSessionStore`         | zustand admin session store.                                         |
+| `useAdminThemeStore`           | zustand admin theme preference store.                                |
+| `useAdminThemeEffect`          | Applies admin light/dark/system theme to `document.documentElement`. |
+| `useAdminT` / `useAdminI18n`   | Admin scoped i18n hooks.                                             |
+| `usePublicT` / `usePublicI18n` | Public scoped i18n hooks.                                            |
+| `useIsMobile`                  | shared responsive media-query hook.                                  |
+| `useDisclosure`                | Open/close/toggle helper for dialogs, sheets, and popovers.          |
+| `useIsMounted`                 | Mounted-state ref for async React safety checks.                     |
+| `useZodForm`                   | React Hook Form wrapper wired to a Zod resolver.                     |
 
 ## Rules
 
 - New hooks must live in `packages/hooks/src/store`。
 - Do not create app-local `hooks` directories。
 - Run `pnpm hooks:check` after adding or moving hooks。
+
+## Current Store Hooks
+
+- `useAdminSessionStore` owns admin auth tokens, user context, capabilities, and dynamic menu state.
+  - Store actions: `setUser`, `setAccessToken`, `setCapabilities`, `setMenus`, `setContext`, `resetAccessToken`, `reset`, `can`, and `isAuthenticated`.
+- `useAdminThemeStore` owns the admin theme mode (`light`, `dark`, `system`).
+  - Store action: `setTheme`, persisted in `localStorage` under `tetap-admin-theme`.
+- `useAdminThemeEffect` applies the selected theme and listens to system color-scheme changes.
+- `useAdminT` / `usePublicT` expose scoped translation helpers without leaking locale modules across apps.
+- `useZodForm` accepts any compatible Zod schema and returns `UseFormReturn` with the resolver already configured.
 
 ## Scripts
 

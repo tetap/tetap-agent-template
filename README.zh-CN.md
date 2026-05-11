@@ -20,7 +20,7 @@ TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的开源全栈 m
 
 ## 核心能力
 
-- **企业级 IAM 基础设施**：JWT、RBAC、PBAC、字段权限、动态菜单、会话失效、强制下线和审计基础能力。
+- **企业级 IAM 基础设施**：JWT、RBAC、PBAC、字段权限、动态菜单、会话失效、强制下线和操作日志基础能力。
 - **前后端契约优先**：request、response、form schema 统一进入 `@tetap/schema`，基于 Zod 复用。
 - **多端 i18n 隔离**：site、public web、admin web、backend、backend-admin 使用不同 i18n scope，避免跨端读取错误文案 key。
 - **VitePress 宣传站**：`apps/site` 提供克制、清晰的技术宣传/文档入口，并使用独立 site 文案 scope。
@@ -67,7 +67,7 @@ pnpm build
 | `packages/config`    | Package | env 文件位置、typed env、Node/Vite 配置入口。                 | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       |
 | `packages/hooks`     | Package | React hooks 和表单 helper 集中仓库。                          | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         |
 | `packages/i18n`      | Package | locale 资源、翻译核心、site/React/Node helper。               | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
-| `packages/iam`       | Package | IAM 权限、会话、策略、字段、数据和审计核心。                  | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             |
+| `packages/iam`       | Package | IAM 权限、会话、策略、字段、数据和操作日志核心。              | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             |
 | `packages/prisma`    | Package | Prisma schema 拆分、校验、生成和 DB 命令。                    | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       |
 | `packages/schema`    | Package | Zod request/response/entity/form 契约。                       | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       |
 | `packages/ui`        | Package | shadcn/ui 组件库、设计系统样式和品牌 SVG。                    | [packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)               |
@@ -84,6 +84,7 @@ pnpm build
 | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | 质量门禁、测试策略、构建和交付规则。            |
 | [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress 宣传站架构和边界。                    |
 | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | 多步骤计划必须同步 todolist 的长期记忆。        |
+| [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | 代码变更后同步 README 和架构文档的长期记忆。    |
 | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | 功能实现后的单元、Browser、冒烟和定向测试记忆。 |
 | [docs/todolists](docs/todolists)                                                                                                 | 每个计划任务的 checkbox 执行记录。              |
 
@@ -126,7 +127,7 @@ pnpm build
 
 ### IAM 规则
 
-- 权限、会话、策略、字段权限、数据权限和审计核心算法统一进入 `@tetap/iam`。
+- 权限、会话、策略、字段权限、数据权限和操作日志核心算法统一进入 `@tetap/iam`。
 - HTTP request/response contract 仍然先定义在 `@tetap/schema`。
 - 持久化模型只能通过 `@tetap/prisma` 维护。
 - 前端 capability 只能决定 UI 显示，后端 auth hook/policy engine 必须做最终校验。
@@ -176,6 +177,14 @@ pnpm build
 - 执行前先搜索是否已有相关 todolist，避免重复。
 - 计划状态变化时同步更新 todolist。
 - 完成后设置 `Status: Closed`，添加关闭日期和 closure notes。
+
+### Documentation 规则
+
+- 代码、导出、API、schema、Prisma model、脚本或行为变化后，必须同步最近的 app/package README。
+- 仓库级变化还必须同步根 README、多语言 README、AGENTS 和相关架构文档。
+- Package README 必须准确列出当前公开入口、工具方法、helper、脚本和验证命令。
+- 交付前必须对照 `package.json#exports`、`src/index.ts`、route 列表、Prisma model 文件和关键 service/store 方法检查 README。
+- 交付前遵守 [README 同步记忆](docs/memory/readme-sync-workflow.md)。
 
 ### TypeScript 门禁
 

@@ -16,13 +16,14 @@
 
 ## 概要
 
-TETAP Agent Template は、AI 支援開発向けのオープンソース full-stack monorepo テンプレートです。public web、admin web、Fastify API、IAM、設定、UI、i18n、schema、Prisma、自動テストを明確な workspace に分割し、高速な開発と強いアーキテクチャ境界を両立します。
+TETAP Agent Template は、AI 支援開発向けのオープンソース full-stack monorepo テンプレートです。VitePress site、public web、admin web、Fastify API、IAM、設定、UI、i18n、schema、Prisma、自動テストを明確な workspace に分割し、高速な開発と強いアーキテクチャ境界を両立します。
 
 ## 主な特徴
 
-- **エンタープライズ IAM 基盤**: JWT、RBAC、PBAC、フィールド権限、動的メニュー、セッション失効、強制ログアウト、監査ログ。
+- **エンタープライズ IAM 基盤**: JWT、RBAC、PBAC、フィールド権限、動的メニュー、セッション失効、強制ログアウト、操作ログ。
 - **Contract-first 開発**: request、response、form schema を `@tetap/schema` に集約し、Zod で再利用します。
 - **Scoped i18n**: site、public web、admin web、backend、backend-admin が別々の i18n entrypoint を使用します。
+- **VitePress promotional site**: `apps/site` は site 専用 i18n scope と GitHub Pages deployment を持つ技術紹介サイトです。
 - **共有 UI システム**: app は `@tetap/ui` の shadcn/ui components と brand assets を組み合わせます。
 - **安全なデフォルト**: Fastify security plugins、CORS allowlist、body limit、rate limit、統一エラー応答、route architecture checks。
 - **自動品質ゲート**: TypeScript、ESLint、Prettier、architecture checks、unit test、Browser Mode test、smoke test。
@@ -66,7 +67,7 @@ pnpm build
 | `packages/config`    | typed env と Node/Vite config entrypoints。                          |
 | `packages/hooks`     | shared React hooks と form helpers。                                 |
 | `packages/i18n`      | locale resources、translation core、site/React/Node helpers。        |
-| `packages/iam`       | IAM permissions、sessions、policies、fields、data、audit core。      |
+| `packages/iam`       | IAM permissions、sessions、policies、fields、data、operation logs。  |
 | `packages/prisma`    | Prisma schema、validation、generation、DB scripts。                  |
 | `packages/schema`    | Zod request/response/entity/form contracts。                         |
 | `packages/ui`        | shadcn/ui components、design-system styles、brand SVG。              |
@@ -76,6 +77,8 @@ pnpm build
 
 - Issue は bug、改善提案、security risk、documentation problem に使用してください。
 - Pull Request は変更範囲を小さく保ち、実行した validation commands を説明に記載してください。
+- Code、exports、APIs、Prisma models、scripts、UI primitives を変更した場合は、最寄りの README と関連 architecture docs も同じ変更で更新してください。
+- Package README は現在の entrypoints、tools、helper methods、scripts、validation commands と一致させてください。
 - public issue に secrets、tokens、database connection strings、exploit details を投稿しないでください。
 - 大きな変更の前に [AGENTS.md](AGENTS.md) と [architecture docs](docs/Logical%20Architecture%20Diagram/README.md) を確認してください。
 

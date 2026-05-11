@@ -14,6 +14,15 @@
 | `@tetap/config/tailwind.config.ts` | 共享 Tailwind 基础配置。                              |
 | `@tetap/config/env`                | 统一 env 模板和 env 文件目录。                        |
 
+## 关键 helper
+
+| Helper                                                          | Purpose                                              |
+| --------------------------------------------------------------- | ---------------------------------------------------- |
+| `loadConfigEnv`                                                 | 加载 base、mode-specific 和可选 local env 文件。     |
+| `getAppEnv` / `readAppEnv`                                      | 从 `process.env` 或指定 source 解析 typed `AppEnv`。 |
+| `configEnvDir`                                                  | 浏览器 apps 共享的 Vite `envDir`。                   |
+| `configBaseEnvFile` / `configLocalEnvFile` / `getConfigEnvFile` | env 文件路径解析 helper。                            |
+
 ## 内部结构
 
 | Path           | Responsibility                                |

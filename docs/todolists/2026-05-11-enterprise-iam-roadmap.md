@@ -17,7 +17,7 @@ Task: Plan the enterprise IAM permission system, scoped i18n split, backend secu
 - [x] Phase 6: Implement data permissions with department, self, custom, and future tenant-aware query constraints.
 - [x] Phase 7: Implement ABAC/PBAC policy engine integration and dynamic policy evaluation.
 - [x] Phase 8: Implement online user management, multi-device controls, session blacklist, and admin forced-offline APIs.
-- [x] Phase 9: Implement audit logging for login, logout, permission changes, risky actions, and policy decisions.
+- [x] Phase 9: Implement operation logging for login, logout, permission changes, risky actions, and policy decisions.
 - [x] Phase 10: Split i18n modules so public web, admin web, public backend, and backend-admin can only import allowed locale scopes.
 - [x] Phase 11: Audit and harden `apps/backend` and `apps/backend-admin` security baselines.
 - [x] Phase 12: Run a code review and optimization pass after IAM, i18n, and security changes are in place.
@@ -86,12 +86,12 @@ Prisma models to design:
 - `Policy`, `FieldPermission`, `Menu`, `MenuPermission`.
 - `Department` or `Organization`, department hierarchy support, and tenant id reservation.
 - `UserSession`, token blacklist or invalid token registry.
-- `AuditLog`.
+- `OperationLog`.
 
 Schema contracts to design:
 
 - Login, refresh, logout, current user, capabilities.
-- Role, permission, menu, field permission, data scope, policy, session, audit APIs.
+- Role, permission, menu, field permission, data scope, policy, session, operation-log APIs.
 - Unified admin list/query request patterns and response pagination.
 
 Validation:
@@ -135,7 +135,7 @@ Backend requirements:
 - Permission plugin loads user roles and permissions from cache or storage.
 - Capability response returns only granted capability codes for the current user.
 - Dynamic menu APIs return only authorized menu tree nodes.
-- Super admin bypass is explicit, audited, and isolated.
+- Super admin bypass is explicit, operation-logged, and isolated.
 
 Frontend contract:
 
@@ -229,11 +229,11 @@ Validation:
 
 - Smoke tests for session list and forced-offline behavior.
 
-### Phase 9: Audit Logging
+### Phase 9: Operation Logging
 
 Goal: make IAM and security actions traceable.
 
-Audit events:
+Operation events:
 
 - Login, refresh, logout, failed login.
 - Permission, role, policy, field permission, and menu changes.
@@ -248,7 +248,7 @@ Rules:
 Validation:
 
 - Unit tests for redaction.
-- Smoke tests for critical audit event creation.
+- Smoke tests for critical operation-log event creation.
 
 ### Phase 10: Scoped I18n Split
 
@@ -354,7 +354,7 @@ UI surfaces:
 - Field permissions and data scopes.
 - Policies and condition editor.
 - Online users and forced offline controls.
-- Audit logs.
+- Operation logs.
 
 Rules:
 
@@ -391,14 +391,14 @@ Closed: 2026-05-11
 
 Implemented:
 
-- Added `@tetap/iam` as the reusable IAM core for JWT HMAC tokens, stateful sessions, token id/token version invalidation, forced offline, RBAC capabilities, dynamic menus, field masking, data-scope constraints, PBAC/ABAC policy evaluation, and audit redaction.
+- Added `@tetap/iam` as the reusable IAM core for JWT HMAC tokens, stateful sessions, token id/token version invalidation, forced offline, RBAC capabilities, dynamic menus, field masking, data-scope constraints, PBAC/ABAC policy evaluation, and operation-log redaction.
 - Added IAM Prisma models under `@tetap/prisma` and IAM Zod HTTP contracts under `@tetap/schema`.
 - Wired `apps/backend` and `apps/backend-admin` with hardened Fastify runtime defaults: body limits, Helmet, CORS allowlist, rate limits, auth hooks, route permission metadata, localized error handling, logger redaction, SSRF guard helpers, and upload guard helpers.
-- Added backend-admin IAM auth/session/API routes for login, refresh, logout, current user, overview, users, roles, permissions, menus, field permissions, policies, online sessions, session revocation, user-session revocation, and audit logs.
+- Added backend-admin IAM auth/session/API routes for login, refresh, logout, current user, overview, users, roles, permissions, menus, field permissions, policies, online sessions, session revocation, user-session revocation, and operation logs.
 - Split i18n into public, admin, backend, and backend-admin entrypoints and added `pnpm i18n:boundaries:check`.
-- Added admin IAM UI and backend-admin API client in `apps/web-admin`, including overview, users, roles, sessions, policy/field/audit surfaces, and forced-offline action wiring.
+- Added admin IAM UI and backend-admin API client in `apps/web-admin`, including overview, users, roles, sessions, policy/field/operation-log surfaces, and forced-offline action wiring.
 - Refreshed README, AGENTS, workspace architecture docs, package docs, quality gates, and testing impact maps.
-- Review follow-up fixed PBAC default behavior to deny when no allow policy matches and added denial audit records for policy-blocked revoke actions.
+- Review follow-up fixed PBAC default behavior to deny when no allow policy matches and added denial operation records for policy-blocked revoke actions.
 
 Validation passed:
 
