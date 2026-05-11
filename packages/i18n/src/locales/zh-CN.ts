@@ -283,7 +283,8 @@ export const zhCN = {
     auth: {
       signIn: {
         title: '登录后台',
-        description: '输入邮箱和密码以访问后台管理。还没有账号？',
+        description: '输入管理员分配的邮箱和密码以访问后台管理。',
+        adminManaged: '后台账号只能由已授权管理员在用户管理中创建或维护。',
         signUpLink: '注册',
         forgotPassword: '忘记密码？',
         loginFailed: '登录失败。请启动 backend-admin，并使用有效的管理员账号。',

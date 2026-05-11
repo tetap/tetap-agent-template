@@ -3,10 +3,8 @@ import { createBrowserRouter, Navigate, RouterProvider, useLocation } from 'reac
 import { useAdminSessionStore, useAdminI18n } from '@tetap/hooks';
 import { fetchAdminBootstrap } from './api/backend-admin.js';
 import { AdminShell } from './layout/admin-shell.js';
-import { ForgotPasswordPage } from './pages/auth/forgot-password.js';
 import { OtpPage } from './pages/auth/otp.js';
 import { SignInPage } from './pages/auth/sign-in.js';
-import { SignUpPage } from './pages/auth/sign-up.js';
 import { toSessionMenus } from './pages/auth/auth-session.js';
 import { AdminDashboardPage } from './pages/dashboard.js';
 import {
@@ -271,11 +269,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/sign-up',
-    element: <SignUpPage />,
+    element: <Navigate replace to="/sign-in" />,
   },
   {
     path: '/forgot-password',
-    element: <ForgotPasswordPage />,
+    element: <Navigate replace to="/sign-in" />,
   },
   {
     path: '/otp',

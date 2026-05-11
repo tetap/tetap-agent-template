@@ -330,6 +330,13 @@ describe('admin web dashboard browser behavior', () => {
 
     await screen.getByLabelText(i18n.t('webAdmin.auth.fields.email')).fill('admin@example.com');
     await screen.getByRole('textbox', { name: i18n.t('webAdmin.auth.fields.password') }).fill('password1');
+    expect(screen.getByText(i18n.t('webAdmin.auth.providers.separator')).query()).toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.auth.providers.github')).query()).toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.auth.providers.facebook')).query()).toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.auth.signIn.forgotPassword')).query()).toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.auth.signIn.signUpLink')).query()).toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.auth.legal.terms')).query()).toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.auth.legal.privacy')).query()).toBeNull();
     await screen.getByRole('button', { name: i18n.t('webAdmin.auth.actions.signIn') }).click();
 
     await expect.poll(() => useAdminSessionStore.getState().auth.accessToken).not.toBe('');

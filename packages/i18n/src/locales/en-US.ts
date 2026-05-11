@@ -296,7 +296,8 @@ export const enUS = {
     auth: {
       signIn: {
         title: 'Sign in',
-        description: 'Enter your email and password to access the admin console. No account yet?',
+        description: 'Enter the email and password assigned by an administrator to access the admin console.',
+        adminManaged: 'Admin accounts can only be created or maintained by authorized operators in user management.',
         signUpLink: 'Sign up',
         forgotPassword: 'Forgot password?',
         loginFailed: 'Unable to sign in. Start backend-admin and use a valid admin account.',
