@@ -1,5 +1,8 @@
 import type { AdminMessageKey } from '@tetap/i18n/admin';
+import type { ReactNode, SVGProps } from 'react';
 import type { LucideIcon } from 'lucide-react';
+
+export type AdminLogo = (props: SVGProps<SVGSVGElement>) => ReactNode;
 
 export type AdminNavItem = {
   titleKey: AdminMessageKey;
@@ -17,7 +20,7 @@ export type AdminNavGroup = {
 export type AdminTeam = {
   nameKey: AdminMessageKey;
   planKey: AdminMessageKey;
-  logo: LucideIcon;
+  logo: AdminLogo;
 };
 
 export type AdminSidebarData = {

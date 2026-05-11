@@ -55,7 +55,7 @@
 | `packages/iam`       | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             | IAM 权限、会话、策略、字段、数据和审计核心。                     |
 | `packages/prisma`    | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       | Prisma schema 拆分规则、生成和 DB 脚本。                         |
 | `packages/schema`    | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       | 前后端共享 Zod 契约。                                            |
-| `packages/ui`        | [packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)               | shadcn/ui 共享组件库和设计系统样式。                             |
+| `packages/ui`        | [packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)               | shadcn/ui 共享组件库、设计系统样式和品牌资产。                   |
 | `test/automation`    | [test-automation.md](docs/Logical%20Architecture%20Diagram/test-automation.md)       | Vitest 单元、Browser Mode UI、冒烟和定向测试。                   |
 
 ## 5. 常用验证命令

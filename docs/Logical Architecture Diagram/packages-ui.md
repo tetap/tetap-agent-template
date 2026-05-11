@@ -2,13 +2,14 @@
 
 ## 定位
 
-`@tetap/ui` 是共享 shadcn/ui 组件库和设计系统 runtime stylesheet。`apps/web` 和 `apps/web-admin` 只消费它，不在 app 内生成本地 UI 系统。
+`@tetap/ui` 是共享 shadcn/ui 组件库、设计系统 runtime stylesheet 和品牌 SVG 资产入口。`apps/web` 和 `apps/web-admin` 只消费它，不在 app 内生成本地 UI 系统。
 
 ## 公开入口
 
 | Export                     | Purpose                                             |
 | -------------------------- | --------------------------------------------------- |
 | `@tetap/ui`                | 主组件 barrel。                                     |
+| `@tetap/ui/brand-logo`     | TETAP SVG brand logo component。                    |
 | `@tetap/ui/styles.css`     | Tailwind + shadcn theme runtime CSS。               |
 | `@tetap/ui/button`         | Button direct export。                              |
 | `@tetap/ui/card`           | Card direct export。                                |
@@ -23,13 +24,15 @@
 
 ## 内部结构
 
-| Path                  | Responsibility                                                           |
-| --------------------- | ------------------------------------------------------------------------ |
-| `components.json`     | shadcn/ui package 配置。                                                 |
-| `src/components/ui/*` | shadcn/ui source components, including sidebar/auth-support primitives。 |
-| `src/lib/utils.ts`    | `cn` utility。                                                           |
-| `src/styles.css`      | Tailwind import、theme tokens、base layer。                              |
-| `tailwind.config.ts`  | shared UI Tailwind config。                                              |
+| Path                     | Responsibility                                                           |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `components.json`        | shadcn/ui package 配置。                                                 |
+| `src/assets/*`           | Shared static brand assets such as the TETAP SVG logo。                  |
+| `src/components/brand/*` | Shared brand presentation components。                                   |
+| `src/components/ui/*`    | shadcn/ui source components, including sidebar/auth-support primitives。 |
+| `src/lib/utils.ts`       | `cn` utility。                                                           |
+| `src/styles.css`         | Tailwind import、theme tokens、base layer。                              |
+| `tailwind.config.ts`     | shared UI Tailwind config。                                              |
 
 ## UI 获取流程
 

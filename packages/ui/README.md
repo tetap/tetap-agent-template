@@ -12,6 +12,7 @@
 | Export                     | Purpose                          |
 | -------------------------- | -------------------------------- |
 | `@tetap/ui`                | Main component barrel.           |
+| `@tetap/ui/brand-logo`     | TETAP SVG brand logo component.  |
 | `@tetap/ui/styles.css`     | Tailwind + shadcn theme runtime. |
 | `@tetap/ui/button`         | Button direct export.            |
 | `@tetap/ui/card`           | Card direct export.              |

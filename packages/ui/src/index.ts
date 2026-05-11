@@ -1,4 +1,6 @@
 export { cn } from './lib/utils.js';
+export { TetapLogo } from './components/brand/tetap-logo.js';
+export type { TetapLogoProps } from './components/brand/tetap-logo.js';
 export { Alert, AlertDescription, AlertTitle } from './components/ui/alert.js';
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar.js';
 export { Badge, badgeVariants } from './components/ui/badge.js';

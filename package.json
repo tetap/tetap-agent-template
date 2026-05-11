@@ -1,7 +1,7 @@
 {
   "name": "tetap-agent-template",
   "version": "1.0.1",
-  "description": "一个面向 Vibe Coding 的 全栈开发模板，包含前端、后端和数据库配置，旨在帮助开发者快速搭建和部署全栈应用。",
+  "description": "Open-source enterprise full-stack monorepo for AI-assisted development with React, Fastify, TypeScript, IAM, scoped i18n, Prisma, and automated quality gates.",
   "author": "TETAP",
   "license": "MIT",
   "private": true,

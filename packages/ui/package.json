@@ -20,6 +20,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./brand-logo": {
+      "types": "./dist/components/brand/tetap-logo.d.ts",
+      "import": "./dist/components/brand/tetap-logo.js"
+    },
     "./styles.css": "./src/styles.css",
     "./alert": {
       "types": "./dist/components/ui/alert.d.ts",

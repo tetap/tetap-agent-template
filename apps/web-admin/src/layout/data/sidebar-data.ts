@@ -1,7 +1,6 @@
 import {
   BadgeCheck,
   Bell,
-  Bot,
   KeyRound,
   LayoutDashboard,
   LockKeyhole,
@@ -11,6 +10,7 @@ import {
   UserCog,
   Users,
 } from 'lucide-react';
+import { TetapLogo } from '@tetap/ui';
 import type { AdminSidebarData } from '../types.js';
 
 export const sidebarData: AdminSidebarData = {
@@ -18,7 +18,7 @@ export const sidebarData: AdminSidebarData = {
     {
       nameKey: 'webAdmin.layout.teams.core.name',
       planKey: 'webAdmin.layout.teams.core.plan',
-      logo: Bot,
+      logo: TetapLogo,
     },
     {
       nameKey: 'webAdmin.layout.teams.security.name',
