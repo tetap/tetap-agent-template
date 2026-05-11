@@ -28,15 +28,15 @@
 
 ## 内部结构
 
-| Path             | Responsibility                                                                                  |
-| ---------------- | ----------------------------------------------------------------------------------------------- |
-| `src/main.tsx`   | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                  |
-| `src/App.tsx`    | React Router、auth routes、protected admin routes 和 app shell 级组合。                         |
-| `src/layout/*`   | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。        |
-| `src/pages/auth` | 后台登录、注册、找回密码和 OTP 页面；schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。 |
-| `src/pages/*`    | Admin 页面组合；只拼装共享能力，不定义共享 primitives。                                         |
-| `vite.config.ts` | Vite 插件和 `@tetap/config/vite` env 目录配置。                                                 |
-| `tsconfig*.json` | Admin web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                                     |
+| Path             | Responsibility                                                                                                              |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`   | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                                              |
+| `src/App.tsx`    | React Router、auth routes、protected admin routes 和 app shell 级组合。                                                     |
+| `src/layout/*`   | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。                                    |
+| `src/pages/auth` | 后台登录和 OTP 页面；后台账号只能由已授权管理员在用户管理中创建，schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。 |
+| `src/pages/*`    | Admin 页面组合；只拼装共享能力，不定义共享 primitives。                                                                     |
+| `vite.config.ts` | Vite 插件和 `@tetap/config/vite` env 目录配置。                                                                             |
+| `tsconfig*.json` | Admin web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                                                                 |
 
 ## 页面渲染流
 

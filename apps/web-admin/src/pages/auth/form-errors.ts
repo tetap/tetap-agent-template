@@ -1,4 +1,3 @@
-import { adminAuthValidationIssueKeys } from '@tetap/schema';
 import type { AdminMessageKey } from '@tetap/i18n/admin';
 
 type AdminAuthFieldError = {
@@ -11,10 +10,6 @@ export const getAdminAuthFieldErrorKey = (
 ): AdminMessageKey | undefined => {
   if (!error) {
     return undefined;
-  }
-
-  if (error.message === adminAuthValidationIssueKeys.passwordMismatch) {
-    return adminAuthValidationIssueKeys.passwordMismatch;
   }
 
   return fallbackKey;

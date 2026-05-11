@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { healthResponseSchema } from '@tetap/schema/backend';
-import { adminOtpInputSchema, adminSignInInputSchema, adminSignUpInputSchema } from '@tetap/schema/admin-auth';
+import { adminOtpInputSchema, adminSignInInputSchema } from '@tetap/schema/admin-auth';
 
 describe('healthResponseSchema', () => {
   it('accepts the unified backend response body shape', () => {
@@ -55,13 +55,14 @@ describe('admin auth schemas', () => {
     expect(adminOtpInputSchema.parse({ otp: '123456' })).toEqual({ otp: '123456' });
   });
 
-  it('rejects mismatched admin sign-up passwords', () => {
+  it('rejects invalid admin sign-in and otp form values', () => {
     expect(() =>
-      adminSignUpInputSchema.parse({
-        confirmPassword: 'password2',
-        email: 'admin@example.com',
-        password: 'password1',
+      adminSignInInputSchema.parse({
+        email: 'not-an-email',
+        password: 'short',
       }),
     ).toThrow();
+
+    expect(() => adminOtpInputSchema.parse({ otp: 'abcdef' })).toThrow();
   });
 });

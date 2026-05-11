@@ -78,18 +78,8 @@ export type {
 } from './iam.js';
 export {
   adminAuthOutputSchema,
-  adminAuthValidationIssueKeys,
-  adminForgotPasswordInputSchema,
   adminOtpInputSchema,
   adminSessionUserSchema,
   adminSignInInputSchema,
-  adminSignUpInputSchema,
 } from './admin-auth.js';
-export type {
-  AdminAuthOutput,
-  AdminForgotPasswordInput,
-  AdminOtpInput,
-  AdminSessionUser,
-  AdminSignInInput,
-  AdminSignUpInput,
-} from './admin-auth.js';
+export type { AdminAuthOutput, AdminOtpInput, AdminSessionUser, AdminSignInInput } from './admin-auth.js';
