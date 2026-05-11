@@ -56,6 +56,7 @@ export const zhCN = {
     nav: {
       ariaLabel: '宣传站导航',
       docs: '文档',
+      story: '滚动叙事',
       architecture: '架构',
       quality: '质量门禁',
       cta: '开始使用',
@@ -95,6 +96,37 @@ export const zhCN = {
       eyebrow: 'Toolbox',
       title: '完整的企业应用工具箱',
       description: '从页面组合到权限中台，每一层都有明确 owner，避免 app 内重复实现横切能力。',
+    },
+    scroll: {
+      eyebrow: 'Continuous story',
+      title: '边界、契约、门禁持续滚动',
+      description:
+        '像调试一段动画时间线一样浏览工程链路：从 AI 生成、workspace 分层、权限契约到自动验证，每一帧都被约束在可交付的轨道上。',
+      stageLabel: '持续滚动架构叙事动画',
+      progressLabel: '滚动叙事进度',
+      loopLabel: 'workspace loop',
+      chapters: {
+        prompt: {
+          tag: '01 / Prompt',
+          title: '先把想法送进工程边界',
+          description: 'Agent 可以快速生成代码，但落点必须进入 site、web、admin、backend 或 packages 的明确职责范围。',
+        },
+        compose: {
+          tag: '02 / Compose',
+          title: '共享能力沿单向依赖流动',
+          description: 'UI、i18n、schema、IAM、Prisma 和 config 都在 packages 内沉淀，apps 只组合 runtime 和页面。',
+        },
+        verify: {
+          tag: '03 / Verify',
+          title: '质量门禁持续拦截偏移',
+          description: 'lint、format、type-check、affected、Browser Mode 和 smoke 让修改在进入主干前完成闭环。',
+        },
+        publish: {
+          tag: '04 / Publish',
+          title: '宣传站和文档同源发布',
+          description: 'VitePress 输出静态站点，GitHub Pages 自动部署，把项目定位、规则和入口展示给使用者。',
+        },
+      },
     },
     features: {
       boundaries: {

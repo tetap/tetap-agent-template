@@ -8,15 +8,18 @@
 
 - Reference site: [Anime.js homepage](https://animejs.com/)。
 - Adopted patterns: dark kinetic canvas, sticky top navigation, large product headline, install-command chip, animated geometric demos, feature gallery, and dense technical CTA sections。
+- Additional motion pattern: continuous scroll storytelling that changes chapter state while geometric loops keep moving in the stage。
 - Rejected patterns: copied Anime.js content/assets, app-local reusable UI primitives, business CSS outside the VitePress theme boundary, and hardcoded user-facing copy。
 
 ## 职责
 
 - 运行 VitePress dev/build/preview。
 - 组合静态宣传页和文档入口页面。
+- 实现用于项目宣传的连续滚动叙事页面动效。
 - 在 `src/.vitepress/theme` 内维护 VitePress custom theme runtime CSS。
 - 只通过 `@tetap/i18n/site` 获取宣传站用户可见文案。
 - 通过 VitePress build 输出静态站点到 `apps/site/dist`。
+- 通过 `.github/workflows/pages.yml` 将 `apps/site/dist` 发布到 GitHub Pages。
 
 ## 服务边界
 
@@ -36,6 +39,7 @@
 | `src/.vitepress/theme/index.ts` | VitePress theme extension and global style import。 |
 | `src/.vitepress/theme/*.vue`    | Vue page composition for static marketing pages。   |
 | `src/.vitepress/theme/*.css`    | Site-only VitePress theme runtime CSS。             |
+| `src/public/.nojekyll`          | Disable Jekyll processing on GitHub Pages。         |
 
 ## 允许
 
@@ -43,6 +47,7 @@
 - 在 `src/.vitepress/theme` 中维护该站点必须的 theme CSS。
 - 从 `@tetap/i18n/site` 读取宣传站文案。
 - 通过 CSS keyframes 和轻量 Vue state 实现静态站点动效。
+- 使用 `prefers-reduced-motion` 对持续动画降级。
 
 ## 禁止
 
@@ -59,6 +64,19 @@
 3. 将页面样式限制在 `src/.vitepress/theme`。
 4. 更新 `test/automation/src/support/test-selection.ts` 的 affected mapping。
 5. 运行 `pnpm test:unit:target -- i18n-site` 和 `pnpm --filter site build`。
+
+## 动效策略
+
+- `TetapLanding.vue` 只读取滚动进度并切换当前章节，不拦截浏览器原生滚动。
+- 连续 marquee、orbit 和 path 动效由 `styles.css` 的 CSS keyframes 驱动。
+- 移动端改为普通垂直堆叠，桌面端使用 sticky stage 展示持续滚动叙事。
+- 降低动态偏好开启时，持续动画会关闭，文案和章节仍保持可读。
+
+## GitHub Pages
+
+- GitHub repository settings must use **Pages → Build and deployment → Source: GitHub Actions**。
+- The workflow builds `@tetap/i18n` first, then runs `pnpm --filter site build` and deploys `apps/site/dist` with the official Pages artifact/deploy actions。
+- VitePress `base` resolves to `/<repo>/` on GitHub Actions for project pages. Use `TETAP_SITE_BASE` to override this when publishing through a custom domain。
 
 ## 常用命令
 

@@ -62,6 +62,7 @@ export const enUS = {
     nav: {
       ariaLabel: 'Promotional site navigation',
       docs: 'Docs',
+      story: 'Scroll story',
       architecture: 'Architecture',
       quality: 'Quality gates',
       cta: 'Get started',
@@ -102,6 +103,41 @@ export const enUS = {
       title: 'A complete enterprise app toolbox',
       description:
         'From page composition to identity controls, every layer has a clear owner so apps do not duplicate cross-cutting capability.',
+    },
+    scroll: {
+      eyebrow: 'Continuous story',
+      title: 'Boundaries, contracts, and gates in motion',
+      description:
+        'Read the engineering chain like an animation timeline: AI generation, workspace layering, permission contracts, and automated validation stay on a deliverable track.',
+      stageLabel: 'Continuous scrolling architecture story animation',
+      progressLabel: 'Scroll story progress',
+      loopLabel: 'workspace loop',
+      chapters: {
+        prompt: {
+          tag: '01 / Prompt',
+          title: 'Send ideas into engineering boundaries first',
+          description:
+            'Agents can generate quickly, but every output still lands in the clear ownership of site, web, admin, backend, or packages.',
+        },
+        compose: {
+          tag: '02 / Compose',
+          title: 'Shared capability flows one way',
+          description:
+            'UI, i18n, schema, IAM, Prisma, and config settle inside packages while apps only compose runtime and pages.',
+        },
+        verify: {
+          tag: '03 / Verify',
+          title: 'Quality gates keep drift contained',
+          description:
+            'Lint, format, type-check, affected tests, Browser Mode, and smoke checks close the loop before changes reach main.',
+        },
+        publish: {
+          tag: '04 / Publish',
+          title: 'The site and docs publish from one source',
+          description:
+            'VitePress emits the static site and GitHub Pages deploys it so positioning, rules, and entry points are visible to users.',
+        },
+      },
     },
     features: {
       boundaries: {

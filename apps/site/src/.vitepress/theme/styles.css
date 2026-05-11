@@ -59,7 +59,7 @@ button:focus-visible {
 
 .tetap-landing {
   min-height: 100vh;
-  overflow: hidden;
+  overflow-x: clip;
   color: var(--site-text);
 }
 
@@ -200,6 +200,7 @@ button:focus-visible {
 .hero-description,
 .section-copy p,
 .feature-copy p,
+.scroll-chapter p,
 .workflow-step p,
 .closing-section p {
   max-width: 42rem;
@@ -555,6 +556,357 @@ button:focus-visible {
   color: var(--site-violet);
 }
 
+.scroll-story {
+  --scroll-progress: 0;
+  --scroll-rotate: 0deg;
+  --scroll-accent: var(--site-red);
+  position: relative;
+  overflow: visible;
+  border-bottom: 1px solid var(--site-border);
+  background:
+    linear-gradient(90deg, rgba(255, 75, 75, 0.08) 0 1px, transparent 1px 100%),
+    linear-gradient(180deg, rgba(38, 242, 213, 0.06) 0 1px, transparent 1px 100%), #201f1e;
+  background-size:
+    72px 72px,
+    72px 72px,
+    auto;
+}
+
+.scroll-sticky {
+  display: grid;
+  gap: 2rem;
+  padding: 4rem 1rem 2rem;
+}
+
+.scroll-copy {
+  align-self: center;
+}
+
+.scroll-progress {
+  position: relative;
+  width: min(28rem, 100%);
+  height: 0.65rem;
+  margin-top: 1.75rem;
+  overflow: hidden;
+  border: 1px solid var(--site-border);
+  border-radius: 999px;
+  background: #1b1a19;
+}
+
+.scroll-progress span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, var(--site-red), var(--site-lime), var(--site-cyan));
+  transform: scaleX(var(--scroll-progress));
+  transform-origin: left center;
+}
+
+.scroll-stage {
+  --scroll-accent: var(--site-red);
+  position: relative;
+  min-height: 25rem;
+  overflow: hidden;
+  border: 1px solid var(--site-border);
+  border-radius: var(--site-radius);
+  background: #191817;
+  box-shadow: inset 0 0 0 1px rgba(246, 244, 242, 0.03);
+  isolation: isolate;
+}
+
+.scroll-stage[data-accent='red'] {
+  --scroll-accent: var(--site-red);
+}
+
+.scroll-stage[data-accent='orange'] {
+  --scroll-accent: var(--site-orange);
+}
+
+.scroll-stage[data-accent='lime'] {
+  --scroll-accent: var(--site-lime);
+}
+
+.scroll-stage[data-accent='cyan'] {
+  --scroll-accent: var(--site-cyan);
+}
+
+.scroll-stage-grid {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(90deg, rgba(246, 244, 242, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(246, 244, 242, 0.08) 1px, transparent 1px);
+  background-size: 30px 30px;
+  opacity: 0.7;
+}
+
+.scroll-marquee-stack {
+  position: absolute;
+  inset: 1rem;
+  z-index: 1;
+  display: grid;
+  align-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  color: var(--scroll-accent);
+  pointer-events: none;
+}
+
+.scroll-marquee {
+  display: flex;
+  width: max-content;
+  min-width: 200%;
+  gap: 0.75rem;
+  white-space: nowrap;
+  animation: marquee-x 22s linear infinite;
+}
+
+.scroll-marquee.lane-two {
+  justify-self: end;
+  animation-direction: reverse;
+  animation-duration: 26s;
+}
+
+.scroll-marquee span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  padding: 0 0.75rem;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  background: rgba(25, 24, 23, 0.76);
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.scroll-orbit {
+  position: absolute;
+  z-index: 2;
+  inset: 16%;
+  border: 1px solid color-mix(in srgb, var(--scroll-accent) 52%, transparent);
+  border-radius: 50%;
+  animation: orbit-rotate 18s linear infinite;
+}
+
+.orbit-core {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: grid;
+  place-items: center;
+  width: 4.25rem;
+  height: 4.25rem;
+  border: 2px solid var(--scroll-accent);
+  border-radius: 8px;
+  color: var(--scroll-accent);
+  background: #252423;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 1.5rem;
+  font-weight: 900;
+  transform: translate(-50%, -50%) rotate(var(--scroll-rotate));
+}
+
+.orbit-node {
+  position: absolute;
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--scroll-accent);
+  background: #191817;
+}
+
+.orbit-node.node-one {
+  top: -0.5rem;
+  left: calc(50% - 0.5rem);
+  border-radius: 50%;
+}
+
+.orbit-node.node-two {
+  right: 6%;
+  bottom: 17%;
+}
+
+.orbit-node.node-three {
+  bottom: 22%;
+  left: 4%;
+  border-radius: 999px;
+}
+
+.scroll-path {
+  position: absolute;
+  z-index: 3;
+  inset: 18% 10%;
+  color: var(--scroll-accent);
+}
+
+.path-line {
+  position: absolute;
+  top: 50%;
+  left: 8%;
+  width: 84%;
+  height: 2px;
+  background: currentColor;
+  opacity: 0.75;
+}
+
+.path-dot {
+  position: absolute;
+  top: 50%;
+  left: 8%;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  background: currentColor;
+  box-shadow: 0 0 0 0.5rem color-mix(in srgb, currentColor 16%, transparent);
+  animation: path-run 3200ms ease-in-out infinite;
+}
+
+.path-block {
+  position: absolute;
+  display: block;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 2px solid currentColor;
+  background: #191817;
+  transform: rotate(45deg);
+}
+
+.path-block.block-one {
+  top: 15%;
+  left: 6%;
+}
+
+.path-block.block-two {
+  top: calc(50% - 1.375rem);
+  left: calc(50% - 1.375rem);
+  border-radius: 50%;
+  transform: none;
+}
+
+.path-block.block-three {
+  right: 5%;
+  bottom: 14%;
+}
+
+.scroll-console {
+  position: absolute;
+  z-index: 4;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid var(--site-border);
+  border-radius: var(--site-radius);
+  background: rgba(31, 30, 29, 0.94);
+}
+
+.console-bar {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  color: var(--site-text-soft);
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.scroll-console code {
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.45rem 0.6rem;
+  overflow-wrap: anywhere;
+  border-radius: 6px;
+  color: #191817;
+  background: var(--scroll-accent);
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-weight: 900;
+}
+
+.scroll-console strong {
+  color: var(--site-text);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.scroll-chapters {
+  display: grid;
+  gap: 1rem;
+  padding: 0 1rem 4rem;
+}
+
+.scroll-chapter {
+  --chapter-accent: var(--site-red);
+  min-height: 15rem;
+  padding: 1.15rem;
+  border: 1px solid var(--site-border);
+  border-left: 0.45rem solid var(--chapter-accent);
+  border-radius: var(--site-radius);
+  background: rgba(31, 30, 29, 0.94);
+  opacity: 0.68;
+  transition:
+    border-color 200ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.scroll-chapter[data-accent='red'] {
+  --chapter-accent: var(--site-red);
+}
+
+.scroll-chapter[data-accent='orange'] {
+  --chapter-accent: var(--site-orange);
+}
+
+.scroll-chapter[data-accent='lime'] {
+  --chapter-accent: var(--site-lime);
+}
+
+.scroll-chapter[data-accent='cyan'] {
+  --chapter-accent: var(--site-cyan);
+}
+
+.scroll-chapter.active {
+  border-color: var(--chapter-accent);
+  opacity: 1;
+  transform: translateY(-0.25rem);
+}
+
+.chapter-index,
+.chapter-tag {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2rem;
+  margin: 0 0.5rem 1rem 0;
+  padding: 0 0.6rem;
+  border-radius: 6px;
+  font-family: ui-monospace, 'SFMono-Regular', Consolas, monospace;
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.chapter-index {
+  color: #191817;
+  background: var(--chapter-accent);
+}
+
+.chapter-tag {
+  color: var(--chapter-accent);
+  background: #191817;
+}
+
+.scroll-chapter h3 {
+  margin: 0;
+  color: var(--site-text);
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.scroll-chapter p {
+  margin: 1rem 0 0;
+}
+
 .features-gallery {
   display: grid;
   gap: 0;
@@ -781,6 +1133,40 @@ button:focus-visible {
   }
 }
 
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes orbit-rotate {
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes path-run {
+  0%,
+  100% {
+    left: 8%;
+    transform: translate(-0.5rem, -50%);
+  }
+
+  35% {
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  70% {
+    left: 92%;
+    transform: translate(-50%, -50%);
+  }
+}
+
 @media (min-width: 700px) {
   .site-nav {
     display: flex;
@@ -806,6 +1192,8 @@ button:focus-visible {
 
   .section-band,
   .feature-row,
+  .scroll-sticky,
+  .scroll-chapters,
   .closing-section {
     padding-right: 1.5rem;
     padding-left: 1.5rem;
@@ -846,6 +1234,7 @@ button:focus-visible {
   .hero-description,
   .section-copy p,
   .feature-copy p,
+  .scroll-chapter p,
   .workflow-step p,
   .closing-section p {
     font-size: 1.125rem;
@@ -862,6 +1251,48 @@ button:focus-visible {
   .feature-copy h2,
   .closing-section h2 {
     font-size: 3.25rem;
+  }
+
+  .scroll-story {
+    min-height: 360vh;
+  }
+
+  .scroll-sticky {
+    position: sticky;
+    top: 4.5rem;
+    grid-template-columns: minmax(0, 0.78fr) minmax(30rem, 1fr);
+    align-items: center;
+    min-height: calc(100vh - 4.5rem);
+    padding-top: 4rem;
+    padding-bottom: 4rem;
+  }
+
+  .scroll-copy {
+    max-width: 34rem;
+  }
+
+  .scroll-stage {
+    min-height: clamp(31rem, 64vh, 44rem);
+  }
+
+  .scroll-chapters {
+    position: absolute;
+    z-index: 6;
+    top: 112vh;
+    left: 1.5rem;
+    width: min(32rem, 42vw);
+    padding: 0 0 70vh;
+    gap: 58vh;
+  }
+
+  .scroll-chapter {
+    min-height: 16rem;
+    background: rgba(31, 30, 29, 0.88);
+    backdrop-filter: blur(10px);
+  }
+
+  .scroll-chapter h3 {
+    font-size: 1.45rem;
   }
 
   .feature-row {
@@ -889,9 +1320,14 @@ button:focus-visible {
   .hero-section,
   .section-band,
   .feature-row,
+  .scroll-sticky,
   .closing-section {
     padding-right: 2rem;
     padding-left: 2rem;
+  }
+
+  .scroll-chapters {
+    left: 2rem;
   }
 
   .hero-copy h1 {

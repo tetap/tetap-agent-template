@@ -17,11 +17,23 @@ type WorkflowStep = {
   index: string;
 };
 
+type ScrollAccent = 'red' | 'orange' | 'lime' | 'cyan';
+
+type ScrollChapter = {
+  titleKey: SiteMessageKey;
+  descriptionKey: SiteMessageKey;
+  tagKey: SiteMessageKey;
+  index: string;
+  accent: ScrollAccent;
+  command: string;
+};
+
 const i18n = createSiteI18n({ locale: 'zh-CN' });
 const t = i18n.t;
 
 const navItems = [
   { labelKey: 'site.nav.docs', href: '#toolbox' },
+  { labelKey: 'site.nav.story', href: '#scroll-story' },
   { labelKey: 'site.nav.architecture', href: '#features' },
   { labelKey: 'site.nav.quality', href: '#workflow' },
 ] as const satisfies readonly { labelKey: SiteMessageKey; href: string }[];
@@ -107,26 +119,113 @@ const workflowSteps: readonly WorkflowStep[] = [
   },
 ];
 
+const scrollChapters: readonly ScrollChapter[] = [
+  {
+    titleKey: 'site.scroll.chapters.prompt.title',
+    descriptionKey: 'site.scroll.chapters.prompt.description',
+    tagKey: 'site.scroll.chapters.prompt.tag',
+    index: '01',
+    accent: 'red',
+    command: 'agent.read(AGENTS.md)',
+  },
+  {
+    titleKey: 'site.scroll.chapters.compose.title',
+    descriptionKey: 'site.scroll.chapters.compose.description',
+    tagKey: 'site.scroll.chapters.compose.tag',
+    index: '02',
+    accent: 'orange',
+    command: 'apps -> packages',
+  },
+  {
+    titleKey: 'site.scroll.chapters.verify.title',
+    descriptionKey: 'site.scroll.chapters.verify.description',
+    tagKey: 'site.scroll.chapters.verify.tag',
+    index: '03',
+    accent: 'lime',
+    command: 'pnpm check',
+  },
+  {
+    titleKey: 'site.scroll.chapters.publish.title',
+    descriptionKey: 'site.scroll.chapters.publish.description',
+    tagKey: 'site.scroll.chapters.publish.tag',
+    index: '04',
+    accent: 'cyan',
+    command: 'deploy_pages(site)',
+  },
+];
+
 const currentPanelIndex = ref(0);
+const scrollStoryRef = ref<HTMLElement | null>(null);
+const scrollProgress = ref(0);
+const activeScrollChapterIndex = ref(0);
 const currentPanel = computed(() => panels[currentPanelIndex.value]);
+const activeScrollChapter = computed(() => scrollChapters[activeScrollChapterIndex.value] ?? scrollChapters[0]);
+const scrollProgressPercent = computed(() => Math.round(scrollProgress.value * 100));
+const scrollRotate = computed(() => `${Math.round(scrollProgress.value * 180)}deg`);
 let rotationTimer: number | undefined;
+let scrollAnimationFrame: number | undefined;
+let removeScrollListeners: (() => void) | undefined;
+
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max);
+
+const updateScrollStory = () => {
+  const element = scrollStoryRef.value;
+
+  if (!element) {
+    return;
+  }
+
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const rect = element.getBoundingClientRect();
+  const scrollDistance = Math.max(1, rect.height - viewportHeight);
+  const nextProgress = clamp(-rect.top / scrollDistance, 0, 1);
+
+  scrollProgress.value = nextProgress;
+  activeScrollChapterIndex.value = Math.min(
+    scrollChapters.length - 1,
+    Math.floor(nextProgress * scrollChapters.length),
+  );
+};
+
+const requestScrollStoryUpdate = () => {
+  if (scrollAnimationFrame !== undefined) {
+    return;
+  }
+
+  scrollAnimationFrame = window.requestAnimationFrame(() => {
+    scrollAnimationFrame = undefined;
+    updateScrollStory();
+  });
+};
 
 onMounted(() => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  if (prefersReducedMotion) {
-    return;
+  if (!prefersReducedMotion) {
+    rotationTimer = window.setInterval(() => {
+      currentPanelIndex.value = (currentPanelIndex.value + 1) % panels.length;
+    }, 2400);
   }
 
-  rotationTimer = window.setInterval(() => {
-    currentPanelIndex.value = (currentPanelIndex.value + 1) % panels.length;
-  }, 2400);
+  window.addEventListener('scroll', requestScrollStoryUpdate, { passive: true });
+  window.addEventListener('resize', requestScrollStoryUpdate);
+  removeScrollListeners = () => {
+    window.removeEventListener('scroll', requestScrollStoryUpdate);
+    window.removeEventListener('resize', requestScrollStoryUpdate);
+  };
+  requestScrollStoryUpdate();
 });
 
 onUnmounted(() => {
   if (rotationTimer) {
     window.clearInterval(rotationTimer);
   }
+
+  if (scrollAnimationFrame !== undefined) {
+    window.cancelAnimationFrame(scrollAnimationFrame);
+  }
+
+  removeScrollListeners?.();
 });
 </script>
 
@@ -234,6 +333,96 @@ onUnmounted(() => {
           <span class="board-node node-api">api</span>
           <span class="board-node node-iam">iam</span>
           <span class="board-node node-test">test</span>
+        </div>
+      </section>
+
+      <section
+        id="scroll-story"
+        ref="scrollStoryRef"
+        class="scroll-story"
+        aria-labelledby="scroll-story-title"
+        :style="{ '--scroll-progress': scrollProgress.toFixed(3), '--scroll-rotate': scrollRotate }">
+        <div class="scroll-sticky">
+          <div class="section-copy scroll-copy">
+            <p class="eyebrow">{{ t('site.scroll.eyebrow') }}</p>
+            <h2 id="scroll-story-title">{{ t('site.scroll.title') }}</h2>
+            <p>{{ t('site.scroll.description') }}</p>
+
+            <div
+              class="scroll-progress"
+              role="progressbar"
+              :aria-label="t('site.scroll.progressLabel')"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              :aria-valuenow="scrollProgressPercent">
+              <span></span>
+            </div>
+          </div>
+
+          <div class="scroll-stage" :data-accent="activeScrollChapter.accent" :aria-label="t('site.scroll.stageLabel')">
+            <div class="scroll-stage-grid" aria-hidden="true"></div>
+
+            <div class="scroll-marquee-stack" aria-hidden="true">
+              <div class="scroll-marquee lane-one">
+                <span>apps/site</span>
+                <span>@tetap/i18n/site</span>
+                <span>vitepress build</span>
+                <span>github pages</span>
+                <span>apps/site</span>
+                <span>@tetap/i18n/site</span>
+                <span>vitepress build</span>
+                <span>github pages</span>
+              </div>
+              <div class="scroll-marquee lane-two">
+                <span>@tetap/schema</span>
+                <span>@tetap/iam</span>
+                <span>@tetap/config</span>
+                <span>@tetap/prisma</span>
+                <span>@tetap/schema</span>
+                <span>@tetap/iam</span>
+                <span>@tetap/config</span>
+                <span>@tetap/prisma</span>
+              </div>
+            </div>
+
+            <div class="scroll-orbit" aria-hidden="true">
+              <span class="orbit-core">T</span>
+              <span class="orbit-node node-one"></span>
+              <span class="orbit-node node-two"></span>
+              <span class="orbit-node node-three"></span>
+            </div>
+
+            <div class="scroll-path" aria-hidden="true">
+              <span class="path-line"></span>
+              <span class="path-dot"></span>
+              <span class="path-block block-one"></span>
+              <span class="path-block block-two"></span>
+              <span class="path-block block-three"></span>
+            </div>
+
+            <div class="scroll-console" aria-live="polite">
+              <div class="console-bar">
+                <span>{{ t('site.scroll.loopLabel') }}</span>
+                <span>{{ t(activeScrollChapter.tagKey) }}</span>
+              </div>
+              <code>{{ activeScrollChapter.command }}</code>
+              <strong>{{ t(activeScrollChapter.titleKey) }}</strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="scroll-chapters">
+          <article
+            v-for="(chapter, index) in scrollChapters"
+            :key="chapter.index"
+            class="scroll-chapter"
+            :class="{ active: index === activeScrollChapterIndex }"
+            :data-accent="chapter.accent">
+            <span class="chapter-index">{{ chapter.index }}</span>
+            <span class="chapter-tag">{{ t(chapter.tagKey) }}</span>
+            <h3>{{ t(chapter.titleKey) }}</h3>
+            <p>{{ t(chapter.descriptionKey) }}</p>
+          </article>
         </div>
       </section>
 

@@ -8,5 +8,7 @@ describe('site i18n scope', () => {
 
     expect(zh.t('site.hero.titleLine2')).toBe('应用工程基座');
     expect(en.t('site.hero.titleLine2')).toBe('application foundation');
+    expect(zh.t('site.scroll.chapters.publish.title')).toBe('宣传站和文档同源发布');
+    expect(en.t('site.scroll.chapters.publish.title')).toBe('The site and docs publish from one source');
   });
 });
