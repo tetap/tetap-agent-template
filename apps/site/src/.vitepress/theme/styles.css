@@ -638,7 +638,7 @@ button:focus-visible {
   --scroll-rotate: 0deg;
   --scroll-accent: var(--site-primary);
   position: relative;
-  overflow: clip;
+  overflow-x: clip;
   padding: 4rem 0;
   border-top: 1px solid var(--site-border);
   border-bottom: 1px solid var(--site-border);
@@ -913,9 +913,9 @@ button:focus-visible {
 
 .scroll-chapters {
   display: grid;
-  width: min(var(--site-max), calc(100% - 2rem));
+  width: 100%;
   gap: 1rem;
-  margin: 2rem auto 0;
+  margin: 2rem 0 0;
 }
 
 .scroll-chapter {
@@ -1337,20 +1337,17 @@ button:focus-visible {
   }
 
   .scroll-story {
-    min-height: 250vh;
+    min-height: 230vh;
     padding-top: 0;
     padding-bottom: 8rem;
   }
 
   .scroll-sticky {
-    position: sticky;
     z-index: 1;
-    top: var(--site-header-height);
     grid-template-columns: minmax(0, 0.78fr) minmax(30rem, 1fr);
-    align-items: center;
-    min-height: calc(100vh - var(--site-header-height));
-    padding-top: 4rem;
-    padding-bottom: 4rem;
+    align-items: start;
+    padding-top: 6rem;
+    padding-bottom: clamp(12rem, 26vh, 18rem);
   }
 
   .scroll-copy {
@@ -1358,15 +1355,19 @@ button:focus-visible {
   }
 
   .scroll-stage {
+    position: sticky;
+    top: calc(var(--site-header-height) + 3rem);
+    grid-row: 1 / span 2;
+    grid-column: 2;
     min-height: 36rem;
   }
 
   .scroll-chapters {
-    position: relative;
-    z-index: 2;
+    grid-row: 2;
+    grid-column: 1;
     grid-template-columns: minmax(0, 32rem);
     gap: 32vh;
-    margin-top: -24vh;
+    margin-top: 2.75rem;
   }
 
   .scroll-chapter {

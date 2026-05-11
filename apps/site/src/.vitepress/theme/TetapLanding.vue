@@ -439,20 +439,20 @@ onUnmounted(() => {
               <strong>{{ t(activeScrollChapter.titleKey) }}</strong>
             </div>
           </div>
-        </div>
 
-        <div class="scroll-chapters">
-          <article
-            v-for="(chapter, index) in scrollChapters"
-            :key="chapter.index"
-            class="scroll-chapter"
-            :class="{ active: index === activeScrollChapterIndex }"
-            :data-accent="chapter.accent">
-            <span class="chapter-index">{{ chapter.index }}</span>
-            <span class="chapter-tag">{{ t(chapter.tagKey) }}</span>
-            <h3>{{ t(chapter.titleKey) }}</h3>
-            <p>{{ t(chapter.descriptionKey) }}</p>
-          </article>
+          <div class="scroll-chapters">
+            <article
+              v-for="(chapter, index) in scrollChapters"
+              :key="chapter.index"
+              class="scroll-chapter"
+              :class="{ active: index === activeScrollChapterIndex }"
+              :data-accent="chapter.accent">
+              <span class="chapter-index">{{ chapter.index }}</span>
+              <span class="chapter-tag">{{ t(chapter.tagKey) }}</span>
+              <h3>{{ t(chapter.titleKey) }}</h3>
+              <p>{{ t(chapter.descriptionKey) }}</p>
+            </article>
+          </div>
         </div>
       </section>
 
