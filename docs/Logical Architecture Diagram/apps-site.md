@@ -4,12 +4,12 @@
 
 `apps/site` 是 VitePress 静态宣传站，用于承载官网首页、项目宣传页和后续文档入口。它不是公共业务 Web runtime；业务页面仍属于 `apps/web`，后台管理页面仍属于 `apps/web-admin`。
 
-## 参考来源
+## 视觉方向
 
-- Reference site: [Anime.js homepage](https://animejs.com/)。
-- Adopted patterns: dark kinetic canvas, sticky top navigation, large product headline, install-command chip, animated geometric demos, feature gallery, and dense technical CTA sections。
-- Additional motion pattern: continuous scroll storytelling that changes chapter state while geometric loops keep moving in the stage。
-- Rejected patterns: copied Anime.js content/assets, app-local reusable UI primitives, business CSS outside the VitePress theme boundary, and hardcoded user-facing copy。
+- Primary pattern: technical documentation landing page for an open-source enterprise app template。
+- Adopted patterns: sticky top navigation, direct product headline, install-command chip, restrained architecture demos, feature gallery, and dense engineering CTA sections。
+- Motion pattern: continuous scroll storytelling that changes chapter state while geometric loops keep moving in the stage。
+- Rejected patterns: copied third-party content/assets, overly noisy dark kinetic effects, app-local reusable UI primitives, business CSS outside the VitePress theme boundary, and hardcoded user-facing copy。
 
 ## 职责
 

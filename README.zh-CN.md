@@ -23,7 +23,7 @@ TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的开源全栈 m
 - **企业级 IAM 基础设施**：JWT、RBAC、PBAC、字段权限、动态菜单、会话失效、强制下线和审计基础能力。
 - **前后端契约优先**：request、response、form schema 统一进入 `@tetap/schema`，基于 Zod 复用。
 - **多端 i18n 隔离**：site、public web、admin web、backend、backend-admin 使用不同 i18n scope，避免跨端读取错误文案 key。
-- **VitePress 宣传站**：`apps/site` 提供参考 Anime.js 官网风格的静态宣传首页，并使用独立 site 文案 scope。
+- **VitePress 宣传站**：`apps/site` 提供克制、清晰的技术宣传/文档入口，并使用独立 site 文案 scope。
 - **共享 UI 系统**：前端应用只消费 `@tetap/ui` 中的 shadcn/ui 组件和品牌资产。
 - **安全默认值**：Fastify 安全插件、CORS 白名单、body limit、rate limit、统一错误响应和 route 架构检查。
 - **自动化质量门禁**：TypeScript、ESLint、Prettier、架构检查、单元测试、Browser Mode 测试和 smoke 测试。

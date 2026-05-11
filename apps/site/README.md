@@ -1,7 +1,7 @@
 # apps/site
 
 `apps/site` 是 VitePress 静态宣传站。它负责官网/文档首页 runtime、VitePress custom theme 和页面组合；宣传站文案通过 `@tetap/i18n/site` 维护。
-首页保留 Anime.js 官网启发的深色几何风格，并在现有页面中实现连续滚动叙事动画，用于展示 TETAP 的 workspace 边界、共享契约、质量门禁和发布链路。
+首页采用克制的技术文档型 landing 视觉，并通过连续滚动叙事动画展示 TETAP 的 workspace 边界、共享契约、质量门禁和发布链路。
 
 ## Architecture Links
 

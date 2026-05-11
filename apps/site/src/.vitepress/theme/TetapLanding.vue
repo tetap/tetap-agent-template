@@ -8,7 +8,14 @@ type Feature = {
   linkKey: SiteMessageKey;
   codeKey: SiteMessageKey;
   href: string;
+  external?: boolean;
   accent: 'red' | 'orange' | 'lime' | 'cyan' | 'blue' | 'violet';
+};
+
+type NavItem = {
+  labelKey: SiteMessageKey;
+  href: string;
+  external?: boolean;
 };
 
 type WorkflowStep = {
@@ -31,12 +38,24 @@ type ScrollChapter = {
 const i18n = createSiteI18n({ locale: 'zh-CN' });
 const t = i18n.t;
 
+const repositoryUrl = 'https://github.com/tetap/tetap-agent-template';
+const docsLinks = {
+  readme: `${repositoryUrl}#readme`,
+  architecture: `${repositoryUrl}/blob/master/docs/Logical%20Architecture%20Diagram/README.md`,
+  boundaries: `${repositoryUrl}/blob/master/docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md`,
+  i18n: `${repositoryUrl}/blob/master/docs/Logical%20Architecture%20Diagram/packages-i18n.md`,
+  iam: `${repositoryUrl}/blob/master/docs/Logical%20Architecture%20Diagram/packages-iam.md`,
+  backend: `${repositoryUrl}/blob/master/docs/Logical%20Architecture%20Diagram/apps-backend.md`,
+  schema: `${repositoryUrl}/blob/master/docs/Logical%20Architecture%20Diagram/packages-schema.md`,
+  testing: `${repositoryUrl}/blob/master/docs/memory/testing-workflow.md`,
+} as const;
+
 const navItems = [
-  { labelKey: 'site.nav.docs', href: '#toolbox' },
+  { labelKey: 'site.nav.docs', href: docsLinks.readme, external: true },
   { labelKey: 'site.nav.story', href: '#scroll-story' },
   { labelKey: 'site.nav.architecture', href: '#features' },
   { labelKey: 'site.nav.quality', href: '#workflow' },
-] as const satisfies readonly { labelKey: SiteMessageKey; href: string }[];
+] as const satisfies readonly NavItem[];
 
 const metrics = [
   { valueKey: 'site.metrics.workspaces.value', labelKey: 'site.metrics.workspaces.label' },
@@ -56,7 +75,8 @@ const features: readonly Feature[] = [
     descriptionKey: 'site.features.boundaries.description',
     linkKey: 'site.features.boundaries.link',
     codeKey: 'site.features.boundaries.code',
-    href: '#workflow',
+    href: docsLinks.boundaries,
+    external: true,
     accent: 'red',
   },
   {
@@ -64,7 +84,8 @@ const features: readonly Feature[] = [
     descriptionKey: 'site.features.i18n.description',
     linkKey: 'site.features.i18n.link',
     codeKey: 'site.features.i18n.code',
-    href: '#workflow',
+    href: docsLinks.i18n,
+    external: true,
     accent: 'orange',
   },
   {
@@ -72,7 +93,8 @@ const features: readonly Feature[] = [
     descriptionKey: 'site.features.iam.description',
     linkKey: 'site.features.iam.link',
     codeKey: 'site.features.iam.code',
-    href: '#workflow',
+    href: docsLinks.iam,
+    external: true,
     accent: 'lime',
   },
   {
@@ -80,7 +102,8 @@ const features: readonly Feature[] = [
     descriptionKey: 'site.features.backend.description',
     linkKey: 'site.features.backend.link',
     codeKey: 'site.features.backend.code',
-    href: '#workflow',
+    href: docsLinks.backend,
+    external: true,
     accent: 'cyan',
   },
   {
@@ -88,7 +111,8 @@ const features: readonly Feature[] = [
     descriptionKey: 'site.features.schema.description',
     linkKey: 'site.features.schema.link',
     codeKey: 'site.features.schema.code',
-    href: '#workflow',
+    href: docsLinks.schema,
+    external: true,
     accent: 'blue',
   },
   {
@@ -96,7 +120,8 @@ const features: readonly Feature[] = [
     descriptionKey: 'site.features.testing.description',
     linkKey: 'site.features.testing.link',
     codeKey: 'site.features.testing.code',
-    href: '#workflow',
+    href: docsLinks.testing,
+    external: true,
     accent: 'violet',
   },
 ];
@@ -238,12 +263,17 @@ onUnmounted(() => {
       </a>
 
       <nav class="site-nav" :aria-label="t('site.nav.ariaLabel')">
-        <a v-for="item in navItems" :key="item.href" :href="item.href">
+        <a
+          v-for="item in navItems"
+          :key="item.href"
+          :href="item.href"
+          :target="item.external ? '_blank' : undefined"
+          :rel="item.external ? 'noreferrer' : undefined">
           {{ t(item.labelKey) }}
         </a>
       </nav>
 
-      <a class="nav-cta" href="#toolbox">
+      <a class="nav-cta" :href="docsLinks.readme" target="_blank" rel="noreferrer">
         {{ t('site.nav.cta') }}
       </a>
     </header>
@@ -259,15 +289,15 @@ onUnmounted(() => {
           </h1>
           <p class="hero-description">{{ t('site.hero.description') }}</p>
 
-          <div class="hero-actions" aria-label="hero actions">
+          <div class="hero-actions" :aria-label="t('site.a11y.heroActions')">
             <code>{{ t('site.hero.command') }}</code>
             <a class="action-button primary" href="#toolbox">
               {{ t('site.hero.primaryAction') }}
               <span aria-hidden="true">→</span>
             </a>
-            <a class="action-button secondary" href="#features">
+            <a class="action-button secondary" :href="docsLinks.architecture" target="_blank" rel="noreferrer">
               {{ t('site.hero.secondaryAction') }}
-              <span aria-hidden="true">↓</span>
+              <span aria-hidden="true">→</span>
             </a>
           </div>
         </div>
@@ -313,7 +343,7 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <section class="metrics-band" aria-label="site metrics">
+      <section class="metrics-band" :aria-label="t('site.a11y.metrics')">
         <div v-for="item in metrics" :key="item.labelKey" class="metric-item">
           <strong>{{ t(item.valueKey) }}</strong>
           <span>{{ t(item.labelKey) }}</span>
@@ -426,12 +456,15 @@ onUnmounted(() => {
         </div>
       </section>
 
-      <section id="features" class="features-gallery" aria-label="feature gallery">
+      <section id="features" class="features-gallery" :aria-label="t('site.a11y.featureGallery')">
         <article v-for="feature in features" :key="feature.titleKey" class="feature-row" :data-accent="feature.accent">
           <div class="feature-copy">
             <h2>{{ t(feature.titleKey) }}</h2>
             <p>{{ t(feature.descriptionKey) }}</p>
-            <a :href="feature.href">
+            <a
+              :href="feature.href"
+              :target="feature.external ? '_blank' : undefined"
+              :rel="feature.external ? 'noreferrer' : undefined">
               {{ t(feature.linkKey) }}
               <span aria-hidden="true">→</span>
             </a>
@@ -463,9 +496,9 @@ onUnmounted(() => {
         <p class="eyebrow">{{ t('site.cta.eyebrow') }}</p>
         <h2 id="closing-title">{{ t('site.cta.title') }}</h2>
         <p>{{ t('site.cta.description') }}</p>
-        <a class="action-button primary" href="#hero">
+        <a class="action-button primary" :href="docsLinks.readme" target="_blank" rel="noreferrer">
           {{ t('site.cta.action') }}
-          <span aria-hidden="true">↑</span>
+          <span aria-hidden="true">→</span>
         </a>
       </section>
     </main>

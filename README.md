@@ -23,7 +23,7 @@ TETAP Agent Template is an open-source full-stack monorepo template for AI-assis
 - **Enterprise IAM foundation**: JWT, RBAC, PBAC, field permissions, dynamic menus, session invalidation, forced logout, and audit primitives.
 - **Contract-first development**: request, response, and form contracts live in `@tetap/schema` and use Zod.
 - **Scoped i18n**: site, public web, admin web, public backend, and backend-admin use isolated i18n entrypoints.
-- **VitePress promotional site**: `apps/site` provides an Anime.js-inspired static landing page, continuous scroll story, GitHub Pages deployment, and site-scoped copy.
+- **VitePress promotional site**: `apps/site` provides a polished technical landing page, continuous scroll story, GitHub Pages deployment, and site-scoped copy.
 - **Shared UI system**: apps compose shadcn/ui components and brand assets from `@tetap/ui`.
 - **Secure defaults**: Fastify security plugins, CORS allowlists, body limits, rate limits, consistent errors, and route architecture checks.
 - **Automated quality gates**: TypeScript, ESLint, Prettier, architecture checks, unit tests, Browser Mode tests, and smoke tests.
