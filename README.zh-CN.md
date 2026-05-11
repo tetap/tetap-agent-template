@@ -16,13 +16,14 @@
 
 ## 概览
 
-TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的开源全栈 monorepo 模板。它把前端、后台管理端、Fastify API、IAM 权限基础设施、配置、UI、i18n、schema、Prisma 和自动化测试拆成清晰的 workspace，让团队在快速迭代时仍然保留强约束、可测试和可演进的架构边界。
+TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的开源全栈 monorepo 模板。它把 VitePress 宣传站、前端、后台管理端、Fastify API、IAM 权限基础设施、配置、UI、i18n、schema、Prisma 和自动化测试拆成清晰的 workspace，让团队在快速迭代时仍然保留强约束、可测试和可演进的架构边界。
 
 ## 核心能力
 
 - **企业级 IAM 基础设施**：JWT、RBAC、PBAC、字段权限、动态菜单、会话失效、强制下线和审计基础能力。
 - **前后端契约优先**：request、response、form schema 统一进入 `@tetap/schema`，基于 Zod 复用。
-- **多端 i18n 隔离**：public web、admin web、backend、backend-admin 使用不同 i18n scope，避免前端读取后端文案 key。
+- **多端 i18n 隔离**：site、public web、admin web、backend、backend-admin 使用不同 i18n scope，避免跨端读取错误文案 key。
+- **VitePress 宣传站**：`apps/site` 提供参考 Anime.js 官网风格的静态宣传首页，并使用独立 site 文案 scope。
 - **共享 UI 系统**：前端应用只消费 `@tetap/ui` 中的 shadcn/ui 组件和品牌资产。
 - **安全默认值**：Fastify 安全插件、CORS 白名单、body limit、rate limit、统一错误响应和 route 架构检查。
 - **自动化质量门禁**：TypeScript、ESLint、Prettier、架构检查、单元测试、Browser Mode 测试和 smoke 测试。
@@ -58,13 +59,14 @@ pnpm build
 
 | Workspace            | 类型    | 职责                                                          | 设计文档                                                                             |
 | -------------------- | ------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| `apps/site`          | App     | VitePress 宣传/文档站 runtime 和静态页面组合。                | [apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                   |
 | `apps/web`           | App     | React + Vite 浏览器 runtime、React Router、页面组合。         | [apps-web.md](docs/Logical%20Architecture%20Diagram/apps-web.md)                     |
 | `apps/web-admin`     | App     | 后台管理专用 React + Vite runtime 和 admin pages。            | [apps-web-admin.md](docs/Logical%20Architecture%20Diagram/apps-web-admin.md)         |
 | `apps/backend`       | App     | 公共 Fastify runtime、plugins、route registration、services。 | [apps-backend.md](docs/Logical%20Architecture%20Diagram/apps-backend.md)             |
 | `apps/backend-admin` | App     | 后台管理专用 Fastify runtime 和 admin APIs。                  | [apps-backend-admin.md](docs/Logical%20Architecture%20Diagram/apps-backend-admin.md) |
 | `packages/config`    | Package | env 文件位置、typed env、Node/Vite 配置入口。                 | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       |
 | `packages/hooks`     | Package | React hooks 和表单 helper 集中仓库。                          | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         |
-| `packages/i18n`      | Package | locale 资源、翻译核心、React/Node helper。                    | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
+| `packages/i18n`      | Package | locale 资源、翻译核心、site/React/Node helper。               | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
 | `packages/iam`       | Package | IAM 权限、会话、策略、字段、数据和审计核心。                  | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             |
 | `packages/prisma`    | Package | Prisma schema 拆分、校验、生成和 DB 命令。                    | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       |
 | `packages/schema`    | Package | Zod request/response/entity/form 契约。                       | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       |
@@ -80,6 +82,7 @@ pnpm build
 | [docs/Logical Architecture Diagram/00-system-overview.md](docs/Logical%20Architecture%20Diagram/00-system-overview.md)           | 系统运行流、设计原则和主要场景。                |
 | [docs/Logical Architecture Diagram/01-workspace-boundaries.md](docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md) | workspace 边界、依赖方向和禁止事项。            |
 | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | 质量门禁、测试策略、构建和交付规则。            |
+| [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress 宣传站架构和边界。                    |
 | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | 多步骤计划必须同步 todolist 的长期记忆。        |
 | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | 功能实现后的单元、Browser、冒烟和定向测试记忆。 |
 | [docs/todolists](docs/todolists)                                                                                                 | 每个计划任务的 checkbox 执行记录。              |
@@ -91,11 +94,12 @@ pnpm build
 - 前端应用必须通过 `@tetap/ui` 使用共享 shadcn/ui 组件和品牌资产。
 - 新增或更新 UI 组件必须放在 `packages/ui`，优先从 shadcn/ui MCP、shadcn CLI 或 shadcn skill 获取。
 - 业务页面不要手写硬编码 `className`、业务 CSS 文件或自定义样式系统。
-- 允许的 CSS 仅限框架或 shadcn/ui 生成的基础主题/运行时 CSS。
+- 允许的 CSS 仅限框架、VitePress theme runtime 或 shadcn/ui 生成的基础主题/运行时 CSS。
 
 ### I18n 规则
 
-- 前后端所有用户可见文案必须通过 `@tetap/i18n` 获取。
+- 站点、前端和后端所有用户可见文案必须通过 `@tetap/i18n` 获取。
+- `apps/site` 只能使用 `@tetap/i18n/site`。
 - `apps/web` 只能使用 `@tetap/i18n/public`。
 - `apps/web-admin` 只能使用 `@tetap/i18n/admin`。
 - `apps/backend` 只能使用 `@tetap/i18n/backend` 输出文案。

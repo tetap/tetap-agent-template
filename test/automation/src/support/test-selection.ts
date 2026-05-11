@@ -45,6 +45,11 @@ export const testTargets: Record<TestType, readonly TestTarget[]> = {
       aliases: ['affected-tests', 'targeted-tests'],
       path: 'src/unit/test-selection.unit.test.ts',
     },
+    {
+      id: 'i18n-site',
+      aliases: ['site-i18n', 'vitepress-site-copy'],
+      path: 'src/unit/i18n-site.unit.test.ts',
+    },
   ],
   browser: [
     {
@@ -130,6 +135,10 @@ export const impactRules: readonly ImpactRule[] = [
     selections: [{ type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' }],
   },
   {
+    prefixes: ['apps/site/'],
+    selections: [{ type: 'unit', path: 'src/unit/i18n-site.unit.test.ts' }],
+  },
+  {
     prefixes: ['packages/hooks/', 'packages/ui/'],
     selections: [
       { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
@@ -139,6 +148,7 @@ export const impactRules: readonly ImpactRule[] = [
   {
     prefixes: ['packages/i18n/'],
     selections: [
+      { type: 'unit', path: 'src/unit/i18n-site.unit.test.ts' },
       { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' },
       { type: 'smoke', path: 'src/smoke/backend-health.smoke.test.ts' },

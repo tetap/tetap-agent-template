@@ -11,6 +11,7 @@ const workspaceAliases = [
   { find: /^@tetap\/i18n$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/index.ts') },
   { find: /^@tetap\/i18n\/node$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/node.ts') },
   { find: /^@tetap\/i18n\/locales$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/locales/index.ts') },
+  { find: /^@tetap\/i18n\/site$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/site.ts') },
   { find: /^@tetap\/schema$/, replacement: resolve(workspaceRoot, 'packages/schema/src/index.ts') },
   { find: /^@tetap\/schema\/backend$/, replacement: resolve(workspaceRoot, 'packages/schema/src/backend.ts') },
 ];

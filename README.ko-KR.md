@@ -22,7 +22,7 @@ TETAP Agent Template은 AI 보조 개발을 위한 오픈소스 full-stack monor
 
 - **엔터프라이즈 IAM 기반**: JWT, RBAC, PBAC, 필드 권한, 동적 메뉴, 세션 무효화, 강제 로그아웃, 감사 로그.
 - **Contract-first 개발**: request, response, form schema를 `@tetap/schema`에 두고 Zod로 재사용합니다.
-- **Scoped i18n**: public web, admin web, backend, backend-admin이 서로 다른 i18n entrypoint를 사용합니다.
+- **Scoped i18n**: site, public web, admin web, backend, backend-admin이 서로 다른 i18n entrypoint를 사용합니다.
 - **공유 UI 시스템**: 앱은 `@tetap/ui`의 shadcn/ui 컴포넌트와 브랜드 자산만 조합합니다.
 - **보안 기본값**: Fastify 보안 플러그인, CORS allowlist, body limit, rate limit, 통일된 오류 응답, route 아키텍처 검사.
 - **자동화 품질 게이트**: TypeScript, ESLint, Prettier, 아키텍처 검사, unit test, Browser Mode test, smoke test.
@@ -56,20 +56,21 @@ pnpm build
 
 ## Workspace
 
-| Workspace            | 역할                                                           |
-| -------------------- | -------------------------------------------------------------- |
-| `apps/web`           | Public React + Vite runtime, routing, page composition.        |
-| `apps/web-admin`     | Admin React + Vite runtime과 admin pages.                      |
-| `apps/backend`       | Public Fastify runtime, plugins, routes, services.             |
-| `apps/backend-admin` | Admin Fastify runtime과 admin APIs.                            |
-| `packages/config`    | typed env와 Node/Vite config entrypoint.                       |
-| `packages/hooks`     | 공유 React hooks와 form helpers.                               |
-| `packages/i18n`      | locale resources, translation core, React/Node helpers.        |
-| `packages/iam`       | IAM permissions, sessions, policies, fields, data, audit core. |
-| `packages/prisma`    | Prisma schema, validation, generation, DB scripts.             |
-| `packages/schema`    | Zod request/response/entity/form contracts.                    |
-| `packages/ui`        | shadcn/ui components, design-system styles, brand SVG.         |
-| `test/automation`    | Vitest unit, Browser Mode UI, smoke, targeted tests.           |
+| Workspace            | 역할                                                                 |
+| -------------------- | -------------------------------------------------------------------- |
+| `apps/site`          | VitePress promotional/docs site runtime and static page composition. |
+| `apps/web`           | Public React + Vite runtime, routing, page composition.              |
+| `apps/web-admin`     | Admin React + Vite runtime과 admin pages.                            |
+| `apps/backend`       | Public Fastify runtime, plugins, routes, services.                   |
+| `apps/backend-admin` | Admin Fastify runtime과 admin APIs.                                  |
+| `packages/config`    | typed env와 Node/Vite config entrypoint.                             |
+| `packages/hooks`     | 공유 React hooks와 form helpers.                                     |
+| `packages/i18n`      | locale resources, translation core, site/React/Node helpers.         |
+| `packages/iam`       | IAM permissions, sessions, policies, fields, data, audit core.       |
+| `packages/prisma`    | Prisma schema, validation, generation, DB scripts.                   |
+| `packages/schema`    | Zod request/response/entity/form contracts.                          |
+| `packages/ui`        | shadcn/ui components, design-system styles, brand SVG.               |
+| `test/automation`    | Vitest unit, Browser Mode UI, smoke, targeted tests.                 |
 
 ## 기여
 

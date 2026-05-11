@@ -27,7 +27,7 @@
 
 | 类别         | 硬性规则                                                                                                       | 深入文档                                                                                                                                             |
 | ------------ | -------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
-| I18n         | 前后端用户可见文案必须来自 scoped `@tetap/i18n/*`；先改 `zh-CN`，再保持其他 locale 同 key。                    | [README.zh-CN.md#i18n-规则](README.zh-CN.md#i18n-规则)、[packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)                   |
+| I18n         | 站点、前端和后端用户可见文案必须来自 scoped `@tetap/i18n/*`；先改 `zh-CN`，再保持其他 locale 同 key。          | [README.zh-CN.md#i18n-规则](README.zh-CN.md#i18n-规则)、[packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)                   |
 | UI           | 前端 UI 只能复用 `@tetap/ui` 中的 shadcn/ui 组件；不要在 app 内创建本地 UI 系统或业务 CSS。                    | [README.zh-CN.md#ui-规则](README.zh-CN.md#ui-规则)、[packages-ui.md](docs/Logical%20Architecture%20Diagram/packages-ui.md)                           |
 | Config       | env 和框架配置必须通过 `@tetap/config`；不要在 app/package 内新增本地 `.env`。                                 | [README.zh-CN.md#config-规则](README.zh-CN.md#config-规则)、[packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)           |
 | Backend      | Fastify route 只能注册路由；所有逻辑、校验、响应体构造必须进入 services 层；后台管理接口只进 `backend-admin`。 | [README.zh-CN.md#backend-规则](README.zh-CN.md#backend-规则)、[apps-backend.md](docs/Logical%20Architecture%20Diagram/apps-backend.md)               |
@@ -45,13 +45,14 @@
 
 | Workspace            | 文档                                                                                 | 一句话职责                                                       |
 | -------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| `apps/site`          | [apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                   | VitePress 宣传/文档站 runtime 和静态页面组合。                   |
 | `apps/web`           | [apps-web.md](docs/Logical%20Architecture%20Diagram/apps-web.md)                     | React + Vite 浏览器 runtime、路由和页面组合。                    |
 | `apps/web-admin`     | [apps-web-admin.md](docs/Logical%20Architecture%20Diagram/apps-web-admin.md)         | 后台管理专用 React + Vite runtime 和 admin pages。               |
 | `apps/backend`       | [apps-backend.md](docs/Logical%20Architecture%20Diagram/apps-backend.md)             | 公共 Fastify runtime、plugins、routes registration 和 services。 |
 | `apps/backend-admin` | [apps-backend-admin.md](docs/Logical%20Architecture%20Diagram/apps-backend-admin.md) | 后台管理专用 Fastify runtime 和 admin APIs。                     |
 | `packages/config`    | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       | 统一 env、typed runtime config、Vite/Node 配置入口。             |
 | `packages/hooks`     | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         | React hooks 与表单 helper 集中仓库。                             |
-| `packages/i18n`      | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           | locale 资源、翻译核心、React/Node helper。                       |
+| `packages/i18n`      | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           | locale 资源、翻译核心、site/React/Node helper。                  |
 | `packages/iam`       | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             | IAM 权限、会话、策略、字段、数据和审计核心。                     |
 | `packages/prisma`    | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       | Prisma schema 拆分规则、生成和 DB 脚本。                         |
 | `packages/schema`    | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       | 前后端共享 Zod 契约。                                            |
@@ -74,6 +75,7 @@ pnpm --filter @tetap/test-automation build
 ## 6. 禁止事项
 
 - 不要在 `apps/*` 中复制 UI、hooks、config、schema、i18n、database 逻辑。
+- `apps/site` 只能作为 VitePress 宣传/文档站，文案走 `@tetap/i18n/site`，样式限制在 VitePress theme runtime。
 - 不要在业务 service 或 route 中手写权限算法；复用 `@tetap/iam`、auth hook 和 policy helper。
 - 不要在 Fastify route 中写业务逻辑、schema parse、响应体拼装或错误码选择。
 - 不要在公共 `apps/backend` 中实现后台管理接口；admin APIs 必须进入 `apps/backend-admin`。

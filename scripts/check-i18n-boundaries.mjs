@@ -13,6 +13,11 @@ const rules = [
     message: 'apps/web-admin may only import @tetap/i18n/admin.',
   },
   {
+    root: 'apps/site/src',
+    allowed: new Set(['@tetap/i18n/site']),
+    message: 'apps/site may only import @tetap/i18n/site.',
+  },
+  {
     root: 'apps/backend/src',
     allowed: new Set(['@tetap/i18n/backend', '@tetap/i18n/node', '@tetap/i18n/locales']),
     message: 'apps/backend may only import backend-safe i18n entrypoints.',
@@ -41,7 +46,7 @@ const walk = directory => {
       return ignoredDirectories.has(entry) ? [] : walk(path);
     }
 
-    return stats.isFile() && /\.(ts|tsx)$/.test(entry) ? [path] : [];
+    return stats.isFile() && /\.(ts|tsx|mts|cts|vue)$/.test(entry) ? [path] : [];
   });
 };
 

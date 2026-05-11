@@ -33,6 +33,7 @@ pnpm test:smoke
 pnpm test:affected
 pnpm test:target -- unit schema-response
 pnpm test:target -- unit schema-response --name healthResponseSchema
+pnpm test:unit:target -- i18n-site
 pnpm test:browser:target -- ui-components
 pnpm test:browser:target -- web-admin-dashboard
 pnpm test:smoke:target -- backend-health

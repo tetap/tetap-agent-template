@@ -54,6 +54,118 @@ export const enUS = {
       action: 'Back home',
     },
   },
+  site: {
+    meta: {
+      title: 'TETAP Agent Template Site',
+      description: 'A VitePress promotional page inspired by the Anime.js homepage.',
+    },
+    nav: {
+      ariaLabel: 'Promotional site navigation',
+      docs: 'Docs',
+      architecture: 'Architecture',
+      quality: 'Quality gates',
+      cta: 'Get started',
+    },
+    hero: {
+      eyebrow: 'Agent-first monorepo',
+      titleLine1: 'All-in-one',
+      titleLine2: 'application foundation',
+      description:
+        'React, Fastify, IAM, Prisma, i18n, schema, and automated tests are split into explicit workspaces so AI-assisted development keeps boundaries, types, and delivery gates intact.',
+      command: 'pnpm install && pnpm dev',
+      primaryAction: 'Explore capabilities',
+      secondaryAction: 'Read architecture',
+      codeLabel: 'workspace.ts',
+      stageLabel: 'Architecture animation preview',
+      panels: {
+        compose: 'Compose runtime',
+        guard: 'Guard boundaries',
+        ship: 'Ship gates',
+      },
+    },
+    metrics: {
+      workspaces: {
+        value: '13',
+        label: 'explicit workspaces',
+      },
+      gates: {
+        value: '8+',
+        label: 'quality gate scripts',
+      },
+      scopes: {
+        value: '5',
+        label: 'isolated i18n scopes',
+      },
+    },
+    toolbox: {
+      eyebrow: 'Toolbox',
+      title: 'A complete enterprise app toolbox',
+      description:
+        'From page composition to identity controls, every layer has a clear owner so apps do not duplicate cross-cutting capability.',
+    },
+    features: {
+      boundaries: {
+        title: 'Workspace boundaries',
+        description:
+          'Apps own runtime and page composition. Shared capabilities live in packages with one-way dependencies.',
+        link: 'View boundary rules',
+        code: 'apps/* -> packages/*',
+      },
+      i18n: {
+        title: 'Scoped i18n',
+        description:
+          'Public, admin, backend, and admin API surfaces use isolated entrypoints for all user-visible copy.',
+        link: 'View i18n rules',
+        code: '@tetap/i18n/site',
+      },
+      iam: {
+        title: 'IAM core',
+        description: 'RBAC, PBAC, field permissions, session invalidation, and audit primitives live in @tetap/iam.',
+        link: 'View permission model',
+        code: 'policyEngine.can()',
+      },
+      backend: {
+        title: 'Fastify layering',
+        description: 'Routes only register entrypoints. Validation, error decisions, and responses move into services.',
+        link: 'View backend layers',
+        code: 'route -> service',
+      },
+      schema: {
+        title: 'Contract first',
+        description: 'Frontend and backend request, response, and form schemas are defined with Zod in @tetap/schema.',
+        link: 'View schema rules',
+        code: 'z.object({...})',
+      },
+      testing: {
+        title: 'Automated gates',
+        description: 'Vitest unit, Browser Mode, smoke tests, and affected selection cover the delivery path.',
+        link: 'View test strategy',
+        code: 'pnpm test:affected',
+      },
+    },
+    workflow: {
+      eyebrow: 'Workflow',
+      title: 'A fixed rhythm from idea to handoff',
+      inspect: {
+        title: 'Read context',
+        description: 'Start with AGENTS, README, architecture docs, and the target workspace guide.',
+      },
+      implement: {
+        title: 'Minimal change',
+        description: 'Touch only the files the task needs, reusing shared packages and existing patterns.',
+      },
+      verify: {
+        title: 'Targeted validation',
+        description: 'Run affected or target tests first, then close with lint, format, and check.',
+      },
+    },
+    cta: {
+      eyebrow: 'Ready',
+      title: 'Keep the landing page, docs, and engineering rules in the same monorepo.',
+      description: 'This VitePress app can grow into a product site, architecture gateway, or open-source docs home.',
+      action: 'Open README',
+    },
+  },
   webAdmin: {
     title: 'TETAP Admin',
     badge: 'Admin workspace',

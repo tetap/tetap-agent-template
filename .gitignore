@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 .turbo
 .cache
+**/.vitepress/cache/
 dist
 release
 dist-ssr

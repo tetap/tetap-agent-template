@@ -1,6 +1,6 @@
 # @tetap/i18n
 
-`@tetap/i18n` 是前后端共享多语言包，负责 locale resources、translation core、React provider 和 Node request locale helper。
+`@tetap/i18n` 是站点、前端和后端共享多语言包，负责 locale resources、translation core、React provider、site translator 和 Node request locale helper。
 
 ## Architecture Links
 
@@ -14,6 +14,7 @@
 | `@tetap/i18n`               | Legacy full translator, resources, types. |
 | `@tetap/i18n/public`        | Public web translator and provider.       |
 | `@tetap/i18n/admin`         | Admin web translator and provider.        |
+| `@tetap/i18n/site`          | VitePress site translator.                |
 | `@tetap/i18n/backend`       | Public backend response translator.       |
 | `@tetap/i18n/backend-admin` | Backend-admin response translator.        |
 | `@tetap/i18n/node`          | Node request locale helper.               |

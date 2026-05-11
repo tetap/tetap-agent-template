@@ -14,6 +14,7 @@
 ```mermaid
 flowchart LR
   subgraph Apps
+    Site[apps/site\nVitePress]
     Web[apps/web\nReact + Vite]
     WebAdmin[apps/web-admin\nReact Admin]
     Backend[apps/backend\nFastify Public]
@@ -33,6 +34,7 @@ flowchart LR
   Tests[test/automation\nVitest automation]
   DB[(Database)]
 
+  Site --> I18n
   Web --> UI
   Web --> Hooks
   Web --> I18n
@@ -56,6 +58,7 @@ flowchart LR
   BackendAdmin --> Schema
   BackendAdmin --> Prisma
   Prisma --> DB
+  Tests --> Site
   Tests --> Web
   Tests --> WebAdmin
   Tests --> Backend
@@ -70,13 +73,14 @@ flowchart LR
 | [00-system-overview.md](00-system-overview.md)           | 系统目标、运行时交互、设计原则、主要扩展场景。             |
 | [01-workspace-boundaries.md](01-workspace-boundaries.md) | workspace ownership、依赖方向、允许/禁止边界。             |
 | [02-quality-gates.md](02-quality-gates.md)               | lint、format、type-check、tests、build、release 门禁。     |
+| [apps-site.md](apps-site.md)                             | VitePress 宣传站架构、页面扩展和 theme 边界。              |
 | [apps-web.md](apps-web.md)                               | React/Vite Web 应用架构与页面扩展规则。                    |
 | [apps-web-admin.md](apps-web-admin.md)                   | 后台管理专用 React/Vite 应用和 admin page 归属规则。       |
 | [apps-backend.md](apps-backend.md)                       | 公共 Fastify 后端分层、安全中间件、统一响应和 route 约束。 |
 | [apps-backend-admin.md](apps-backend-admin.md)           | 后台管理专用 Fastify 服务和 admin API 归属规则。           |
 | [packages-config.md](packages-config.md)                 | env、typed config、Vite/Node 入口设计。                    |
 | [packages-hooks.md](packages-hooks.md)                   | hooks 集中仓库、form helper 和导出约束。                   |
-| [packages-i18n.md](packages-i18n.md)                     | locale 资源、翻译核心、React/Node i18n。                   |
+| [packages-i18n.md](packages-i18n.md)                     | locale 资源、翻译核心、site/React/Node i18n。              |
 | [packages-iam.md](packages-iam.md)                       | IAM 权限、会话、策略、字段、数据和审计核心。               |
 | [packages-prisma.md](packages-prisma.md)                 | Prisma schema 拆分、生成、数据库脚本和边界。               |
 | [packages-schema.md](packages-schema.md)                 | Zod 契约、统一响应 schema、前后端交互模型。                |

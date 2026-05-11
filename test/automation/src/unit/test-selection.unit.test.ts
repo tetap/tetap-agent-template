@@ -7,6 +7,11 @@ describe('targeted test selection', () => {
       selected: [{ type: 'unit', path: 'src/unit/schema-response.unit.test.ts' }],
       unknown: [],
     });
+
+    expect(selectTargets('unit', ['site-i18n'])).toMatchObject({
+      selected: [{ type: 'unit', path: 'src/unit/i18n-site.unit.test.ts' }],
+      unknown: [],
+    });
   });
 
   it('maps changed source files to affected test modules', () => {

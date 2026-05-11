@@ -25,6 +25,7 @@ Use targeted commands during development so each change runs only the module tes
 pnpm test:target -- unit schema-response
 pnpm test:target -- unit schema-response --name healthResponseSchema
 pnpm test:unit:target -- config-env
+pnpm test:unit:target -- i18n-site
 pnpm test:browser:target -- ui-components
 pnpm test:browser:target -- web-admin-dashboard
 pnpm test:smoke:target -- backend-health
@@ -37,23 +38,25 @@ pnpm test:target -- --list
 ## Coverage Notes
 
 - `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard tab interaction, and sign-in form session storage.
+- `unit:i18n-site` covers the VitePress promotional site copy scope.
 - `unit:schema-response` also covers admin auth form schemas from `@tetap/schema/admin-auth`.
 
 ## Impact Map
 
 The affected runner uses `src/support/test-selection.ts` as the single source of truth.
 
-| Changed Area                                  | Tests Selected                                         |
-| --------------------------------------------- | ------------------------------------------------------ |
-| `packages/config/**`                          | `unit:config-env`                                      |
-| `packages/schema/**`                          | `unit:schema-response`, `smoke:backend-health`         |
-| `apps/backend/**`                             | `smoke:backend-health`                                 |
-| `apps/backend-admin/**`, `packages/prisma/**` | `smoke:backend-admin-health`                           |
-| `apps/web/**`                                 | `browser:ui-components`                                |
-| `apps/web-admin/**`                           | `browser:web-admin-dashboard`                          |
-| `packages/hooks/**`, `packages/ui/**`         | `browser:ui-components`, `browser:web-admin-dashboard` |
-| `packages/i18n/**`                            | browser targets plus backend smoke targets             |
-| `test/automation/src/**` test files           | The changed test file only.                            |
+| Changed Area                                  | Tests Selected                                           |
+| --------------------------------------------- | -------------------------------------------------------- |
+| `packages/config/**`                          | `unit:config-env`                                        |
+| `packages/schema/**`                          | `unit:schema-response`, `smoke:backend-health`           |
+| `apps/backend/**`                             | `smoke:backend-health`                                   |
+| `apps/backend-admin/**`, `packages/prisma/**` | `smoke:backend-admin-health`                             |
+| `apps/web/**`                                 | `browser:ui-components`                                  |
+| `apps/web-admin/**`                           | `browser:web-admin-dashboard`                            |
+| `apps/site/**`                                | `unit:i18n-site`                                         |
+| `packages/hooks/**`, `packages/ui/**`         | `browser:ui-components`, `browser:web-admin-dashboard`   |
+| `packages/i18n/**`                            | `unit:i18n-site`, browser targets, backend smoke targets |
+| `test/automation/src/**` test files           | The changed test file only.                              |
 
 ## Rules
 
