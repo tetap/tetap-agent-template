@@ -5,7 +5,7 @@
 ## Architecture Links
 
 - [packages/config Architecture](../../docs/Logical%20Architecture%20Diagram/packages-config.md)
-- [Config Rules](../../README.md#config-规则)
+- [Config Rules](../../README.md#config-rules)
 
 ## Public Entrypoints
 

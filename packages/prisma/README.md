@@ -5,7 +5,7 @@
 ## Architecture Links
 
 - [packages/prisma Architecture](../../docs/Logical%20Architecture%20Diagram/packages-prisma.md)
-- [Database Rules](../../README.md#database-规则)
+- [Database Rules](../../README.md#database-rules)
 
 ## Rules
 

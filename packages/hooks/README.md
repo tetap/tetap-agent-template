@@ -5,7 +5,7 @@
 ## Architecture Links
 
 - [packages/hooks Architecture](../../docs/Logical%20Architecture%20Diagram/packages-hooks.md)
-- [Hooks Rules](../../README.md#hooks-规则)
+- [Hooks Rules](../../README.md#hooks-rules)
 
 ## Public Entrypoints
 

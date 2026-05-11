@@ -38,8 +38,6 @@ auto-imports.d.ts
 *.zip
 migration_lock.toml
 
-.agents/
-skills-lock.json
 build
 .react-router
 .pnpm-store

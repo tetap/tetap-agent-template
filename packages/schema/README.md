@@ -5,7 +5,7 @@
 ## Architecture Links
 
 - [packages/schema Architecture](../../docs/Logical%20Architecture%20Diagram/packages-schema.md)
-- [Schema Rules](../../README.md#schema-规则)
+- [Schema Rules](../../README.md#schema-rules)
 
 ## Public Entrypoints
 

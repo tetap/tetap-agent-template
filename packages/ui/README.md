@@ -5,7 +5,7 @@
 ## Architecture Links
 
 - [packages/ui Architecture](../../docs/Logical%20Architecture%20Diagram/packages-ui.md)
-- [UI Rules](../../README.md#ui-规则)
+- [UI Rules](../../README.md#ui-rules)
 
 ## Public Entrypoints
 

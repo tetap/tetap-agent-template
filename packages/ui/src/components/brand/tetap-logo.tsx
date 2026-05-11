@@ -5,9 +5,13 @@ export type TetapLogoProps = SVGProps<SVGSVGElement> & {
 };
 
 export const TetapLogo = ({ title = 'TETAP', ...props }: TetapLogoProps) => (
-  <svg viewBox="0 0 64 64" fill="none" role={title ? 'img' : undefined} aria-label={title} {...props}>
-    <path d="M32 7 53.65 19.5v25L32 57 10.35 44.5v-25L32 7Z" fill="currentColor" />
-    <path d="M20 21h24v7h-8.35v17h-7.3V28H20v-7Z" fill="var(--background)" />
-    <path d="M18 42.5h28" stroke="var(--background)" strokeWidth="4.5" strokeLinecap="round" opacity="0.9" />
+  <svg viewBox="0 0 512 512" fill="none" role={title ? 'img' : undefined} aria-label={title} {...props}>
+    <rect x="16" y="16" width="480" height="480" rx="96" fill="#000000" />
+    <g stroke="#FFFFFF" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M182 190 L256 112 L256 352 L314 352" />
+      <path d="M182 190 L306 190" />
+      <path d="M220 226 L220 315 L256 352" />
+      <path d="M220 315 L286 315" />
+    </g>
   </svg>
 );

@@ -5,7 +5,7 @@
 ## Architecture Links
 
 - [packages/i18n Architecture](../../docs/Logical%20Architecture%20Diagram/packages-i18n.md)
-- [I18n Rules](../../README.md#i18n-规则)
+- [I18n Rules](../../README.md#i18n-rules)
 
 ## Public Entrypoints
 
