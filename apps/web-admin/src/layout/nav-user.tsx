@@ -35,16 +35,32 @@ export const NavUser = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton size="lg">
-                <Avatar>
+                <Avatar className="size-8 rounded-lg">
                   <AvatarFallback>{fallback}</AvatarFallback>
                 </Avatar>
-                <span>{displayName}</span>
-                <span>{displayEmail}</span>
-                <ChevronsUpDown />
+                <div className="grid flex-1 text-start text-sm leading-tight">
+                  <span className="truncate font-semibold">{displayName}</span>
+                  <span className="truncate text-xs">{displayEmail}</span>
+                </div>
+                <ChevronsUpDown className="ms-auto" />
               </SidebarMenuButton>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" side={isMobile ? 'bottom' : 'right'} sideOffset={4}>
-              <DropdownMenuLabel>{displayName}</DropdownMenuLabel>
+            <DropdownMenuContent
+              align="end"
+              className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+              side={isMobile ? 'bottom' : 'right'}
+              sideOffset={4}>
+              <DropdownMenuLabel className="p-0 font-normal">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
+                  <Avatar className="size-8 rounded-lg">
+                    <AvatarFallback className="rounded-lg">{fallback}</AvatarFallback>
+                  </Avatar>
+                  <div className="grid flex-1 text-start text-sm leading-tight">
+                    <span className="truncate font-semibold">{displayName}</span>
+                    <span className="truncate text-xs">{displayEmail}</span>
+                  </div>
+                </div>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>

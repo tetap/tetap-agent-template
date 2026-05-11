@@ -175,10 +175,17 @@ export const enUS = {
     dashboard: {
       title: 'Admin Dashboard',
       description: 'A shadcn-admin inspired information architecture adapted to this project workspace.',
+      actions: {
+        download: 'Download',
+      },
       tabs: {
         overview: 'Overview',
         users: 'User operations',
         security: 'Security activity',
+      },
+      overview: {
+        title: 'Overview',
+        description: 'Management indicators presented with shadcn-admin card grids and scan-friendly density.',
       },
       metrics: {
         activeUsers: {
@@ -210,6 +217,7 @@ export const enUS = {
       activity: {
         title: 'Security and audit activity',
         description: 'Keep critical admin actions visible before real audit data is connected.',
+        timestamp: 'Updated just now',
         items: {
           audit: 'An administrator login audit entry was recorded.',
           userReview: 'A user profile is waiting for review.',

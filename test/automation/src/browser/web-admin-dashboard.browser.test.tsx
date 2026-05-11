@@ -68,7 +68,13 @@ const renderSignIn = async () => {
       },
       {
         path: '/',
-        element: <AdminDashboardPage />,
+        element: <AdminShell />,
+        children: [
+          {
+            index: true,
+            element: <AdminDashboardPage />,
+          },
+        ],
       },
     ],
     {
@@ -139,7 +145,13 @@ const renderIamPage = async () => {
   const router = createMemoryRouter([
     {
       path: '/',
-      element: <AdminIamPage />,
+      element: <AdminShell />,
+      children: [
+        {
+          index: true,
+          element: <AdminIamPage />,
+        },
+      ],
     },
   ]);
 

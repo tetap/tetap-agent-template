@@ -29,7 +29,7 @@ export const SearchCommand = () => {
     <>
       <Button onClick={() => setOpen(true)} type="button" variant="outline">
         <Search />
-        {t('webAdmin.layout.search.trigger')}
+        <span className="hidden md:inline-flex">{t('webAdmin.layout.search.trigger')}</span>
       </Button>
       <CommandDialog closeLabel={t('common.close')} onOpenChange={setOpen} open={open}>
         <CommandInput placeholder={t('webAdmin.layout.search.placeholder')} />
@@ -38,15 +38,17 @@ export const SearchCommand = () => {
             <CommandEmpty>{t('webAdmin.layout.search.empty')}</CommandEmpty>
             {sidebarData.navGroups.map(group => (
               <CommandGroup heading={t(group.titleKey)} key={group.titleKey}>
-                {group.items.map(item => (
-                  <CommandItem
-                    key={`${item.titleKey}-${item.url}`}
-                    onSelect={() => runCommand(item.url)}
-                    value={t(item.titleKey)}>
-                    <ArrowRight />
-                    {t(item.titleKey)}
-                  </CommandItem>
-                ))}
+                {group.items
+                  .flatMap(item => [item, ...(item.items ?? [])])
+                  .map(item => (
+                    <CommandItem
+                      key={`${item.titleKey}-${item.url}`}
+                      onSelect={() => runCommand(item.url)}
+                      value={t(item.titleKey)}>
+                      <ArrowRight />
+                      {t(item.titleKey)}
+                    </CommandItem>
+                  ))}
               </CommandGroup>
             ))}
             <CommandSeparator />

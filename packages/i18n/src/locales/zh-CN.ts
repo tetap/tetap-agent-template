@@ -169,10 +169,17 @@ export const zhCN = {
     dashboard: {
       title: '管理后台总览',
       description: '参考 shadcn-admin 的信息架构，适配为当前项目的后台工作台入口。',
+      actions: {
+        download: '下载报表',
+      },
       tabs: {
         overview: '总览',
         users: '用户运营',
         security: '安全动态',
+      },
+      overview: {
+        title: '趋势概览',
+        description: '以 shadcn-admin 的卡片网格和可扫描信息密度呈现管理指标。',
       },
       metrics: {
         activeUsers: {
@@ -204,6 +211,7 @@ export const zhCN = {
       activity: {
         title: '安全与审计动态',
         description: '保留管理端关键动作的可见性，便于后续接入真实审计数据。',
+        timestamp: '刚刚更新',
         items: {
           audit: '已记录一次管理员登录审计。',
           userReview: '有新的用户资料等待复核。',

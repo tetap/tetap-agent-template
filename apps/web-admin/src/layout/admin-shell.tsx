@@ -1,8 +1,6 @@
 import { Outlet } from 'react-router';
 import { SidebarInset, SidebarProvider } from '@tetap/ui';
-import { AdminHeader } from './header.js';
 import { AppSidebar } from './app-sidebar.js';
-import { AdminMain } from './main.js';
 
 const getSidebarDefaultOpen = () => {
   if (typeof document === 'undefined') {
@@ -15,11 +13,8 @@ const getSidebarDefaultOpen = () => {
 export const AdminShell = () => (
   <SidebarProvider defaultOpen={getSidebarDefaultOpen()}>
     <AppSidebar />
-    <SidebarInset>
-      <AdminHeader />
-      <AdminMain>
-        <Outlet />
-      </AdminMain>
+    <SidebarInset className="@container/content has-data-[layout=fixed]:h-svh peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]">
+      <Outlet />
     </SidebarInset>
   </SidebarProvider>
 );

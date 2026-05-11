@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { LogOut, Plus, RefreshCw, ShieldCheck, Trash2 } from 'lucide-react';
 import { useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
@@ -23,6 +23,10 @@ import {
   TabsList,
   TabsTrigger,
 } from '@tetap/ui';
+import { AdminHeader } from '../layout/header.js';
+import { AdminMain } from '../layout/main.js';
+import { ProfileDropdown } from '../layout/profile-dropdown.js';
+import { SearchCommand } from '../layout/search-command.js';
 import {
   createIamFieldPermission,
   createIamPermission,
@@ -217,15 +221,15 @@ export const AdminIamPage = () => {
 
   if (isLoading) {
     return (
-      <main className="flex flex-col gap-4" aria-labelledby="admin-iam-title">
+      <IamPageFrame>
         <Skeleton className="h-28 w-full" />
         <Skeleton className="h-64 w-full" />
-      </main>
+      </IamPageFrame>
     );
   }
 
   return (
-    <main className="flex flex-col gap-4" aria-labelledby="admin-iam-title">
+    <IamPageFrame>
       <section className="flex flex-col gap-3">
         <div className="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-2">
@@ -638,9 +642,22 @@ export const AdminIamPage = () => {
           </TabsContent>
         </Tabs>
       ) : null}
-    </main>
+    </IamPageFrame>
   );
 };
+
+const IamPageFrame = ({ children }: { children: ReactNode }) => (
+  <>
+    <AdminHeader>
+      <div className="me-auto" />
+      <SearchCommand />
+      <ProfileDropdown />
+    </AdminHeader>
+    <AdminMain aria-labelledby="admin-iam-title" className="flex flex-col gap-4">
+      {children}
+    </AdminMain>
+  </>
+);
 
 const MetricCard = ({ label, value }: { label: string; value: number }) => (
   <Card>

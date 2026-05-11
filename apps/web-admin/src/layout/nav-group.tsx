@@ -7,6 +7,7 @@ import {
   CollapsibleTrigger,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -59,7 +60,11 @@ const NavBadge = ({ item }: { item: AdminNavItem }) => {
     return null;
   }
 
-  return <Badge variant="secondary">{t(item.badgeKey)}</Badge>;
+  return (
+    <Badge className="rounded-full px-1 py-0 text-xs" variant="secondary">
+      {t(item.badgeKey)}
+    </Badge>
+  );
 };
 
 const SidebarMenuLink = ({ item, href }: { item: AdminNavItem; href: string }) => {
@@ -86,14 +91,14 @@ const SidebarMenuCollapsible = ({ item, href }: { item: AdminNavItem; href: stri
   const Icon = item.icon;
 
   return (
-    <Collapsible asChild defaultOpen={checkIsActive(href, item, true)}>
+    <Collapsible asChild className="group/collapsible" defaultOpen={checkIsActive(href, item, true)}>
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
           <SidebarMenuButton tooltip={t(item.titleKey)}>
             {Icon ? <Icon /> : null}
             <span>{t(item.titleKey)}</span>
             <NavBadge item={item} />
-            <ChevronRight />
+            <ChevronRight className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
         <CollapsibleContent>
@@ -132,25 +137,27 @@ const SidebarMenuCollapsedDropdown = ({ item, href }: { item: AdminNavItem; href
             {Icon ? <Icon /> : null}
             <span>{t(item.titleKey)}</span>
             <NavBadge item={item} />
-            <ChevronRight />
+            <ChevronRight className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="right" sideOffset={4}>
           <DropdownMenuLabel>{t(item.titleKey)}</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          {item.items?.map(subItem => {
-            const SubIcon = subItem.icon;
+          <DropdownMenuGroup>
+            {item.items?.map(subItem => {
+              const SubIcon = subItem.icon;
 
-            return (
-              <DropdownMenuItem asChild key={`${subItem.titleKey}-${subItem.url}`}>
-                <Link to={subItem.url}>
-                  {SubIcon ? <SubIcon /> : null}
-                  <span>{t(subItem.titleKey)}</span>
-                  <NavBadge item={subItem} />
-                </Link>
-              </DropdownMenuItem>
-            );
-          })}
+              return (
+                <DropdownMenuItem asChild key={`${subItem.titleKey}-${subItem.url}`}>
+                  <Link to={subItem.url}>
+                    {SubIcon ? <SubIcon /> : null}
+                    <span>{t(subItem.titleKey)}</span>
+                    <NavBadge item={subItem} />
+                  </Link>
+                </DropdownMenuItem>
+              );
+            })}
+          </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
     </SidebarMenuItem>
