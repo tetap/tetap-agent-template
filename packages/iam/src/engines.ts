@@ -62,6 +62,8 @@ const toIso = (date: Date) => date.toISOString();
 
 const toEpochSeconds = (date: Date) => Math.floor(date.getTime() / 1000);
 
+const isIsoExpired = (isoDatetime: string, now: Date) => Date.parse(isoDatetime) <= now.getTime();
+
 const omitPasswordHash = (source: IamUser) => {
   const { passwordHash, ...user } = source;
 
@@ -863,7 +865,7 @@ export class IamService {
   }
 
   refresh(refreshToken: string) {
-    const payload = verifyJwt(refreshToken, this.options.refreshTokenSecret);
+    const payload = verifyJwt(refreshToken, this.options.refreshTokenSecret, toEpochSeconds(this.options.now()));
 
     if (payload.type !== 'refresh') {
       throw new Error('Invalid refresh token.');
@@ -891,7 +893,7 @@ export class IamService {
   }
 
   verifyAccessToken(accessToken: string): AuthenticatedUserContext {
-    const payload = verifyJwt(accessToken, this.options.accessTokenSecret);
+    const payload = verifyJwt(accessToken, this.options.accessTokenSecret, toEpochSeconds(this.options.now()));
 
     if (payload.type !== 'access') {
       throw new Error('Invalid access token.');
@@ -936,6 +938,7 @@ export class IamService {
 
     this.sessions.set(sessionId, revokedSession);
     this.blacklistedTokenIds.set(session.tokenId, revokedSession.expiresAt);
+    this.pruneExpiredBlacklistedTokenIds();
     this.recordAudit({
       actorUserId,
       action: reason === 'logout' ? 'LOGOUT' : 'FORCE_LOGOUT',
@@ -1163,6 +1166,8 @@ export class IamService {
   }
 
   private resolveTokenContext(payload: IamJwtPayload) {
+    this.pruneExpiredBlacklistedTokenIds();
+
     if (this.blacklistedTokenIds.has(payload.tokenId)) {
       throw new Error('Token revoked.');
     }
@@ -1181,7 +1186,27 @@ export class IamService {
       throw new Error('Session expired.');
     }
 
+    if (isIsoExpired(session.expiresAt, this.options.now())) {
+      this.sessions.set(session.id, {
+        ...session,
+        status: 'EXPIRED',
+      });
+      this.blacklistedTokenIds.set(session.tokenId, session.expiresAt);
+      this.pruneExpiredBlacklistedTokenIds();
+      throw new Error('Session expired.');
+    }
+
     return { user, session };
+  }
+
+  private pruneExpiredBlacklistedTokenIds() {
+    const now = this.options.now();
+
+    for (const [tokenId, expiresAt] of this.blacklistedTokenIds.entries()) {
+      if (isIsoExpired(expiresAt, now)) {
+        this.blacklistedTokenIds.delete(tokenId);
+      }
+    }
   }
 
   private touchSession(sessionId: string) {

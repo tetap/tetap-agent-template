@@ -8,6 +8,16 @@ const createService = () =>
     passwordSalt: 'unit-salt',
   });
 
+const createClockedService = (nowRef: { current: Date }, ttl: { access: number; refresh: number }) =>
+  new IamService(createDemoIamData('unit-salt'), {
+    accessTokenSecret: 'unit-access-secret',
+    refreshTokenSecret: 'unit-refresh-secret',
+    passwordSalt: 'unit-salt',
+    accessTokenTtlSeconds: ttl.access,
+    refreshTokenTtlSeconds: ttl.refresh,
+    now: () => nowRef.current,
+  });
+
 describe('IAM engines', () => {
   it('signs in, resolves capabilities, and invalidates forced-offline sessions', async () => {
     const iam = createService();
@@ -29,6 +39,24 @@ describe('IAM engines', () => {
     iam.revokeSession(session.id, 'unit-test', login.user.id);
 
     expect(() => iam.verifyAccessToken(login.accessToken)).toThrow();
+  });
+
+  it('uses the service clock for token and session expiry checks', async () => {
+    const nowRef = { current: new Date('2026-01-01T00:00:00.000Z') };
+    const iam = createClockedService(nowRef, { access: 120, refresh: 60 });
+    const login = await iam.login({
+      username: 'admin',
+      password: 'password1',
+      deviceType: 'WEB',
+    });
+
+    expect(iam.verifyAccessToken(login.accessToken).session.status).toBe('ONLINE');
+
+    nowRef.current = new Date('2026-01-01T00:01:01.000Z');
+
+    expect(() => iam.verifyAccessToken(login.accessToken)).toThrow('Session expired.');
+    expect(() => iam.refresh(login.refreshToken)).toThrow('Token expired.');
+    expect(iam.listSessions()[0]?.status).toBe('EXPIRED');
   });
 
   it('applies field policies and data constraints for scoped roles', async () => {

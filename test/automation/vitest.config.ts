@@ -12,8 +12,10 @@ const workspaceAliases = [
   { find: /^@tetap\/i18n\/node$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/node.ts') },
   { find: /^@tetap\/i18n\/locales$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/locales/index.ts') },
   { find: /^@tetap\/i18n\/site$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/site.ts') },
+  { find: /^@tetap\/iam$/, replacement: resolve(workspaceRoot, 'packages/iam/src/index.ts') },
   { find: /^@tetap\/schema$/, replacement: resolve(workspaceRoot, 'packages/schema/src/index.ts') },
   { find: /^@tetap\/schema\/backend$/, replacement: resolve(workspaceRoot, 'packages/schema/src/backend.ts') },
+  { find: /^@tetap\/schema\/admin-auth$/, replacement: resolve(workspaceRoot, 'packages/schema/src/admin-auth.ts') },
 ];
 
 export default defineConfig({

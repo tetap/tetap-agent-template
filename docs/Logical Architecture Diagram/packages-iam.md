@@ -7,7 +7,7 @@
 ## 拥有能力
 
 - JWT HMAC sign/verify helper。
-- Stateful session manager、token id、token version、forced-offline invalidation。
+- Stateful session manager、token id、token version、clock-aware expiry、forced-offline invalidation、token blacklist cleanup。
 - RBAC capability resolution and route permission checks。
 - Dynamic menu filtering。
 - Field permission filtering and masking。
