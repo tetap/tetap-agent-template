@@ -208,21 +208,41 @@ export const enUS = {
     navigation: {
       label: 'Admin navigation',
       dashboard: 'Overview',
+      tasks: 'Tasks',
+      apps: 'Apps',
+      chats: 'Chats',
       users: 'Users',
       settings: 'Settings',
       security: 'Security',
+      auth: 'Auth',
+      errors: 'Errors',
+      signIn: 'Sign In',
+      signUp: 'Sign Up',
+      forgotPassword: 'Forgot Password',
+      otp: 'OTP',
+      unauthorized: 'Unauthorized',
+      forbidden: 'Forbidden',
+      notFound: 'Not Found',
+      internalError: 'Internal Server Error',
       audit: 'Audit logs',
       roles: 'Roles',
       iam: 'IAM',
       sessions: 'Online users',
       account: 'Account',
       billing: 'Billing',
+      appearance: 'Appearance',
+      display: 'Display',
+      helpCenter: 'Help Center',
       notifications: 'Notifications',
       groups: {
+        general: 'General',
+        pages: 'Pages',
+        other: 'Other',
         platform: 'Platform',
         system: 'System',
       },
       badges: {
+        chats: '3',
         review: 'Review',
       },
     },
@@ -231,6 +251,8 @@ export const enUS = {
       sidebarDescription: 'Displays the mobile admin navigation.',
       sidebarClose: 'Close sidebar',
       sidebarToggle: 'Toggle sidebar',
+      themeToggle: 'Toggle theme',
+      configToggle: 'Open display settings',
       search: {
         trigger: 'Search',
         placeholder: 'Type a command or search pages...',
@@ -313,21 +335,35 @@ export const enUS = {
       },
       legal: {
         signIn: 'By signing in, you agree to the terms of service and privacy policy.',
+        signInPrefix: 'By clicking sign in, you agree to our',
         signUp: 'By creating an account, you agree to the terms of service and privacy policy.',
+        terms: 'Terms of Service',
+        and: 'and',
+        privacy: 'Privacy Policy',
       },
       providers: {
-        github: 'Continue with GitHub',
-        facebook: 'Continue with Facebook',
+        separator: 'Or continue with',
+        github: 'GitHub',
+        facebook: 'Facebook',
       },
     },
     dashboard: {
-      title: 'Admin Dashboard',
+      title: 'Dashboard',
       description: 'A shadcn-admin inspired information architecture adapted to this project workspace.',
       actions: {
         download: 'Download',
       },
+      topNav: {
+        overview: 'Overview',
+        customers: 'Customers',
+        products: 'Products',
+        settings: 'Settings',
+      },
       tabs: {
         overview: 'Overview',
+        analytics: 'Analytics',
+        reports: 'Reports',
+        notifications: 'Notifications',
         users: 'User operations',
         security: 'Security activity',
       },
@@ -459,9 +495,37 @@ export const enUS = {
         title: 'User management',
         description: 'Hosts user lists, profile review, and account status management.',
       },
+      tasks: {
+        title: 'Tasks',
+        description: 'Prepares workflow task boards and assignment queues.',
+      },
+      apps: {
+        title: 'Apps',
+        description: 'Prepares connected app and integration management.',
+      },
+      chats: {
+        title: 'Chats',
+        description: 'Prepares internal admin conversations and support threads.',
+      },
       security: {
         title: 'Security center',
         description: 'Centralizes audit, risk, and role-permission entry points.',
+      },
+      unauthorized: {
+        title: 'Unauthorized',
+        description: 'Demonstrates the admin unauthorized state.',
+      },
+      forbidden: {
+        title: 'Forbidden',
+        description: 'Demonstrates the admin forbidden state.',
+      },
+      notFound: {
+        title: 'Not found',
+        description: 'Demonstrates the admin not-found state.',
+      },
+      internalError: {
+        title: 'Internal server error',
+        description: 'Demonstrates the admin server-error state.',
       },
       audit: {
         title: 'Audit logs',
@@ -486,6 +550,18 @@ export const enUS = {
       notifications: {
         title: 'Notification settings',
         description: 'Manages admin alerts and message policies.',
+      },
+      appearance: {
+        title: 'Appearance settings',
+        description: 'Prepares future theme and density preferences.',
+      },
+      display: {
+        title: 'Display settings',
+        description: 'Prepares future dashboard display options.',
+      },
+      helpCenter: {
+        title: 'Help Center',
+        description: 'Hosts future operator documentation and support entries.',
       },
     },
     actions: {

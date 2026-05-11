@@ -37,6 +37,33 @@ const router = createBrowserRouter([
         element: <AdminDashboardPage />,
       },
       {
+        path: 'tasks',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.tasks.description"
+            titleKey="webAdmin.placeholder.tasks.title"
+          />
+        ),
+      },
+      {
+        path: 'apps',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.apps.description"
+            titleKey="webAdmin.placeholder.apps.title"
+          />
+        ),
+      },
+      {
+        path: 'chats',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.chats.description"
+            titleKey="webAdmin.placeholder.chats.title"
+          />
+        ),
+      },
+      {
         path: 'users',
         element: (
           <AdminPlaceholderPage
@@ -81,6 +108,42 @@ const router = createBrowserRouter([
         element: <AdminIamPage />,
       },
       {
+        path: 'errors/unauthorized',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.unauthorized.description"
+            titleKey="webAdmin.placeholder.unauthorized.title"
+          />
+        ),
+      },
+      {
+        path: 'errors/forbidden',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.forbidden.description"
+            titleKey="webAdmin.placeholder.forbidden.title"
+          />
+        ),
+      },
+      {
+        path: 'errors/not-found',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.notFound.description"
+            titleKey="webAdmin.placeholder.notFound.title"
+          />
+        ),
+      },
+      {
+        path: 'errors/internal-server-error',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.internalError.description"
+            titleKey="webAdmin.placeholder.internalError.title"
+          />
+        ),
+      },
+      {
         path: 'settings',
         element: (
           <AdminPlaceholderPage
@@ -108,11 +171,38 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: 'settings/appearance',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.appearance.description"
+            titleKey="webAdmin.placeholder.appearance.title"
+          />
+        ),
+      },
+      {
         path: 'settings/notifications',
         element: (
           <AdminPlaceholderPage
             descriptionKey="webAdmin.placeholder.notifications.description"
             titleKey="webAdmin.placeholder.notifications.title"
+          />
+        ),
+      },
+      {
+        path: 'settings/display',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.display.description"
+            titleKey="webAdmin.placeholder.display.title"
+          />
+        ),
+      },
+      {
+        path: 'help-center',
+        element: (
+          <AdminPlaceholderPage
+            descriptionKey="webAdmin.placeholder.helpCenter.description"
+            titleKey="webAdmin.placeholder.helpCenter.title"
           />
         ),
       },

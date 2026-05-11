@@ -1,4 +1,5 @@
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { Facebook, Github, LogIn } from 'lucide-react';
 import { adminSignInInputSchema, type AdminSignInInput } from '@tetap/schema';
 import {
   Button,
@@ -8,7 +9,6 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-  Checkbox,
   Field,
   FieldError,
   FieldGroup,
@@ -47,19 +47,19 @@ export const SignInPage = () => {
 
   return (
     <AuthLayout>
-      <Card>
+      <Card className="max-w-sm gap-4">
         <CardHeader>
-          <CardTitle>{t('webAdmin.auth.signIn.title')}</CardTitle>
+          <CardTitle className="text-lg tracking-tight">{t('webAdmin.auth.signIn.title')}</CardTitle>
           <CardDescription>
             {t('webAdmin.auth.signIn.description')}{' '}
-            <Button asChild variant="link">
-              <Link to="/sign-up">{t('webAdmin.auth.signIn.signUpLink')}</Link>
-            </Button>
+            <Link className="text-nowrap underline underline-offset-4 hover:text-primary" to="/sign-up">
+              {t('webAdmin.auth.signIn.signUpLink')}
+            </Link>
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={onSubmit}>
-            <FieldGroup>
+            <FieldGroup className="gap-3">
               <Field data-invalid={Boolean(emailErrorKey)}>
                 <FieldLabel htmlFor="admin-sign-in-email">{t('webAdmin.auth.fields.email')}</FieldLabel>
                 <Input
@@ -71,8 +71,13 @@ export const SignInPage = () => {
                 />
                 {emailErrorKey ? <FieldError>{t(emailErrorKey)}</FieldError> : null}
               </Field>
-              <Field data-invalid={Boolean(passwordErrorKey)}>
-                <FieldLabel htmlFor="admin-sign-in-password">{t('webAdmin.auth.fields.password')}</FieldLabel>
+              <Field className="relative" data-invalid={Boolean(passwordErrorKey)}>
+                <div className="flex items-center justify-between gap-3">
+                  <FieldLabel htmlFor="admin-sign-in-password">{t('webAdmin.auth.fields.password')}</FieldLabel>
+                  <Link className="text-sm font-medium text-muted-foreground hover:opacity-75" to="/forgot-password">
+                    {t('webAdmin.auth.signIn.forgotPassword')}
+                  </Link>
+                </div>
                 <PasswordInput
                   aria-invalid={Boolean(passwordErrorKey)}
                   hidePasswordLabel={t('webAdmin.auth.actions.hidePassword')}
@@ -83,24 +88,44 @@ export const SignInPage = () => {
                 />
                 {passwordErrorKey ? <FieldError>{t(passwordErrorKey)}</FieldError> : null}
               </Field>
-              <Field orientation="horizontal">
-                <Checkbox
-                  checked={form.watch('rememberMe')}
-                  id="admin-sign-in-remember"
-                  onCheckedChange={checked => form.setValue('rememberMe', checked === true)}
-                />
-                <FieldLabel htmlFor="admin-sign-in-remember">{t('webAdmin.auth.fields.rememberMe')}</FieldLabel>
-              </Field>
-              <Button disabled={form.formState.isSubmitting} type="submit">
+              <Button className="mt-2" disabled={form.formState.isSubmitting} type="submit">
+                <LogIn data-icon="inline-start" />
                 {t('webAdmin.auth.actions.signIn')}
               </Button>
-              <Button asChild variant="link">
-                <Link to="/forgot-password">{t('webAdmin.auth.signIn.forgotPassword')}</Link>
-              </Button>
+              <div className="relative my-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-card px-2 text-muted-foreground">{t('webAdmin.auth.providers.separator')}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <Button disabled={form.formState.isSubmitting} type="button" variant="outline">
+                  <Github data-icon="inline-start" />
+                  {t('webAdmin.auth.providers.github')}
+                </Button>
+                <Button disabled={form.formState.isSubmitting} type="button" variant="outline">
+                  <Facebook data-icon="inline-start" />
+                  {t('webAdmin.auth.providers.facebook')}
+                </Button>
+              </div>
             </FieldGroup>
           </form>
         </CardContent>
-        <CardFooter>{t('webAdmin.auth.legal.signIn')}</CardFooter>
+        <CardFooter>
+          <p className="px-8 text-center text-sm text-muted-foreground">
+            {t('webAdmin.auth.legal.signInPrefix')}{' '}
+            <Link className="underline underline-offset-4 hover:text-primary" to="/terms">
+              {t('webAdmin.auth.legal.terms')}
+            </Link>{' '}
+            {t('webAdmin.auth.legal.and')}{' '}
+            <Link className="underline underline-offset-4 hover:text-primary" to="/privacy">
+              {t('webAdmin.auth.legal.privacy')}
+            </Link>
+            .
+          </p>
+        </CardFooter>
       </Card>
     </AuthLayout>
   );

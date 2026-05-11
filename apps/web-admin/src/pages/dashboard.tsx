@@ -1,4 +1,4 @@
-import { Activity, CreditCard, Download, ShieldCheck, Users } from 'lucide-react';
+import { Activity, CreditCard, Download, Settings, ShieldCheck, Sun, Users } from 'lucide-react';
 import { useAdminT } from '@tetap/hooks';
 import {
   Avatar,
@@ -22,10 +22,10 @@ import { SearchCommand } from '../layout/search-command.js';
 import { TopNav, type TopNavItem } from '../layout/top-nav.js';
 
 const topNav: readonly TopNavItem[] = [
-  { href: '/', titleKey: 'webAdmin.navigation.dashboard' },
-  { href: '/users', titleKey: 'webAdmin.navigation.users' },
-  { href: '/security/iam', titleKey: 'webAdmin.navigation.iam' },
-  { href: '/settings', titleKey: 'webAdmin.navigation.settings' },
+  { href: '/', titleKey: 'webAdmin.dashboard.topNav.overview' },
+  { disabled: true, href: '/customers', titleKey: 'webAdmin.dashboard.topNav.customers' },
+  { disabled: true, href: '/products', titleKey: 'webAdmin.dashboard.topNav.products' },
+  { disabled: true, href: '/settings', titleKey: 'webAdmin.dashboard.topNav.settings' },
 ];
 
 const metrics = [
@@ -71,14 +71,19 @@ export const AdminDashboardPage = () => {
       <AdminHeader>
         <TopNav className="me-auto" links={topNav} />
         <SearchCommand />
+        <Button size="icon" variant="ghost">
+          <Sun />
+          <span className="sr-only">{t('webAdmin.layout.themeToggle')}</span>
+        </Button>
+        <Button size="icon" variant="ghost">
+          <Settings />
+          <span className="sr-only">{t('webAdmin.layout.configToggle')}</span>
+        </Button>
         <ProfileDropdown />
       </AdminHeader>
       <AdminMain>
         <div className="mb-2 flex items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">{t('webAdmin.dashboard.title')}</h1>
-            <p className="text-muted-foreground">{t('webAdmin.dashboard.description')}</p>
-          </div>
+          <h1 className="text-2xl font-bold tracking-tight">{t('webAdmin.dashboard.title')}</h1>
           <Button>
             <Download data-icon="inline-start" />
             {t('webAdmin.dashboard.actions.download')}
@@ -88,8 +93,13 @@ export const AdminDashboardPage = () => {
           <div className="w-full overflow-x-auto pb-2">
             <TabsList>
               <TabsTrigger value="overview">{t('webAdmin.dashboard.tabs.overview')}</TabsTrigger>
-              <TabsTrigger value="users">{t('webAdmin.dashboard.tabs.users')}</TabsTrigger>
-              <TabsTrigger value="security">{t('webAdmin.dashboard.tabs.security')}</TabsTrigger>
+              <TabsTrigger value="analytics">{t('webAdmin.dashboard.tabs.analytics')}</TabsTrigger>
+              <TabsTrigger disabled value="reports">
+                {t('webAdmin.dashboard.tabs.reports')}
+              </TabsTrigger>
+              <TabsTrigger disabled value="notifications">
+                {t('webAdmin.dashboard.tabs.notifications')}
+              </TabsTrigger>
             </TabsList>
           </div>
           <TabsContent className="flex flex-col gap-4" value="overview">
@@ -117,10 +127,10 @@ export const AdminDashboardPage = () => {
                   <CardTitle>{t('webAdmin.dashboard.overview.title')}</CardTitle>
                   <CardDescription>{t('webAdmin.dashboard.overview.description')}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="ps-2">
                   <div className="flex h-72 items-end gap-3">
                     {chartBars.map((height, index) => (
-                      <div className="flex flex-1 flex-col items-center gap-2" key={`${height}-${index}`}>
+                      <div className="flex h-full flex-1 flex-col justify-end gap-2" key={`${height}-${index}`}>
                         <div className="w-full rounded-md bg-primary" style={{ height: `${height}%` }} />
                         <span className="text-xs text-muted-foreground">{index + 1}</span>
                       </div>
@@ -150,28 +160,13 @@ export const AdminDashboardPage = () => {
               </Card>
             </section>
           </TabsContent>
-          <TabsContent className="flex flex-col gap-4" value="users">
+          <TabsContent className="flex flex-col gap-4" value="analytics">
             <Card>
               <CardHeader>
                 <CardTitle>{t('webAdmin.dashboard.users.title')}</CardTitle>
                 <CardDescription>{t('webAdmin.dashboard.users.description')}</CardDescription>
               </CardHeader>
               <CardContent>{t('webAdmin.dashboard.users.content')}</CardContent>
-            </Card>
-          </TabsContent>
-          <TabsContent className="flex flex-col gap-4" value="security">
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('webAdmin.dashboard.activity.title')}</CardTitle>
-                <CardDescription>{t('webAdmin.dashboard.activity.description')}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {recentActivities.map(activityKey => (
-                  <div className="rounded-lg border p-3" key={activityKey}>
-                    {t(activityKey)}
-                  </div>
-                ))}
-              </CardContent>
             </Card>
           </TabsContent>
         </Tabs>

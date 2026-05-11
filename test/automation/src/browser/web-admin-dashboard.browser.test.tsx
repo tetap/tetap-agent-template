@@ -171,12 +171,12 @@ describe('admin web dashboard browser behavior', () => {
     const screen = await renderAdminShell();
 
     expect(screen.getByText(i18n.t('webAdmin.dashboard.title')).query()).not.toBeNull();
-    expect(screen.getByRole('link', { name: i18n.t('webAdmin.navigation.users') }).query()).not.toBeNull();
-    expect(screen.getByRole('button', { name: i18n.t('webAdmin.layout.search.trigger') }).query()).not.toBeNull();
+    expect(screen.getByRole('link', { name: i18n.t('webAdmin.dashboard.topNav.overview') }).query()).not.toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.layout.search.trigger')).query()).not.toBeNull();
 
-    await screen.getByRole('tab', { name: i18n.t('webAdmin.dashboard.tabs.security') }).click();
+    await screen.getByRole('tab', { name: i18n.t('webAdmin.dashboard.tabs.analytics') }).click();
 
-    await expect.poll(() => screen.getByText(i18n.t('webAdmin.dashboard.activity.title')).query()).not.toBeNull();
+    await expect.poll(() => screen.getByText(i18n.t('webAdmin.dashboard.users.title')).query()).not.toBeNull();
   });
 
   it('submits the sign-in form and stores the admin session with zustand', async () => {

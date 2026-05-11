@@ -27,9 +27,16 @@ export const SearchCommand = () => {
 
   return (
     <>
-      <Button onClick={() => setOpen(true)} type="button" variant="outline">
+      <Button
+        className="relative h-9 w-40 justify-start text-sm text-muted-foreground sm:pe-12 md:w-64"
+        onClick={() => setOpen(true)}
+        type="button"
+        variant="outline">
         <Search />
         <span className="hidden md:inline-flex">{t('webAdmin.layout.search.trigger')}</span>
+        <kbd className="pointer-events-none absolute end-1.5 top-1.5 hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
+          <span className="text-xs">⌘</span>K
+        </kbd>
       </Button>
       <CommandDialog closeLabel={t('common.close')} onOpenChange={setOpen} open={open}>
         <CommandInput placeholder={t('webAdmin.layout.search.placeholder')} />

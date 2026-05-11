@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router';
-import { Button, cn } from '@tetap/ui';
+import { Menu } from 'lucide-react';
+import { Button, cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 import type { AdminMessageKey } from '@tetap/i18n/admin';
 
@@ -15,17 +16,55 @@ export const TopNav = ({ className, links }: { className?: string; links: readon
   const pathname = location.pathname;
 
   return (
-    <nav className={cn('hidden items-center gap-1 md:flex', className)} aria-label={t('webAdmin.navigation.label')}>
-      {links.map(link => (
-        <Button
-          asChild={!link.disabled}
-          disabled={link.disabled}
-          key={`${link.titleKey}-${link.href}`}
-          size="sm"
-          variant={pathname === link.href ? 'secondary' : 'ghost'}>
-          {link.disabled ? <span>{t(link.titleKey)}</span> : <Link to={link.href}>{t(link.titleKey)}</Link>}
-        </Button>
-      ))}
-    </nav>
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button className={cn('md:size-7 lg:hidden', className)} size="icon" variant="outline">
+            <Menu />
+            <span className="sr-only">{t('webAdmin.navigation.label')}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" side="bottom">
+          {links.map(link => {
+            const isActive = pathname === link.href;
+
+            return (
+              <DropdownMenuItem asChild={!link.disabled} key={`${link.titleKey}-${link.href}`}>
+                {link.disabled ? (
+                  <span className="text-muted-foreground">{t(link.titleKey)}</span>
+                ) : (
+                  <Link className={isActive ? undefined : 'text-muted-foreground'} to={link.href}>
+                    {t(link.titleKey)}
+                  </Link>
+                )}
+              </DropdownMenuItem>
+            );
+          })}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <nav
+        className={cn('hidden items-center gap-4 lg:flex xl:gap-6', className)}
+        aria-label={t('webAdmin.navigation.label')}>
+        {links.map(link => {
+          const isActive = pathname === link.href;
+
+          return link.disabled ? (
+            <span className="text-sm font-medium text-muted-foreground" key={`${link.titleKey}-${link.href}`}>
+              {t(link.titleKey)}
+            </span>
+          ) : (
+            <Link
+              className={cn(
+                'text-sm font-medium transition-colors hover:text-primary',
+                !isActive && 'text-muted-foreground',
+              )}
+              key={`${link.titleKey}-${link.href}`}
+              to={link.href}>
+              {t(link.titleKey)}
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 };

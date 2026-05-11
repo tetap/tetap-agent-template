@@ -195,21 +195,41 @@ export const zhCN = {
     navigation: {
       label: '后台导航',
       dashboard: '总览',
+      tasks: '任务',
+      apps: '应用',
+      chats: '会话',
       users: '用户',
       settings: '设置',
       security: '安全',
+      auth: '认证',
+      errors: '错误页',
+      signIn: '登录',
+      signUp: '注册',
+      forgotPassword: '找回密码',
+      otp: '验证码',
+      unauthorized: '未认证',
+      forbidden: '无权限',
+      notFound: '未找到',
+      internalError: '服务错误',
       audit: '审计日志',
       roles: '角色权限',
       iam: '权限中台',
       sessions: '在线用户',
       account: '账号',
       billing: '计费',
+      appearance: '外观',
+      display: '显示',
+      helpCenter: '帮助中心',
       notifications: '通知',
       groups: {
+        general: 'General',
+        pages: 'Pages',
+        other: 'Other',
         platform: '平台管理',
         system: '系统配置',
       },
       badges: {
+        chats: '3',
         review: '待审',
       },
     },
@@ -218,6 +238,8 @@ export const zhCN = {
       sidebarDescription: '展示后台管理移动端导航。',
       sidebarClose: '关闭侧边栏',
       sidebarToggle: '切换侧边栏',
+      themeToggle: '切换主题',
+      configToggle: '打开显示设置',
       search: {
         trigger: '搜索',
         placeholder: '输入命令或搜索页面...',
@@ -300,21 +322,35 @@ export const zhCN = {
       },
       legal: {
         signIn: '点击登录即表示你同意服务条款和隐私政策。',
+        signInPrefix: '点击登录即表示你同意我们的',
         signUp: '创建账号即表示你同意服务条款和隐私政策。',
+        terms: '服务条款',
+        and: '和',
+        privacy: '隐私政策',
       },
       providers: {
-        github: '使用 GitHub 继续',
-        facebook: '使用 Facebook 继续',
+        separator: '或使用以下方式继续',
+        github: 'GitHub',
+        facebook: 'Facebook',
       },
     },
     dashboard: {
-      title: '管理后台总览',
+      title: 'Dashboard',
       description: '参考 shadcn-admin 的信息架构，适配为当前项目的后台工作台入口。',
       actions: {
         download: '下载报表',
       },
+      topNav: {
+        overview: 'Overview',
+        customers: 'Customers',
+        products: 'Products',
+        settings: 'Settings',
+      },
       tabs: {
         overview: '总览',
+        analytics: 'Analytics',
+        reports: 'Reports',
+        notifications: 'Notifications',
         users: '用户运营',
         security: '安全动态',
       },
@@ -444,9 +480,37 @@ export const zhCN = {
         title: '用户管理',
         description: '用于承载用户列表、资料复核和账号状态管理。',
       },
+      tasks: {
+        title: '任务',
+        description: '用于后续承载工作流任务看板和指派队列。',
+      },
+      apps: {
+        title: '应用',
+        description: '用于后续管理接入应用和集成配置。',
+      },
+      chats: {
+        title: '会话',
+        description: '用于后续承载后台内部沟通和支持会话。',
+      },
       security: {
         title: '安全中心',
         description: '用于集中展示审计、风险和角色权限入口。',
+      },
+      unauthorized: {
+        title: '未认证',
+        description: '用于展示后台未认证状态。',
+      },
+      forbidden: {
+        title: '无权限',
+        description: '用于展示后台无权限状态。',
+      },
+      notFound: {
+        title: '未找到',
+        description: '用于展示后台未找到状态。',
+      },
+      internalError: {
+        title: '服务错误',
+        description: '用于展示后台服务错误状态。',
       },
       audit: {
         title: '审计日志',
@@ -471,6 +535,18 @@ export const zhCN = {
       notifications: {
         title: '通知设置',
         description: '用于后续管理后台提醒和消息策略。',
+      },
+      appearance: {
+        title: '外观设置',
+        description: '用于后续配置主题和密度偏好。',
+      },
+      display: {
+        title: '显示设置',
+        description: '用于后续配置仪表盘显示选项。',
+      },
+      helpCenter: {
+        title: '帮助中心',
+        description: '用于后续承载操作文档和支持入口。',
       },
     },
     actions: {
