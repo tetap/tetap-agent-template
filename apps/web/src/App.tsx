@@ -1,16 +1,11 @@
+import type { ComponentProps } from 'react';
 import { useEffect } from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router';
+import { RouterProvider } from 'react-router';
 import { usePublicI18n } from '@tetap/hooks';
-import { HomePage } from './pages/home';
 
-const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <HomePage />,
-  },
-]);
+type AppProps = Pick<ComponentProps<typeof RouterProvider>, 'router'>;
 
-function App() {
+function App({ router }: AppProps) {
   const { locale, t } = usePublicI18n();
 
   useEffect(() => {
