@@ -25,18 +25,26 @@ import {
 import { useAdminT } from '@tetap/hooks';
 import type { AdminNavGroup, AdminNavItem } from './types.js';
 
-export const NavGroup = ({ titleKey, items }: AdminNavGroup) => {
+const useNavLabel = () => {
   const t = useAdminT();
+
+  return (item: { title?: string; titleKey?: Parameters<typeof t>[0] }) =>
+    item.titleKey ? t(item.titleKey) : (item.title ?? '');
+};
+
+export const NavGroup = ({ title, titleKey, items }: AdminNavGroup) => {
+  const t = useAdminT();
+  const getLabel = useNavLabel();
   const { isMobile, state } = useSidebar();
   const location = useLocation();
   const href = `${location.pathname}${location.search}`;
 
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>{t(titleKey)}</SidebarGroupLabel>
+      <SidebarGroupLabel>{titleKey ? t(titleKey) : title}</SidebarGroupLabel>
       <SidebarMenu>
         {items.map(item => {
-          const key = `${item.titleKey}-${item.url}`;
+          const key = `${getLabel(item)}-${item.url}`;
 
           if (!item.items) {
             return <SidebarMenuLink href={href} item={item} key={key} />;
@@ -68,16 +76,17 @@ const NavBadge = ({ item }: { item: AdminNavItem }) => {
 };
 
 const SidebarMenuLink = ({ item, href }: { item: AdminNavItem; href: string }) => {
-  const t = useAdminT();
+  const getLabel = useNavLabel();
   const { setOpenMobile } = useSidebar();
   const Icon = item.icon;
+  const label = getLabel(item);
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild isActive={checkIsActive(href, item)} tooltip={t(item.titleKey)}>
+      <SidebarMenuButton asChild isActive={checkIsActive(href, item)} tooltip={label}>
         <Link onClick={() => setOpenMobile(false)} to={item.url}>
           {Icon ? <Icon /> : null}
-          <span>{t(item.titleKey)}</span>
+          <span>{label}</span>
           <NavBadge item={item} />
         </Link>
       </SidebarMenuButton>
@@ -86,17 +95,18 @@ const SidebarMenuLink = ({ item, href }: { item: AdminNavItem; href: string }) =
 };
 
 const SidebarMenuCollapsible = ({ item, href }: { item: AdminNavItem; href: string }) => {
-  const t = useAdminT();
+  const getLabel = useNavLabel();
   const { setOpenMobile } = useSidebar();
   const Icon = item.icon;
+  const label = getLabel(item);
 
   return (
     <Collapsible asChild className="group/collapsible" defaultOpen={checkIsActive(href, item, true)}>
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={t(item.titleKey)}>
+          <SidebarMenuButton tooltip={label}>
             {Icon ? <Icon /> : null}
-            <span>{t(item.titleKey)}</span>
+            <span>{label}</span>
             <NavBadge item={item} />
             <ChevronRight className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
@@ -105,13 +115,14 @@ const SidebarMenuCollapsible = ({ item, href }: { item: AdminNavItem; href: stri
           <SidebarMenuSub>
             {item.items?.map(subItem => {
               const SubIcon = subItem.icon;
+              const subLabel = getLabel(subItem);
 
               return (
-                <SidebarMenuSubItem key={`${subItem.titleKey}-${subItem.url}`}>
+                <SidebarMenuSubItem key={`${subLabel}-${subItem.url}`}>
                   <SidebarMenuSubButton asChild isActive={checkIsActive(href, subItem)}>
                     <Link onClick={() => setOpenMobile(false)} to={subItem.url}>
                       {SubIcon ? <SubIcon /> : null}
-                      <span>{t(subItem.titleKey)}</span>
+                      <span>{subLabel}</span>
                       <NavBadge item={subItem} />
                     </Link>
                   </SidebarMenuSubButton>
@@ -126,32 +137,34 @@ const SidebarMenuCollapsible = ({ item, href }: { item: AdminNavItem; href: stri
 };
 
 const SidebarMenuCollapsedDropdown = ({ item, href }: { item: AdminNavItem; href: string }) => {
-  const t = useAdminT();
+  const getLabel = useNavLabel();
   const Icon = item.icon;
+  const label = getLabel(item);
 
   return (
     <SidebarMenuItem>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <SidebarMenuButton isActive={checkIsActive(href, item)} tooltip={t(item.titleKey)}>
+          <SidebarMenuButton isActive={checkIsActive(href, item)} tooltip={label}>
             {Icon ? <Icon /> : null}
-            <span>{t(item.titleKey)}</span>
+            <span>{label}</span>
             <NavBadge item={item} />
             <ChevronRight className="ms-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start" side="right" sideOffset={4}>
-          <DropdownMenuLabel>{t(item.titleKey)}</DropdownMenuLabel>
+          <DropdownMenuLabel>{label}</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             {item.items?.map(subItem => {
               const SubIcon = subItem.icon;
+              const subLabel = getLabel(subItem);
 
               return (
-                <DropdownMenuItem asChild key={`${subItem.titleKey}-${subItem.url}`}>
+                <DropdownMenuItem asChild key={`${subLabel}-${subItem.url}`}>
                   <Link to={subItem.url}>
                     {SubIcon ? <SubIcon /> : null}
-                    <span>{t(subItem.titleKey)}</span>
+                    <span>{subLabel}</span>
                     <NavBadge item={subItem} />
                   </Link>
                 </DropdownMenuItem>

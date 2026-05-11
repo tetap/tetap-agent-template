@@ -29,19 +29,26 @@ import { ProfileDropdown } from '../layout/profile-dropdown.js';
 import { SearchCommand } from '../layout/search-command.js';
 import {
   createIamFieldPermission,
+  createIamMenu,
   createIamPermission,
   createIamPolicy,
   createIamRole,
   createIamUser,
+  deleteIamFieldPermission,
+  deleteIamMenu,
+  deleteIamPermission,
   deleteIamPolicy,
   deleteIamRole,
   deleteIamUser,
   fetchIamOverview,
   revokeIamSession,
+  revokeIamUserSessions,
   updateIamRole,
+  updateIamUser,
 } from '../api/backend-admin.js';
-import type { IamCreatePolicyRequest, IamOverviewData } from '@tetap/schema/iam';
+import type { IamCreatePolicyRequest, IamMenuNode, IamOverviewData } from '@tetap/schema/iam';
 
+type IamTab = 'overview' | 'users' | 'roles' | 'permissions' | 'menus' | 'sessions' | 'fields' | 'policies' | 'audit';
 type PermissionTypeInput = 'MENU' | 'API' | 'BUTTON' | 'FIELD' | 'DATA';
 type PolicyEffectInput = 'ALLOW' | 'DENY';
 type FieldPermissionTypeInput = 'HIDE' | 'MASK' | 'READONLY' | 'READWRITE';
@@ -54,6 +61,8 @@ const parseCsv = (value: string) =>
     .filter(Boolean);
 
 const uniqueStrings = (values: string[]) => Array.from(new Set(values.filter(Boolean)));
+
+const flattenIamMenus = (menu: IamMenuNode): IamMenuNode[] => [menu, ...menu.children.flatMap(flattenIamMenus)];
 
 const parsePolicyConditions = (value: string) => JSON.parse(value) as IamCreatePolicyRequest['conditions'];
 
@@ -68,46 +77,62 @@ const toFieldPermissionType = (value: string): FieldPermissionTypeInput =>
 const toDataScopeType = (value: string): DataScopeTypeInput =>
   ['ALL', 'DEPT', 'DEPT_AND_CHILD', 'SELF', 'CUSTOM'].includes(value) ? (value as DataScopeTypeInput) : 'SELF';
 
-export const AdminIamPage = () => {
+export const AdminIamPage = ({ defaultTab = 'overview' }: { defaultTab?: IamTab }) => {
   const t = useAdminT();
   const accessToken = useAdminSessionStore(state => state.auth.accessToken);
+  const can = useAdminSessionStore(state => state.auth.can);
+  const [activeTab, setActiveTab] = useState<IamTab>(defaultTab);
   const [overview, setOverview] = useState<IamOverviewData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isMutating, setIsMutating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [userForm, setUserForm] = useState({
-    username: 'operator',
-    email: 'operator@tetap.local',
-    password: 'password1',
-    roleCodes: 'security-auditor',
-    deptId: '200',
+    username: '',
+    email: '',
+    password: '',
+    roleCodes: '',
+    deptId: '',
   });
   const [roleForm, setRoleForm] = useState({
-    name: 'Report Auditor',
-    code: 'report-auditor',
-    permissionCodes: 'iam:read,user:read,audit:read',
+    name: '',
+    code: '',
+    permissionCodes: '',
     dataScopeType: 'DEPT_AND_CHILD',
   });
   const [permissionForm, setPermissionForm] = useState({
-    code: 'report:read',
-    name: 'Read reports',
+    code: '',
+    name: '',
     type: 'API',
-    resource: 'report',
-    action: 'read',
+    resource: '',
+    action: '',
+  });
+  const [menuForm, setMenuForm] = useState({
+    name: '',
+    path: '',
+    component: '',
+    icon: 'ShieldCheck',
+    parentId: '',
+    permissionCodes: '',
+    order: '0',
   });
   const [fieldForm, setFieldForm] = useState({
-    roleCode: 'security-auditor',
-    resource: 'user',
-    fieldName: 'email',
+    roleCode: '',
+    resource: '',
+    fieldName: '',
     permissionType: 'MASK',
   });
   const [policyForm, setPolicyForm] = useState({
-    resource: 'report',
-    action: 'read',
+    resource: '',
+    action: '',
     effect: 'ALLOW',
-    conditions: '{"any":[{"source":"user","path":"roleCodes","operator":"contains","value":"security-auditor"}]}',
+    conditions: '{"all":[]}',
   });
+  const canManageUsers = can('user:update');
+  const canManageRoles = can('role:update');
+  const canManageIam = can('iam:manage');
+  const canUpdatePolicy = can('policy:update');
+  const canRevokeSessions = can('session:revoke');
 
   const loadOverview = async () => {
     if (!accessToken) {
@@ -195,6 +220,19 @@ export const AdminIamPage = () => {
       }),
     );
 
+  const submitMenu = () =>
+    runMutation(token =>
+      createIamMenu(token, {
+        name: menuForm.name,
+        path: menuForm.path,
+        component: menuForm.component,
+        icon: menuForm.icon,
+        parentId: menuForm.parentId || undefined,
+        permissionCodes: parseCsv(menuForm.permissionCodes),
+        order: Number.parseInt(menuForm.order, 10) || 0,
+      }),
+    );
+
   const submitFieldPermission = () =>
     runMutation(token =>
       createIamFieldPermission(token, {
@@ -214,6 +252,10 @@ export const AdminIamPage = () => {
         conditions: parsePolicyConditions(policyForm.conditions),
       }),
     );
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
 
   useEffect(() => {
     void loadOverview();
@@ -261,14 +303,17 @@ export const AdminIamPage = () => {
       </section>
 
       {overview ? (
-        <Tabs defaultValue="overview">
-          <TabsList>
+        <Tabs onValueChange={value => setActiveTab(value as IamTab)} value={activeTab}>
+          <TabsList className="h-auto flex-wrap justify-start">
             <TabsTrigger value="overview">{t('webAdmin.iam.tabs.overview')}</TabsTrigger>
             <TabsTrigger value="users">{t('webAdmin.iam.tabs.users')}</TabsTrigger>
             <TabsTrigger value="roles">{t('webAdmin.iam.tabs.roles')}</TabsTrigger>
             <TabsTrigger value="permissions">{t('webAdmin.iam.tabs.permissions')}</TabsTrigger>
+            <TabsTrigger value="menus">{t('webAdmin.iam.tabs.menus')}</TabsTrigger>
             <TabsTrigger value="sessions">{t('webAdmin.iam.tabs.sessions')}</TabsTrigger>
-            <TabsTrigger value="policy">{t('webAdmin.iam.tabs.policy')}</TabsTrigger>
+            <TabsTrigger value="fields">{t('webAdmin.iam.tabs.fields')}</TabsTrigger>
+            <TabsTrigger value="policies">{t('webAdmin.iam.tabs.policies')}</TabsTrigger>
+            <TabsTrigger value="audit">{t('webAdmin.iam.tabs.audit')}</TabsTrigger>
           </TabsList>
           <TabsContent value="overview">
             <section className="grid gap-4 md:grid-cols-4">
@@ -333,7 +378,7 @@ export const AdminIamPage = () => {
                   </FieldGroup>
                 </CardContent>
                 <CardFooter>
-                  <Button disabled={isMutating} onClick={() => void submitUser()}>
+                  <Button disabled={isMutating || !canManageUsers} onClick={() => void submitUser()}>
                     <Plus data-icon="inline-start" />
                     {t('webAdmin.iam.actions.createUser')}
                   </Button>
@@ -354,9 +399,30 @@ export const AdminIamPage = () => {
                         </Badge>
                       ))}
                     </CardContent>
-                    <CardFooter>
+                    <CardFooter className="flex flex-wrap gap-2">
                       <Button
-                        disabled={isMutating || user.isSuperAdmin}
+                        disabled={isMutating || user.isSuperAdmin || !canManageUsers}
+                        onClick={() =>
+                          void runMutation(token =>
+                            updateIamUser(token, user.id, {
+                              status: user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE',
+                            }),
+                          )
+                        }
+                        variant="outline">
+                        {user.status === 'ACTIVE'
+                          ? t('webAdmin.iam.actions.disableUser')
+                          : t('webAdmin.iam.actions.activateUser')}
+                      </Button>
+                      <Button
+                        disabled={isMutating || !canRevokeSessions}
+                        onClick={() => void runMutation(token => revokeIamUserSessions(token, user.id))}
+                        variant="outline">
+                        <LogOut data-icon="inline-start" />
+                        {t('webAdmin.iam.actions.revokeUserSessions')}
+                      </Button>
+                      <Button
+                        disabled={isMutating || user.isSuperAdmin || !canManageUsers}
                         onClick={() => void runMutation(token => deleteIamUser(token, user.id))}
                         variant="outline">
                         <Trash2 data-icon="inline-start" />
@@ -400,7 +466,7 @@ export const AdminIamPage = () => {
                   </FieldGroup>
                 </CardContent>
                 <CardFooter>
-                  <Button disabled={isMutating} onClick={() => void submitRole()}>
+                  <Button disabled={isMutating || !canManageRoles} onClick={() => void submitRole()}>
                     <Plus data-icon="inline-start" />
                     {t('webAdmin.iam.actions.createRole')}
                   </Button>
@@ -422,7 +488,7 @@ export const AdminIamPage = () => {
                   </CardContent>
                   <CardFooter className="gap-2">
                     <Button
-                      disabled={isMutating}
+                      disabled={isMutating || !canManageRoles}
                       onClick={() =>
                         void runMutation(token =>
                           updateIamRole(token, role.id, {
@@ -435,7 +501,7 @@ export const AdminIamPage = () => {
                       {t('webAdmin.iam.actions.grantPermission')}
                     </Button>
                     <Button
-                      disabled={isMutating || role.code === 'super-admin'}
+                      disabled={isMutating || role.code === 'super-admin' || !canManageRoles}
                       onClick={() => void runMutation(token => deleteIamRole(token, role.id))}
                       variant="outline">
                       <Trash2 data-icon="inline-start" />
@@ -483,7 +549,7 @@ export const AdminIamPage = () => {
                   </FieldGroup>
                 </CardContent>
                 <CardFooter>
-                  <Button disabled={isMutating} onClick={() => void submitPermission()}>
+                  <Button disabled={isMutating || !canManageIam} onClick={() => void submitPermission()}>
                     <Plus data-icon="inline-start" />
                     {t('webAdmin.iam.actions.createPermission')}
                   </Button>
@@ -501,6 +567,98 @@ export const AdminIamPage = () => {
                       <Badge variant="secondary">{permission.resource}</Badge>
                       <Badge variant="outline">{permission.action}</Badge>
                     </CardContent>
+                    <CardFooter>
+                      <Button
+                        disabled={isMutating || !canManageIam}
+                        onClick={() => void runMutation(token => deleteIamPermission(token, permission.id))}
+                        variant="outline">
+                        <Trash2 data-icon="inline-start" />
+                        {t('webAdmin.iam.actions.delete')}
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </section>
+            </section>
+          </TabsContent>
+          <TabsContent value="menus">
+            <section className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+              <Card>
+                <CardHeader>
+                  <CardTitle>{t('webAdmin.iam.forms.menuTitle')}</CardTitle>
+                  <CardDescription>{t('webAdmin.iam.forms.menuDescription')}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <FieldGroup>
+                    <TextField
+                      label={t('webAdmin.iam.fields.name')}
+                      onChange={value => setMenuForm(current => ({ ...current, name: value }))}
+                      value={menuForm.name}
+                    />
+                    <TextField
+                      label={t('webAdmin.iam.fields.path')}
+                      onChange={value => setMenuForm(current => ({ ...current, path: value }))}
+                      value={menuForm.path}
+                    />
+                    <TextField
+                      label={t('webAdmin.iam.fields.component')}
+                      onChange={value => setMenuForm(current => ({ ...current, component: value }))}
+                      value={menuForm.component}
+                    />
+                    <TextField
+                      label={t('webAdmin.iam.fields.icon')}
+                      onChange={value => setMenuForm(current => ({ ...current, icon: value }))}
+                      value={menuForm.icon}
+                    />
+                    <TextField
+                      label={t('webAdmin.iam.fields.parentId')}
+                      onChange={value => setMenuForm(current => ({ ...current, parentId: value }))}
+                      value={menuForm.parentId}
+                    />
+                    <TextField
+                      label={t('webAdmin.iam.fields.permissionCodes')}
+                      onChange={value => setMenuForm(current => ({ ...current, permissionCodes: value }))}
+                      value={menuForm.permissionCodes}
+                    />
+                    <TextField
+                      label={t('webAdmin.iam.fields.order')}
+                      onChange={value => setMenuForm(current => ({ ...current, order: value }))}
+                      value={menuForm.order}
+                    />
+                  </FieldGroup>
+                </CardContent>
+                <CardFooter>
+                  <Button disabled={isMutating || !canManageIam} onClick={() => void submitMenu()}>
+                    <Plus data-icon="inline-start" />
+                    {t('webAdmin.iam.actions.createMenu')}
+                  </Button>
+                </CardFooter>
+              </Card>
+              <section className="grid gap-4">
+                {overview.menus.flatMap(flattenIamMenus).map(menu => (
+                  <Card key={menu.id}>
+                    <CardHeader>
+                      <CardTitle>{menu.name}</CardTitle>
+                      <CardDescription>{menu.path}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-wrap gap-2">
+                      <Badge>{menu.component}</Badge>
+                      <Badge variant="secondary">{menu.icon}</Badge>
+                      {menu.permissionCodes.map(permission => (
+                        <Badge key={permission} variant="outline">
+                          {permission}
+                        </Badge>
+                      ))}
+                    </CardContent>
+                    <CardFooter>
+                      <Button
+                        disabled={isMutating || !canManageIam}
+                        onClick={() => void runMutation(token => deleteIamMenu(token, menu.id))}
+                        variant="outline">
+                        <Trash2 data-icon="inline-start" />
+                        {t('webAdmin.iam.actions.delete')}
+                      </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </section>
@@ -522,7 +680,7 @@ export const AdminIamPage = () => {
                     </CardContent>
                     <CardFooter>
                       <Button
-                        disabled={session.status !== 'ONLINE'}
+                        disabled={session.status !== 'ONLINE' || !canRevokeSessions}
                         onClick={() => void revokeSession(session.id)}
                         variant="outline">
                         <LogOut data-icon="inline-start" />
@@ -541,8 +699,8 @@ export const AdminIamPage = () => {
               )}
             </section>
           </TabsContent>
-          <TabsContent value="policy">
-            <section className="grid gap-4 lg:grid-cols-2">
+          <TabsContent value="fields">
+            <section className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <Card>
                 <CardHeader>
                   <CardTitle>{t('webAdmin.iam.forms.fieldTitle')}</CardTitle>
@@ -573,12 +731,33 @@ export const AdminIamPage = () => {
                   </FieldGroup>
                 </CardContent>
                 <CardFooter>
-                  <Button disabled={isMutating} onClick={() => void submitFieldPermission()}>
+                  <Button disabled={isMutating || !canManageIam} onClick={() => void submitFieldPermission()}>
                     <Plus data-icon="inline-start" />
                     {t('webAdmin.iam.actions.createFieldPermission')}
                   </Button>
                 </CardFooter>
               </Card>
+              <PolicyCard
+                description={t('webAdmin.iam.policy.fieldDescription')}
+                deleteLabel={t('webAdmin.iam.actions.delete')}
+                items={overview.fieldPermissions.map(
+                  item => `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
+                )}
+                onDelete={
+                  canManageIam
+                    ? fieldPermissionId => void runMutation(token => deleteIamFieldPermission(token, fieldPermissionId))
+                    : undefined
+                }
+                rawItems={overview.fieldPermissions.map(item => ({
+                  id: item.id,
+                  label: `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
+                }))}
+                title={t('webAdmin.iam.tabs.fields')}
+              />
+            </section>
+          </TabsContent>
+          <TabsContent value="policies">
+            <section className="grid gap-4 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
               <Card>
                 <CardHeader>
                   <CardTitle>{t('webAdmin.iam.forms.policyTitle')}</CardTitle>
@@ -609,30 +788,29 @@ export const AdminIamPage = () => {
                   </FieldGroup>
                 </CardContent>
                 <CardFooter>
-                  <Button disabled={isMutating} onClick={() => void submitPolicy()}>
+                  <Button disabled={isMutating || !canUpdatePolicy} onClick={() => void submitPolicy()}>
                     <Plus data-icon="inline-start" />
                     {t('webAdmin.iam.actions.createPolicy')}
                   </Button>
                 </CardFooter>
               </Card>
               <PolicyCard
-                description={t('webAdmin.iam.policy.fieldDescription')}
-                items={overview.fieldPermissions.map(
-                  item => `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
-                )}
-                title={t('webAdmin.iam.tabs.fields')}
-              />
-              <PolicyCard
                 description={t('webAdmin.iam.policy.policyDescription')}
                 items={overview.policies.map(item => `${item.effect}:${item.resource}:${item.action}`)}
                 deleteLabel={t('webAdmin.iam.actions.delete')}
-                onDelete={policyId => void runMutation(token => deleteIamPolicy(token, policyId))}
+                onDelete={
+                  canUpdatePolicy ? policyId => void runMutation(token => deleteIamPolicy(token, policyId)) : undefined
+                }
                 rawItems={overview.policies.map(item => ({
                   id: item.id,
                   label: `${item.effect}:${item.resource}:${item.action}`,
                 }))}
                 title={t('webAdmin.iam.tabs.policies')}
               />
+            </section>
+          </TabsContent>
+          <TabsContent value="audit">
+            <section className="grid gap-4">
               <PolicyCard
                 description={t('webAdmin.iam.policy.auditDescription')}
                 items={overview.auditLogs.map(item => `${item.action}:${item.result}:${item.createdAt}`)}

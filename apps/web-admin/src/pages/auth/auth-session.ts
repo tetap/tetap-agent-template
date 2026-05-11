@@ -1,38 +1,43 @@
 import { adminAuthOutputSchema } from '@tetap/schema';
+import type { AdminSessionMenuNode } from '@tetap/hooks';
+import type { IamMenuNode } from '@tetap/schema/iam';
 import { loginAdmin } from '../../api/backend-admin.js';
 
-const createLocalAdminAuthResult = (email: string) =>
-  adminAuthOutputSchema.parse({
-    accessToken: `admin-local-${Date.now()}`,
+export const toSessionMenus = (menus: readonly IamMenuNode[]): AdminSessionMenuNode[] =>
+  menus.map(menu => ({
+    id: menu.id,
+    name: menu.name,
+    path: menu.path,
+    component: menu.component,
+    icon: menu.icon,
+    parentId: menu.parentId,
+    permissionCodes: menu.permissionCodes,
+    order: menu.order,
+    children: toSessionMenus(menu.children),
+  }));
+
+export const createAdminAuthResult = async (email: string, password: string, rememberMe = false) => {
+  const result = await loginAdmin({
+    username: email,
+    password,
+    rememberMe,
+    deviceType: 'WEB',
+  });
+
+  const auth = adminAuthOutputSchema.parse({
+    accessToken: result.accessToken,
     user: {
-      accountNo: 'admin-local',
-      email,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 8,
-      name: email.split('@')[0] || 'admin',
-      roles: ['admin'],
+      accountNo: result.user.id,
+      email: result.user.email,
+      exp: Math.floor(new Date(result.accessTokenExpiresAt).getTime() / 1000),
+      name: result.user.username,
+      roles: result.user.roleCodes,
     },
   });
 
-export const createAdminAuthResult = async (email: string, password: string, rememberMe = false) => {
-  try {
-    const result = await loginAdmin({
-      username: email,
-      password,
-      rememberMe,
-      deviceType: 'WEB',
-    });
-
-    return adminAuthOutputSchema.parse({
-      accessToken: result.accessToken,
-      user: {
-        accountNo: result.user.id,
-        email: result.user.email,
-        exp: Math.floor(new Date(result.accessTokenExpiresAt).getTime() / 1000),
-        name: result.user.username,
-        roles: result.user.roleCodes,
-      },
-    });
-  } catch {
-    return createLocalAdminAuthResult(email);
-  }
+  return {
+    ...auth,
+    capabilities: result.capabilities,
+    menus: toSessionMenus(result.menus),
+  };
 };

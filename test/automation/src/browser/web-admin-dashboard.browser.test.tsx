@@ -7,9 +7,57 @@ import { AdminShell } from '../../../../apps/web-admin/src/layout/admin-shell.ts
 import { SignInPage } from '../../../../apps/web-admin/src/pages/auth/sign-in.tsx';
 import { AdminDashboardPage } from '../../../../apps/web-admin/src/pages/dashboard.tsx';
 import { AdminIamPage } from '../../../../apps/web-admin/src/pages/iam.tsx';
-import { AdminPlaceholderPage } from '../../../../apps/web-admin/src/pages/placeholder.tsx';
 
 const i18n = createAdminI18n({ locale: 'en-US' });
+const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+const testMenus = [
+  {
+    id: 'dashboard',
+    name: 'Dashboard',
+    path: '/',
+    component: 'AdminDashboardPage',
+    icon: 'LayoutDashboard',
+    permissionCodes: [],
+    order: 1,
+    children: [],
+  },
+  {
+    id: 'iam',
+    name: 'IAM',
+    path: '/security/iam',
+    component: 'AdminIamPage',
+    icon: 'ShieldCheck',
+    permissionCodes: ['iam:read'],
+    order: 20,
+    children: [
+      {
+        id: 'roles',
+        name: 'Roles',
+        path: '/security/roles',
+        component: 'AdminRolesPage',
+        icon: 'UserCog',
+        permissionCodes: ['role:read'],
+        order: 22,
+        children: [],
+      },
+    ],
+  },
+] as const;
+const testCapabilities = [
+  'iam:read',
+  'iam:manage',
+  'audit:read',
+  'field:read',
+  'menu:read',
+  'user:read',
+  'user:update',
+  'role:read',
+  'role:update',
+  'session:read',
+  'session:revoke',
+  'policy:read',
+  'policy:update',
+] as const;
 
 const renderWithI18n = (router: ReturnType<typeof createMemoryRouter>) =>
   render(
@@ -21,18 +69,101 @@ const renderWithI18n = (router: ReturnType<typeof createMemoryRouter>) =>
 const seedAdminSession = () => {
   const auth = useAdminSessionStore.getState().auth;
 
-  auth.setAccessToken('browser-test-token');
-  auth.setUser({
-    accountNo: 'browser-test-admin',
-    email: 'admin@example.com',
-    exp: Math.floor(Date.now() / 1000) + 3600,
-    name: 'Admin',
-    roles: ['admin'],
+  auth.setContext({
+    accessToken: 'browser-test-token',
+    capabilities: testCapabilities,
+    menus: testMenus,
+    user: {
+      accountNo: 'browser-test-admin',
+      email: 'admin@example.com',
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      name: 'Admin',
+      roles: ['admin'],
+    },
   });
 };
 
+const createLoginResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: {
+    accessToken: 'browser-test-token',
+    refreshToken: 'browser-refresh-token',
+    accessTokenExpiresAt: expiresAt,
+    refreshTokenExpiresAt: expiresAt,
+    tokenId: 'browser-token-id',
+    capabilities: testCapabilities,
+    menus: testMenus,
+    user: {
+      id: '1',
+      username: 'admin',
+      email: 'admin@tetap.local',
+      status: 'ACTIVE',
+      deptId: '100',
+      tenantId: 'tenant-default',
+      isSuperAdmin: true,
+      roleCodes: ['super-admin'],
+      tokenVersion: 1,
+    },
+  },
+});
+
+const createOverviewResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: {
+    users: [
+      {
+        id: '1',
+        username: 'admin',
+        email: 'admin@tetap.local',
+        status: 'ACTIVE',
+        deptId: '100',
+        tenantId: 'tenant-default',
+        isSuperAdmin: true,
+        roleCodes: ['super-admin'],
+        tokenVersion: 1,
+      },
+    ],
+    roles: [
+      {
+        id: '1',
+        name: 'Super Admin',
+        code: 'super-admin',
+        description: 'Full access',
+        permissionCodes: ['iam:read'],
+        dataScope: { type: 'ALL' },
+      },
+    ],
+    permissions: [
+      {
+        id: '1',
+        code: 'iam:read',
+        name: 'Read IAM',
+        type: 'API',
+        resource: 'iam',
+        action: 'read',
+      },
+    ],
+    menus: testMenus,
+    fieldPermissions: [],
+    policies: [],
+    sessions: [],
+    auditLogs: [],
+  },
+});
+
 const renderAdminShell = async () => {
   seedAdminSession();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => {
+      return new Response(JSON.stringify(createOverviewResponse()), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
 
   const router = createMemoryRouter([
     {
@@ -43,15 +174,6 @@ const renderAdminShell = async () => {
           index: true,
           element: <AdminDashboardPage />,
         },
-        {
-          path: 'users',
-          element: (
-            <AdminPlaceholderPage
-              descriptionKey="webAdmin.placeholder.users.description"
-              titleKey="webAdmin.placeholder.users.title"
-            />
-          ),
-        },
       ],
     },
   ]);
@@ -60,6 +182,19 @@ const renderAdminShell = async () => {
 };
 
 const renderSignIn = async () => {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      const body = url.includes('/iam/overview') ? createOverviewResponse() : createLoginResponse();
+
+      return new Response(JSON.stringify(body), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
+
   const router = createMemoryRouter(
     [
       {
@@ -90,52 +225,7 @@ const renderIamPage = async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async () => {
-      const body = {
-        code: 0,
-        message: 'ok',
-        data: {
-          users: [
-            {
-              id: '1',
-              username: 'admin',
-              email: 'admin@tetap.local',
-              status: 'ACTIVE',
-              deptId: '100',
-              tenantId: 'tenant-default',
-              isSuperAdmin: true,
-              roleCodes: ['super-admin'],
-              tokenVersion: 1,
-            },
-          ],
-          roles: [
-            {
-              id: '1',
-              name: 'Super Admin',
-              code: 'super-admin',
-              description: 'Full access',
-              permissionCodes: ['iam:read'],
-              dataScope: { type: 'ALL' },
-            },
-          ],
-          permissions: [
-            {
-              id: '1',
-              code: 'iam:read',
-              name: 'Read IAM',
-              type: 'API',
-              resource: 'iam',
-              action: 'read',
-            },
-          ],
-          menus: [],
-          fieldPermissions: [],
-          policies: [],
-          sessions: [],
-          auditLogs: [],
-        },
-      };
-
-      return new Response(JSON.stringify(body), {
+      return new Response(JSON.stringify(createOverviewResponse()), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -196,7 +286,9 @@ describe('admin web dashboard browser behavior', () => {
     await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.title')).query()).not.toBeNull();
     await expect.poll(() => screen.getByText('admin@tetap.local').query()).not.toBeNull();
     expect(screen.getByRole('tab', { exact: true, name: i18n.t('webAdmin.iam.tabs.users') }).query()).not.toBeNull();
-    expect(screen.getByRole('tab', { name: i18n.t('webAdmin.iam.tabs.permissions') }).query()).not.toBeNull();
+    expect(
+      screen.getByRole('tab', { exact: true, name: i18n.t('webAdmin.iam.tabs.permissions') }).query(),
+    ).not.toBeNull();
     expect(fetch).toHaveBeenCalled();
   });
 });

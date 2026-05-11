@@ -1,12 +1,40 @@
+import { KeyRound, LayoutDashboard, LockKeyhole, MonitorCog, ShieldCheck, UserCog, Users } from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from '@tetap/ui';
-import { useAdminT } from '@tetap/hooks';
-import { sidebarData } from './data/sidebar-data.js';
+import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
+import { adminTeams } from './data/team-data.js';
 import { NavGroup } from './nav-group.js';
 import { NavUser } from './nav-user.js';
 import { TeamSwitcher } from './team-switcher.js';
+import type { AdminNavItem } from './types.js';
+
+const menuIconMap = {
+  KeyRound,
+  LayoutDashboard,
+  LockKeyhole,
+  MonitorCog,
+  ShieldCheck,
+  UserCog,
+  Users,
+} as const;
+
+const toNavItem = (menu: AdminSessionMenuNode): AdminNavItem => ({
+  title: menu.name,
+  url: menu.path,
+  icon: menuIconMap[menu.icon as keyof typeof menuIconMap],
+  items: menu.children.map(toNavItem),
+});
 
 export const AppSidebar = () => {
   const t = useAdminT();
+  const menus = useAdminSessionStore(state => state.auth.menus);
+  const navGroups = menus.length
+    ? [
+        {
+          titleKey: 'webAdmin.navigation.groups.backendMenus' as const,
+          items: menus.map(toNavItem),
+        },
+      ]
+    : [];
 
   return (
     <Sidebar
@@ -16,10 +44,10 @@ export const AppSidebar = () => {
       mobileTitle={t('webAdmin.layout.sidebarTitle')}
       variant="inset">
       <SidebarHeader>
-        <TeamSwitcher teams={sidebarData.teams} />
+        <TeamSwitcher teams={adminTeams} />
       </SidebarHeader>
       <SidebarContent>
-        {sidebarData.navGroups.map(group => (
+        {navGroups.map(group => (
           <NavGroup {...group} key={group.titleKey} />
         ))}
       </SidebarContent>

@@ -1,7 +1,10 @@
 import { Link, useNavigate, useSearchParams } from 'react-router';
+import { useState } from 'react';
 import { Facebook, Github, LogIn } from 'lucide-react';
 import { adminSignInInputSchema, type AdminSignInInput } from '@tetap/schema';
 import {
+  Alert,
+  AlertDescription,
   Button,
   Card,
   CardContent,
@@ -25,8 +28,8 @@ export const SignInPage = () => {
   const t = useAdminT();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const setAccessToken = useAdminSessionStore(state => state.auth.setAccessToken);
-  const setUser = useAdminSessionStore(state => state.auth.setUser);
+  const setContext = useAdminSessionStore(state => state.auth.setContext);
+  const [authError, setAuthError] = useState<string | null>(null);
   const form = useZodForm<AdminSignInInput>(adminSignInInputSchema, {
     defaultValues: {
       email: '',
@@ -39,10 +42,15 @@ export const SignInPage = () => {
   const passwordErrorKey = getAdminAuthFieldErrorKey(errors.password, 'webAdmin.auth.validation.password');
 
   const onSubmit = form.handleSubmit(async values => {
-    const authResult = await createAdminAuthResult(values.email, values.password, values.rememberMe);
-    setAccessToken(authResult.accessToken);
-    setUser(authResult.user);
-    void navigate(searchParams.get('redirect') || '/', { replace: true });
+    setAuthError(null);
+
+    try {
+      const authResult = await createAdminAuthResult(values.email, values.password, values.rememberMe);
+      setContext(authResult);
+      void navigate(searchParams.get('redirect') || '/', { replace: true });
+    } catch {
+      setAuthError(t('webAdmin.auth.signIn.loginFailed'));
+    }
   });
 
   return (
@@ -60,6 +68,11 @@ export const SignInPage = () => {
         <CardContent>
           <form onSubmit={onSubmit}>
             <FieldGroup className="gap-3">
+              {authError ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{authError}</AlertDescription>
+                </Alert>
+              ) : null}
               <Field data-invalid={Boolean(emailErrorKey)}>
                 <FieldLabel htmlFor="admin-sign-in-email">{t('webAdmin.auth.fields.email')}</FieldLabel>
                 <Input

@@ -5,7 +5,8 @@ import type { LucideIcon } from 'lucide-react';
 export type AdminLogo = (props: SVGProps<SVGSVGElement>) => ReactNode;
 
 export type AdminNavItem = {
-  titleKey: AdminMessageKey;
+  title?: string;
+  titleKey?: AdminMessageKey;
   url: string;
   icon?: LucideIcon;
   badgeKey?: AdminMessageKey;
@@ -13,7 +14,8 @@ export type AdminNavItem = {
 };
 
 export type AdminNavGroup = {
-  titleKey: AdminMessageKey;
+  title?: string;
+  titleKey?: AdminMessageKey;
   items: readonly AdminNavItem[];
 };
 
@@ -21,9 +23,4 @@ export type AdminTeam = {
   nameKey: AdminMessageKey;
   planKey: AdminMessageKey;
   logo: AdminLogo;
-};
-
-export type AdminSidebarData = {
-  teams: readonly AdminTeam[];
-  navGroups: readonly AdminNavGroup[];
 };

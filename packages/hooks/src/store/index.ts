@@ -5,6 +5,6 @@ export { useZodForm } from './use-zod-form.js';
 export type { UseZodFormOptions } from './use-zod-form.js';
 export { useIsMobile } from './use-is-mobile.js';
 export { useAdminSessionStore } from './use-admin-session.js';
-export type { AdminSessionStoreState, AdminSessionUser } from './use-admin-session.js';
+export type { AdminSessionMenuNode, AdminSessionStoreState, AdminSessionUser } from './use-admin-session.js';
 export { useAdminI18n, useAdminT } from './use-admin-i18n.js';
 export { usePublicI18n, usePublicT } from './use-public-i18n.js';

@@ -4,6 +4,7 @@ import {
   iamCreatePolicyRequestSchema,
   iamCreateRoleRequestSchema,
   iamCreateUserRequestSchema,
+  iamCurrentUserResponseSchema,
   iamFieldPermissionMutationResponseSchema,
   iamMenuMutationResponseSchema,
   iamCreateMenuRequestSchema,
@@ -19,6 +20,7 @@ import {
   iamUpdatePermissionRequestSchema,
   iamUpdatePolicyRequestSchema,
   iamUpdateRoleRequestSchema,
+  iamUpdateUserRequestSchema,
   iamUserMutationResponseSchema,
   type IamCreateFieldPermissionRequest,
   type IamCreateMenuRequest,
@@ -32,6 +34,7 @@ import {
   type IamUpdatePermissionRequest,
   type IamUpdatePolicyRequest,
   type IamUpdateRoleRequest,
+  type IamUpdateUserRequest,
 } from '@tetap/schema/iam';
 
 const metaEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
@@ -66,6 +69,22 @@ export const loginAdmin = async (input: IamLoginRequest) => {
   return iamLoginResponseSchema.parse(response).data;
 };
 
+export const fetchAdminBootstrap = async (accessToken: string) => {
+  const response = await requestJson('/auth/me', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamCurrentUserResponseSchema.parse(response).data;
+};
+
+export const logoutAdmin = async (accessToken: string) => {
+  await requestJson('/auth/logout', {
+    headers: createHeaders(accessToken),
+    method: 'POST',
+  });
+};
+
 export const fetchIamOverview = async (accessToken: string) => {
   const response = await requestJson('/iam/overview', {
     headers: createHeaders(accessToken),
@@ -84,12 +103,32 @@ export const revokeIamSession = async (accessToken: string, sessionId: string) =
   return iamSessionRevokeResponseSchema.parse(response).data;
 };
 
+export const revokeIamUserSessions = async (accessToken: string, userId: string) => {
+  const response = await requestJson(`/iam/users/${encodeURIComponent(userId)}/revoke-sessions`, {
+    headers: createHeaders(accessToken),
+    method: 'POST',
+  });
+
+  return iamSessionRevokeResponseSchema.parse(response).data;
+};
+
 export const createIamUser = async (accessToken: string, input: IamCreateUserRequest) => {
   const body = iamCreateUserRequestSchema.parse(input);
   const response = await requestJson('/iam/users', {
     body: JSON.stringify(body),
     headers: createHeaders(accessToken),
     method: 'POST',
+  });
+
+  return iamUserMutationResponseSchema.parse(response).data;
+};
+
+export const updateIamUser = async (accessToken: string, userId: string, input: IamUpdateUserRequest) => {
+  const body = iamUpdateUserRequestSchema.parse(input);
+  const response = await requestJson(`/iam/users/${encodeURIComponent(userId)}`, {
+    body: JSON.stringify(body),
+    headers: createHeaders(accessToken),
+    method: 'PATCH',
   });
 
   return iamUserMutationResponseSchema.parse(response).data;

@@ -57,7 +57,7 @@ export const enUS = {
   site: {
     meta: {
       title: 'TETAP Agent Template Site',
-      description: 'A VitePress promotional page inspired by the Anime.js homepage.',
+      description: 'A VitePress technical documentation entry for an open-source enterprise app template.',
     },
     nav: {
       ariaLabel: 'Promotional site navigation',
@@ -66,6 +66,11 @@ export const enUS = {
       architecture: 'Architecture',
       quality: 'Quality gates',
       cta: 'Get started',
+    },
+    a11y: {
+      heroActions: 'Hero actions',
+      metrics: 'Site metrics',
+      featureGallery: 'Feature capability list',
     },
     hero: {
       eyebrow: 'Agent-first monorepo',
@@ -238,6 +243,7 @@ export const enUS = {
         general: 'General',
         pages: 'Pages',
         other: 'Other',
+        backendMenus: 'Menus',
         platform: 'Platform',
         system: 'System',
       },
@@ -288,10 +294,13 @@ export const enUS = {
         description: 'Enter your email and password to access the admin console. No account yet?',
         signUpLink: 'Sign up',
         forgotPassword: 'Forgot password?',
+        loginFailed: 'Unable to sign in. Start backend-admin and use a valid admin account.',
       },
       signUp: {
         title: 'Create an admin account',
-        description: 'Enter your email and password to create an admin account. Already have an account?',
+        description: 'Admin accounts are created by authorized operators in user management.',
+        adminManaged:
+          'Self-service admin registration is disabled for security. Sign in with an account created by an administrator.',
         signInLink: 'Sign in',
       },
       forgotPassword: {
@@ -374,24 +383,27 @@ export const enUS = {
       metrics: {
         activeUsers: {
           label: 'Active users',
-          value: '12,482',
-          trend: 'Up 8.2% from last week',
+          value: '0',
+          trend: 'Loaded from backend-admin users',
         },
         adminTasks: {
-          label: 'Open admin tasks',
-          value: '24',
-          trend: 'Includes account reviews and permission checks',
+          label: 'Roles',
+          value: '0',
+          trend: 'Loaded from IAM role configuration',
         },
         securityEvents: {
-          label: 'Security events',
-          value: '3',
-          trend: 'All events are being processed',
+          label: 'Audit events',
+          value: '0',
+          trend: 'Loaded from backend audit logs',
         },
         backendStatus: {
-          label: 'Admin backend',
-          value: 'Online',
-          trend: 'Management APIs are served by backend-admin',
+          label: 'Online sessions',
+          value: '0',
+          trend: 'Loaded from revocable login sessions',
         },
+      },
+      states: {
+        loadFailed: 'Failed to load dashboard data. Confirm the backend-admin service is running.',
       },
       users: {
         title: 'User management entry',
@@ -400,8 +412,9 @@ export const enUS = {
       },
       activity: {
         title: 'Security and audit activity',
-        description: 'Keep critical admin actions visible before real audit data is connected.',
+        description: 'Shows the latest audit events returned by backend-admin.',
         timestamp: 'Updated just now',
+        empty: 'No audit events yet.',
         items: {
           audit: 'An administrator login audit entry was recorded.',
           userReview: 'A user profile is waiting for review.',
@@ -419,6 +432,7 @@ export const enUS = {
         users: 'Users',
         roles: 'Roles',
         permissions: 'Permissions',
+        menus: 'Menus',
         sessions: 'Online users',
         policy: 'Policy',
         fields: 'Field permissions',
@@ -427,26 +441,35 @@ export const enUS = {
       },
       actions: {
         createFieldPermission: 'Create field permission',
+        createMenu: 'Create menu',
         createPermission: 'Create permission',
         createPolicy: 'Create policy',
         createRole: 'Create role',
         createUser: 'Create user',
+        activateUser: 'Activate account',
         delete: 'Delete',
+        disableUser: 'Disable account',
         grantPermission: 'Grant form permission',
         refresh: 'Refresh',
         revoke: 'Force offline',
+        revokeUserSessions: 'Force all devices offline',
       },
       fields: {
         action: 'Action',
         code: 'Code',
+        component: 'Component',
         conditions: 'Conditions JSON',
         dataScope: 'Data scope',
         deptId: 'Department ID',
         effect: 'Effect',
         email: 'Email',
         fieldName: 'Field name',
+        icon: 'Icon',
         name: 'Name',
+        order: 'Order',
+        parentId: 'Parent menu ID',
         password: 'Password',
+        path: 'Path',
         permissionCodes: 'Permission codes',
         permissionType: 'Field permission type',
         resource: 'Resource',
@@ -458,6 +481,8 @@ export const enUS = {
       forms: {
         fieldDescription: 'Configure hide, mask, readonly, or editable field rules for a role.',
         fieldTitle: 'New field permission',
+        menuDescription: 'Maintain the dynamic menu tree returned to the admin app by the backend.',
+        menuTitle: 'New menu',
         permissionDescription: 'Maintain permission codes used by roles, buttons, menus, and APIs.',
         permissionTitle: 'New permission',
         policyDescription: 'Create dynamic ABAC/PBAC policies with JSON conditions.',
@@ -488,80 +513,22 @@ export const enUS = {
         revokeFailed: 'Failed to force the session offline. Please try again.',
       },
     },
-    placeholder: {
-      content:
-        'This page is wired into the admin layout. Future forms and API contracts must continue through shared packages.',
-      users: {
-        title: 'User management',
-        description: 'Hosts user lists, profile review, and account status management.',
-      },
-      tasks: {
-        title: 'Tasks',
-        description: 'Prepares workflow task boards and assignment queues.',
-      },
-      apps: {
-        title: 'Apps',
-        description: 'Prepares connected app and integration management.',
-      },
-      chats: {
-        title: 'Chats',
-        description: 'Prepares internal admin conversations and support threads.',
-      },
-      security: {
-        title: 'Security center',
-        description: 'Centralizes audit, risk, and role-permission entry points.',
-      },
+    statePages: {
       unauthorized: {
         title: 'Unauthorized',
-        description: 'Demonstrates the admin unauthorized state.',
+        description: 'Sign in to the admin console before continuing.',
       },
       forbidden: {
         title: 'Forbidden',
-        description: 'Demonstrates the admin forbidden state.',
+        description: 'The current account does not have permission to access this admin feature.',
       },
       notFound: {
         title: 'Not found',
-        description: 'Demonstrates the admin not-found state.',
+        description: 'The requested admin page does not exist, or the current account has no visible menu.',
       },
       internalError: {
         title: 'Internal server error',
-        description: 'Demonstrates the admin server-error state.',
-      },
-      audit: {
-        title: 'Audit logs',
-        description: 'Connects future admin action audit queries.',
-      },
-      roles: {
-        title: 'Roles and permissions',
-        description: 'Maintains administrator roles, permissions, and authorization policy.',
-      },
-      settings: {
-        title: 'System settings',
-        description: 'Configures future admin runtime settings.',
-      },
-      account: {
-        title: 'Account settings',
-        description: 'Maintains the current administrator profile.',
-      },
-      billing: {
-        title: 'Billing settings',
-        description: 'Hosts future subscription and invoice information.',
-      },
-      notifications: {
-        title: 'Notification settings',
-        description: 'Manages admin alerts and message policies.',
-      },
-      appearance: {
-        title: 'Appearance settings',
-        description: 'Prepares future theme and density preferences.',
-      },
-      display: {
-        title: 'Display settings',
-        description: 'Prepares future dashboard display options.',
-      },
-      helpCenter: {
-        title: 'Help Center',
-        description: 'Hosts future operator documentation and support entries.',
+        description: 'The admin service is temporarily unavailable. Try again later.',
       },
     },
     actions: {

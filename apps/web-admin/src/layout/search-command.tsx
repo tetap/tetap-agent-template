@@ -12,13 +12,17 @@ import {
   CommandSeparator,
   ScrollArea,
 } from '@tetap/ui';
-import { useAdminT } from '@tetap/hooks';
-import { sidebarData } from './data/sidebar-data.js';
+import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
+
+const flattenMenus = (menus: readonly AdminSessionMenuNode[]): AdminSessionMenuNode[] =>
+  menus.flatMap(menu => [menu, ...flattenMenus(menu.children)]);
 
 export const SearchCommand = () => {
   const t = useAdminT();
   const navigate = useNavigate();
+  const menus = useAdminSessionStore(state => state.auth.menus);
   const [open, setOpen] = useState(false);
+  const searchableMenus = flattenMenus(menus);
 
   const runCommand = (path: string) => {
     setOpen(false);
@@ -43,21 +47,14 @@ export const SearchCommand = () => {
         <CommandList>
           <ScrollArea>
             <CommandEmpty>{t('webAdmin.layout.search.empty')}</CommandEmpty>
-            {sidebarData.navGroups.map(group => (
-              <CommandGroup heading={t(group.titleKey)} key={group.titleKey}>
-                {group.items
-                  .flatMap(item => [item, ...(item.items ?? [])])
-                  .map(item => (
-                    <CommandItem
-                      key={`${item.titleKey}-${item.url}`}
-                      onSelect={() => runCommand(item.url)}
-                      value={t(item.titleKey)}>
-                      <ArrowRight />
-                      {t(item.titleKey)}
-                    </CommandItem>
-                  ))}
-              </CommandGroup>
-            ))}
+            <CommandGroup heading={t('webAdmin.navigation.groups.backendMenus')}>
+              {searchableMenus.map(menu => (
+                <CommandItem key={`${menu.id}-${menu.path}`} onSelect={() => runCommand(menu.path)} value={menu.name}>
+                  <ArrowRight />
+                  {menu.name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
             <CommandSeparator />
           </ScrollArea>
         </CommandList>

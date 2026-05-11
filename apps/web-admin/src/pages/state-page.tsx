@@ -1,4 +1,4 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@tetap/ui';
+import { Card, CardDescription, CardHeader, CardTitle } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 import type { AdminMessageKey } from '@tetap/i18n/admin';
 import { AdminHeader } from '../layout/header.js';
@@ -6,7 +6,7 @@ import { AdminMain } from '../layout/main.js';
 import { ProfileDropdown } from '../layout/profile-dropdown.js';
 import { SearchCommand } from '../layout/search-command.js';
 
-export const AdminPlaceholderPage = ({
+export const AdminStatePage = ({
   descriptionKey,
   titleKey,
 }: {
@@ -32,7 +32,6 @@ export const AdminPlaceholderPage = ({
             <CardTitle>{t(titleKey)}</CardTitle>
             <CardDescription>{t(descriptionKey)}</CardDescription>
           </CardHeader>
-          <CardContent>{t('webAdmin.placeholder.content')}</CardContent>
         </Card>
       </AdminMain>
     </>

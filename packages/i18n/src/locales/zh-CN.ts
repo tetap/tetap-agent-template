@@ -51,7 +51,7 @@ export const zhCN = {
   site: {
     meta: {
       title: 'TETAP Agent Template 宣传站',
-      description: '参考 Anime.js 官网风格设计的 VitePress 宣传页。',
+      description: '面向开源企业应用模板的 VitePress 技术文档入口。',
     },
     nav: {
       ariaLabel: '宣传站导航',
@@ -60,6 +60,11 @@ export const zhCN = {
       architecture: '架构',
       quality: '质量门禁',
       cta: '开始使用',
+    },
+    a11y: {
+      heroActions: '首页操作',
+      metrics: '站点指标',
+      featureGallery: '功能能力列表',
     },
     hero: {
       eyebrow: 'Agent-first monorepo',
@@ -225,6 +230,7 @@ export const zhCN = {
         general: 'General',
         pages: 'Pages',
         other: 'Other',
+        backendMenus: '菜单',
         platform: '平台管理',
         system: '系统配置',
       },
@@ -275,10 +281,12 @@ export const zhCN = {
         description: '输入邮箱和密码以访问后台管理。还没有账号？',
         signUpLink: '注册',
         forgotPassword: '忘记密码？',
+        loginFailed: '登录失败。请启动 backend-admin，并使用有效的管理员账号。',
       },
       signUp: {
         title: '创建后台账号',
-        description: '输入邮箱和密码创建后台账号。已有账号？',
+        description: '后台账号由已授权管理员在用户管理中创建。',
+        adminManaged: '出于安全原因，后台不开放自助注册。请使用管理员创建的账号登录。',
         signInLink: '登录',
       },
       forgotPassword: {
@@ -361,24 +369,27 @@ export const zhCN = {
       metrics: {
         activeUsers: {
           label: '活跃用户',
-          value: '12,482',
-          trend: '较上周提升 8.2%',
+          value: '0',
+          trend: '来自 backend-admin 用户数据',
         },
         adminTasks: {
-          label: '待处理任务',
-          value: '24',
-          trend: '包含账号审核与权限复核',
+          label: '角色',
+          value: '0',
+          trend: '来自 IAM 角色配置',
         },
         securityEvents: {
-          label: '安全事件',
-          value: '3',
-          trend: '全部处于处理中状态',
+          label: '审计事件',
+          value: '0',
+          trend: '来自后端审计日志',
         },
         backendStatus: {
-          label: '后台服务',
-          value: '在线',
-          trend: '通过 backend-admin 提供管理接口',
+          label: '在线会话',
+          value: '0',
+          trend: '来自可失效登录会话',
         },
+      },
+      states: {
+        loadFailed: '后台首页数据加载失败，请确认 backend-admin 服务已启动。',
       },
       users: {
         title: '用户管理入口',
@@ -387,8 +398,9 @@ export const zhCN = {
       },
       activity: {
         title: '安全与审计动态',
-        description: '保留管理端关键动作的可见性，便于后续接入真实审计数据。',
+        description: '展示 backend-admin 返回的最新审计事件。',
         timestamp: '刚刚更新',
+        empty: '暂无审计事件。',
         items: {
           audit: '已记录一次管理员登录审计。',
           userReview: '有新的用户资料等待复核。',
@@ -405,6 +417,7 @@ export const zhCN = {
         users: '用户',
         roles: '角色',
         permissions: '权限码',
+        menus: '菜单',
         sessions: '在线用户',
         policy: '策略',
         fields: '字段权限',
@@ -413,26 +426,35 @@ export const zhCN = {
       },
       actions: {
         createFieldPermission: '创建字段权限',
+        createMenu: '创建菜单',
         createPermission: '创建权限码',
         createPolicy: '创建策略',
         createRole: '创建角色',
         createUser: '创建用户',
+        activateUser: '启用账号',
         delete: '删除',
+        disableUser: '禁用账号',
         grantPermission: '授予表单权限码',
         refresh: '刷新',
         revoke: '强制下线',
+        revokeUserSessions: '踢下线全部设备',
       },
       fields: {
         action: '动作',
         code: '编码',
+        component: '组件',
         conditions: '条件 JSON',
         dataScope: '数据范围',
         deptId: '部门 ID',
         effect: '效果',
         email: '邮箱',
         fieldName: '字段名',
+        icon: '图标',
         name: '名称',
+        order: '排序',
+        parentId: '父级菜单 ID',
         password: '密码',
+        path: '路径',
         permissionCodes: '权限码',
         permissionType: '字段权限类型',
         resource: '资源',
@@ -444,6 +466,8 @@ export const zhCN = {
       forms: {
         fieldDescription: '为角色配置字段隐藏、脱敏、只读或可编辑规则。',
         fieldTitle: '新增字段权限',
+        menuDescription: '维护后端返回给管理端的动态菜单树。',
+        menuTitle: '新增菜单',
         permissionDescription: '维护可被角色、按钮、菜单和 API 使用的权限码。',
         permissionTitle: '新增权限码',
         policyDescription: '使用 JSON 条件创建 ABAC/PBAC 动态策略。',
@@ -474,79 +498,22 @@ export const zhCN = {
         revokeFailed: '强制下线失败，请稍后重试。',
       },
     },
-    placeholder: {
-      content: '该页面已接入后台布局，后续业务表单和接口契约必须继续从共享 packages 扩展。',
-      users: {
-        title: '用户管理',
-        description: '用于承载用户列表、资料复核和账号状态管理。',
-      },
-      tasks: {
-        title: '任务',
-        description: '用于后续承载工作流任务看板和指派队列。',
-      },
-      apps: {
-        title: '应用',
-        description: '用于后续管理接入应用和集成配置。',
-      },
-      chats: {
-        title: '会话',
-        description: '用于后续承载后台内部沟通和支持会话。',
-      },
-      security: {
-        title: '安全中心',
-        description: '用于集中展示审计、风险和角色权限入口。',
-      },
+    statePages: {
       unauthorized: {
         title: '未认证',
-        description: '用于展示后台未认证状态。',
+        description: '请先登录后台管理后再继续访问。',
       },
       forbidden: {
         title: '无权限',
-        description: '用于展示后台无权限状态。',
+        description: '当前账号没有访问该后台功能所需的权限。',
       },
       notFound: {
         title: '未找到',
-        description: '用于展示后台未找到状态。',
+        description: '请求的后台页面不存在，或当前账号没有可见菜单。',
       },
       internalError: {
         title: '服务错误',
-        description: '用于展示后台服务错误状态。',
-      },
-      audit: {
-        title: '审计日志',
-        description: '用于后续接入后台管理操作审计查询。',
-      },
-      roles: {
-        title: '角色权限',
-        description: '用于后续维护管理员角色、权限和授权策略。',
-      },
-      settings: {
-        title: '系统设置',
-        description: '用于后续配置后台管理运行参数。',
-      },
-      account: {
-        title: '账号设置',
-        description: '用于维护当前管理员账号资料。',
-      },
-      billing: {
-        title: '计费设置',
-        description: '用于后续承载订阅和账单信息。',
-      },
-      notifications: {
-        title: '通知设置',
-        description: '用于后续管理后台提醒和消息策略。',
-      },
-      appearance: {
-        title: '外观设置',
-        description: '用于后续配置主题和密度偏好。',
-      },
-      display: {
-        title: '显示设置',
-        description: '用于后续配置仪表盘显示选项。',
-      },
-      helpCenter: {
-        title: '帮助中心',
-        description: '用于后续承载操作文档和支持入口。',
+        description: '后台管理服务暂时不可用，请稍后重试。',
       },
     },
     actions: {

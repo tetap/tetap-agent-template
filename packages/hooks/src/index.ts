@@ -11,6 +11,7 @@ export {
 } from './store/index.js';
 export type {
   AdminSessionStoreState,
+  AdminSessionMenuNode,
   AdminSessionUser,
   UseDisclosureOptions,
   UseZodFormOptions,
