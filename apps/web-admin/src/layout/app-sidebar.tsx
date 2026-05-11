@@ -1,7 +1,17 @@
-import { KeyRound, LayoutDashboard, LockKeyhole, MonitorCog, ShieldCheck, UserCog, Users } from 'lucide-react';
+import {
+  KeyRound,
+  LayoutDashboard,
+  LockKeyhole,
+  MonitorCog,
+  Settings,
+  ShieldCheck,
+  UserCog,
+  Users,
+} from 'lucide-react';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarRail } from '@tetap/ui';
 import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
 import { adminTeams } from './data/team-data.js';
+import { adminMenuTitleKeyMap } from './menu-labels.js';
 import { NavGroup } from './nav-group.js';
 import { NavUser } from './nav-user.js';
 import { TeamSwitcher } from './team-switcher.js';
@@ -12,6 +22,7 @@ const menuIconMap = {
   LayoutDashboard,
   LockKeyhole,
   MonitorCog,
+  Settings,
   ShieldCheck,
   UserCog,
   Users,
@@ -19,6 +30,7 @@ const menuIconMap = {
 
 const toNavItem = (menu: AdminSessionMenuNode): AdminNavItem => ({
   title: menu.name,
+  titleKey: adminMenuTitleKeyMap[menu.id],
   url: menu.path,
   icon: menuIconMap[menu.icon as keyof typeof menuIconMap],
   items: menu.children.map(toNavItem),

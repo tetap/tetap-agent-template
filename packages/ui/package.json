@@ -105,6 +105,10 @@
       "types": "./dist/components/ui/tabs.d.ts",
       "import": "./dist/components/ui/tabs.js"
     },
+    "./table": {
+      "types": "./dist/components/ui/table.d.ts",
+      "import": "./dist/components/ui/table.js"
+    },
     "./tooltip": {
       "types": "./dist/components/ui/tooltip.d.ts",
       "import": "./dist/components/ui/tooltip.js"

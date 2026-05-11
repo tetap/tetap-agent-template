@@ -9,7 +9,17 @@ import { SignInPage } from './pages/auth/sign-in.js';
 import { SignUpPage } from './pages/auth/sign-up.js';
 import { toSessionMenus } from './pages/auth/auth-session.js';
 import { AdminDashboardPage } from './pages/dashboard.js';
-import { AdminIamPage } from './pages/iam.js';
+import {
+  AdminAuditPage,
+  AdminFieldPermissionsPage,
+  AdminIamOverviewPage,
+  AdminMenusPage,
+  AdminPermissionsPage,
+  AdminPoliciesPage,
+  AdminRolesPage,
+  AdminSessionsPage,
+  AdminUsersPage,
+} from './pages/iam.js';
 import { AdminStatePage } from './pages/state-page.js';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
@@ -94,21 +104,73 @@ const router = createBrowserRouter([
       },
       {
         path: 'users',
+        element: <Navigate replace to="/system/user" />,
+      },
+      {
+        path: 'system',
+        element: <Navigate replace to="/system/user" />,
+      },
+      {
+        path: 'system/users',
+        element: <Navigate replace to="/system/user" />,
+      },
+      {
+        path: 'system/user',
         element: (
           <PermissionRoute permission="user:read">
-            <AdminIamPage defaultTab="users" />
+            <AdminUsersPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'system/roles',
+        element: <Navigate replace to="/system/role" />,
+      },
+      {
+        path: 'system/role',
+        element: (
+          <PermissionRoute permission="role:read">
+            <AdminRolesPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'system/permissions',
+        element: <Navigate replace to="/system/permission" />,
+      },
+      {
+        path: 'system/permission',
+        element: (
+          <PermissionRoute permission="iam:read">
+            <AdminPermissionsPage />
+          </PermissionRoute>
+        ),
+      },
+      {
+        path: 'system/menus',
+        element: <Navigate replace to="/system/menu" />,
+      },
+      {
+        path: 'system/menu',
+        element: (
+          <PermissionRoute permission="menu:read">
+            <AdminMenusPage />
           </PermissionRoute>
         ),
       },
       {
         path: 'security',
-        element: <Navigate replace to="/security/iam" />,
+        element: <Navigate replace to="/security/sessions" />,
       },
       {
         path: 'security/iam',
+        element: <Navigate replace to="/system/permission" />,
+      },
+      {
+        path: 'security/overview',
         element: (
           <PermissionRoute permission="iam:read">
-            <AdminIamPage defaultTab="overview" />
+            <AdminIamOverviewPage />
           </PermissionRoute>
         ),
       },
@@ -116,55 +178,43 @@ const router = createBrowserRouter([
         path: 'security/audit',
         element: (
           <PermissionRoute permission="audit:read">
-            <AdminIamPage defaultTab="audit" />
+            <AdminAuditPage />
           </PermissionRoute>
         ),
       },
       {
         path: 'security/roles',
-        element: (
-          <PermissionRoute permission="role:read">
-            <AdminIamPage defaultTab="roles" />
-          </PermissionRoute>
-        ),
+        element: <Navigate replace to="/system/role" />,
       },
       {
         path: 'security/sessions',
         element: (
           <PermissionRoute permission="session:read">
-            <AdminIamPage defaultTab="sessions" />
+            <AdminSessionsPage />
           </PermissionRoute>
         ),
       },
       {
         path: 'security/permissions',
-        element: (
-          <PermissionRoute permission="iam:read">
-            <AdminIamPage defaultTab="permissions" />
-          </PermissionRoute>
-        ),
+        element: <Navigate replace to="/system/permission" />,
       },
       {
         path: 'security/fields',
         element: (
           <PermissionRoute permission="field:read">
-            <AdminIamPage defaultTab="fields" />
+            <AdminFieldPermissionsPage />
           </PermissionRoute>
         ),
       },
       {
         path: 'security/menus',
-        element: (
-          <PermissionRoute permission="menu:read">
-            <AdminIamPage defaultTab="menus" />
-          </PermissionRoute>
-        ),
+        element: <Navigate replace to="/system/menu" />,
       },
       {
         path: 'security/policies',
         element: (
           <PermissionRoute permission="policy:read">
-            <AdminIamPage defaultTab="policies" />
+            <AdminPoliciesPage />
           </PermissionRoute>
         ),
       },

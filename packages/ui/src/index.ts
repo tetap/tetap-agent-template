@@ -105,5 +105,15 @@ export {
   useSidebar,
 } from './components/ui/sidebar.js';
 export { Skeleton } from './components/ui/skeleton.js';
+export {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableFooter,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from './components/ui/table.js';
 export { Tabs, TabsContent, TabsList, TabsTrigger } from './components/ui/tabs.js';
 export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './components/ui/tooltip.js';

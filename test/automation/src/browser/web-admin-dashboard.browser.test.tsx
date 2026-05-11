@@ -6,7 +6,7 @@ import { render } from 'vitest-browser-react';
 import { AdminShell } from '../../../../apps/web-admin/src/layout/admin-shell.tsx';
 import { SignInPage } from '../../../../apps/web-admin/src/pages/auth/sign-in.tsx';
 import { AdminDashboardPage } from '../../../../apps/web-admin/src/pages/dashboard.tsx';
-import { AdminIamPage } from '../../../../apps/web-admin/src/pages/iam.tsx';
+import { AdminRolesPage, AdminUsersPage } from '../../../../apps/web-admin/src/pages/iam.tsx';
 
 const i18n = createAdminI18n({ locale: 'en-US' });
 const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
@@ -22,22 +22,53 @@ const testMenus = [
     children: [],
   },
   {
-    id: 'iam',
-    name: 'IAM',
-    path: '/security/iam',
-    component: 'AdminIamPage',
-    icon: 'ShieldCheck',
-    permissionCodes: ['iam:read'],
-    order: 20,
+    id: 'system',
+    name: 'System Management',
+    path: '/system',
+    component: 'AdminSystemRedirectPage',
+    icon: 'Settings',
+    permissionCodes: [],
+    order: 10,
     children: [
+      {
+        id: 'users',
+        name: 'Users',
+        path: '/system/user',
+        component: 'AdminUsersPage',
+        icon: 'Users',
+        permissionCodes: ['user:read'],
+        order: 11,
+        children: [],
+      },
       {
         id: 'roles',
         name: 'Roles',
-        path: '/security/roles',
+        path: '/system/role',
         component: 'AdminRolesPage',
         icon: 'UserCog',
         permissionCodes: ['role:read'],
-        order: 22,
+        order: 12,
+        children: [],
+      },
+    ],
+  },
+  {
+    id: 'security',
+    name: 'Security Center',
+    path: '/security',
+    component: 'AdminSecurityRedirectPage',
+    icon: 'ShieldCheck',
+    permissionCodes: [],
+    order: 20,
+    children: [
+      {
+        id: 'sessions',
+        name: 'Online Users',
+        path: '/security/sessions',
+        component: 'AdminSessionsPage',
+        icon: 'MonitorCog',
+        permissionCodes: ['session:read'],
+        order: 24,
         children: [],
       },
     ],
@@ -239,7 +270,35 @@ const renderIamPage = async () => {
       children: [
         {
           index: true,
-          element: <AdminIamPage />,
+          element: <AdminUsersPage />,
+        },
+      ],
+    },
+  ]);
+
+  return renderWithI18n(router);
+};
+
+const renderRolePage = async () => {
+  seedAdminSession();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => {
+      return new Response(JSON.stringify(createOverviewResponse()), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
+
+  const router = createMemoryRouter([
+    {
+      path: '/',
+      element: <AdminShell />,
+      children: [
+        {
+          index: true,
+          element: <AdminRolesPage />,
         },
       ],
     },
@@ -257,16 +316,13 @@ describe('admin web dashboard browser behavior', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders the shadcn-admin adapted shell and switches dashboard tabs', async () => {
+  it('renders the cleaned admin shell and backend-driven menu', async () => {
     const screen = await renderAdminShell();
 
     expect(screen.getByText(i18n.t('webAdmin.dashboard.title')).query()).not.toBeNull();
-    expect(screen.getByRole('link', { name: i18n.t('webAdmin.dashboard.topNav.overview') }).query()).not.toBeNull();
+    expect(useAdminSessionStore.getState().auth.menus.some(menu => menu.id === 'system')).toBe(true);
+    expect(screen.getByRole('button', { name: i18n.t('webAdmin.dashboard.actions.refresh') }).query()).not.toBeNull();
     expect(screen.getByText(i18n.t('webAdmin.layout.search.trigger')).query()).not.toBeNull();
-
-    await screen.getByRole('tab', { name: i18n.t('webAdmin.dashboard.tabs.analytics') }).click();
-
-    await expect.poll(() => screen.getByText(i18n.t('webAdmin.dashboard.users.title')).query()).not.toBeNull();
   });
 
   it('submits the sign-in form and stores the admin session with zustand', async () => {
@@ -280,15 +336,24 @@ describe('admin web dashboard browser behavior', () => {
     await expect.poll(() => screen.getByText(i18n.t('webAdmin.dashboard.title')).query()).not.toBeNull();
   });
 
-  it('loads IAM overview data through the backend-admin API client', async () => {
+  it('loads the user management page through the backend-admin API client', async () => {
     const screen = await renderIamPage();
 
-    await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.title')).query()).not.toBeNull();
+    await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.pages.users.title')).query()).not.toBeNull();
     await expect.poll(() => screen.getByText('admin@tetap.local').query()).not.toBeNull();
-    expect(screen.getByRole('tab', { exact: true, name: i18n.t('webAdmin.iam.tabs.users') }).query()).not.toBeNull();
-    expect(
-      screen.getByRole('tab', { exact: true, name: i18n.t('webAdmin.iam.tabs.permissions') }).query(),
-    ).not.toBeNull();
+    expect(screen.getByRole('cell', { name: i18n.t('webAdmin.iam.fields.username') }).query()).not.toBeNull();
+    expect(screen.getByRole('tab').query()).toBeNull();
     expect(fetch).toHaveBeenCalled();
+  });
+
+  it('renders a RuoYi-style role management workflow backed by IAM data', async () => {
+    const screen = await renderRolePage();
+
+    await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.pages.roles.title')).query()).not.toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.iam.roleManager.filters.title')).query()).not.toBeNull();
+    expect(screen.getByRole('button', { name: i18n.t('webAdmin.iam.roleManager.actions.add') }).query()).not.toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.iam.roleManager.columns.index')).query()).not.toBeNull();
+    expect(screen.getByText('super-admin').query()).not.toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.iam.roleManager.actions.permissions')).query()).not.toBeNull();
   });
 });

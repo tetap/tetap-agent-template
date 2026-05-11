@@ -13,6 +13,7 @@ import {
   ScrollArea,
 } from '@tetap/ui';
 import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
+import { adminMenuTitleKeyMap } from './menu-labels.js';
 
 const flattenMenus = (menus: readonly AdminSessionMenuNode[]): AdminSessionMenuNode[] =>
   menus.flatMap(menu => [menu, ...flattenMenus(menu.children)]);
@@ -23,6 +24,11 @@ export const SearchCommand = () => {
   const menus = useAdminSessionStore(state => state.auth.menus);
   const [open, setOpen] = useState(false);
   const searchableMenus = flattenMenus(menus);
+  const getMenuLabel = (menu: AdminSessionMenuNode) => {
+    const titleKey = adminMenuTitleKeyMap[menu.id];
+
+    return titleKey ? t(titleKey) : menu.name;
+  };
 
   const runCommand = (path: string) => {
     setOpen(false);
@@ -48,12 +54,16 @@ export const SearchCommand = () => {
           <ScrollArea>
             <CommandEmpty>{t('webAdmin.layout.search.empty')}</CommandEmpty>
             <CommandGroup heading={t('webAdmin.navigation.groups.backendMenus')}>
-              {searchableMenus.map(menu => (
-                <CommandItem key={`${menu.id}-${menu.path}`} onSelect={() => runCommand(menu.path)} value={menu.name}>
-                  <ArrowRight />
-                  {menu.name}
-                </CommandItem>
-              ))}
+              {searchableMenus.map(menu => {
+                const label = getMenuLabel(menu);
+
+                return (
+                  <CommandItem key={`${menu.id}-${menu.path}`} onSelect={() => runCommand(menu.path)} value={label}>
+                    <ArrowRight />
+                    {label}
+                  </CommandItem>
+                );
+              })}
             </CommandGroup>
             <CommandSeparator />
           </ScrollArea>
