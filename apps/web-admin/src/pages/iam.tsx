@@ -3,6 +3,7 @@ import {
   Database,
   Edit,
   KeyRound,
+  LoaderCircle,
   LogOut,
   MoreHorizontal,
   Plus,
@@ -201,8 +202,48 @@ const isSectionLoaded = (section: IamSection, loadedSections: Set<IamSection>) =
 
 const stringifyPolicyConditions = (conditions: IamPolicy['conditions']) => JSON.stringify(conditions);
 
-const resolveBackendErrorMessage = (error: unknown, fallback: string) =>
-  error instanceof BackendAdminRequestError && error.message ? error.message : fallback;
+const hasIssueMessages = (error: unknown): error is { issues: Array<{ message?: unknown }> } =>
+  Boolean(error && typeof error === 'object' && Array.isArray((error as { issues?: unknown }).issues));
+
+const resolveBackendErrorDetail = (error: BackendAdminRequestError) => {
+  const body = error.body as { data?: unknown; message?: unknown } | null;
+
+  if (typeof body?.data === 'string' && body.data.trim()) {
+    return body.data;
+  }
+
+  if (body?.data && typeof body.data === 'object' && 'issues' in body.data) {
+    const issues = (body.data as { issues?: Array<{ message?: unknown }> }).issues ?? [];
+    const message = issues
+      .map(issue => issue.message)
+      .find((issueMessage): issueMessage is string => typeof issueMessage === 'string');
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return typeof body?.message === 'string' && body.message.trim() ? body.message : undefined;
+};
+
+const resolveBackendErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof BackendAdminRequestError) {
+    return resolveBackendErrorDetail(error) ?? fallback;
+  }
+
+  if (hasIssueMessages(error)) {
+    return (
+      error.issues.map(issue => issue.message).find((message): message is string => typeof message === 'string') ??
+      fallback
+    );
+  }
+
+  if (error instanceof SyntaxError && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
 
 const toPermissionType = (value: string): PermissionTypeInput =>
   ['MENU', 'API', 'BUTTON', 'FIELD', 'DATA'].includes(value) ? (value as PermissionTypeInput) : 'API';
@@ -333,6 +374,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
     sort: 'desc',
   });
   const [isLoading, setIsLoading] = useState(() => !isSectionLoaded(section, cachedLoadedSections));
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [createDialog, setCreateDialog] = useState<Exclude<IamSection, 'roles' | 'sessions' | 'operationLogs'> | null>(
     null,
@@ -393,10 +435,12 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
   const loadSectionData = async () => {
     if (!accessToken) {
       setIsLoading(false);
+      setIsRefreshing(false);
       toast.error(t('webAdmin.iam.states.loginExpired'));
       return;
     }
 
+    setIsRefreshing(true);
     setIsLoading(!isSectionLoaded(section, cachedLoadedSections));
 
     try {
@@ -454,6 +498,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.loadFailed')));
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   };
 
@@ -463,12 +508,16 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       return;
     }
 
+    setIsMutating(true);
+
     try {
       await revokeIamSession(accessToken, sessionId);
       toast.success(t('webAdmin.iam.states.mutationOk'));
       await loadSectionData();
     } catch (error) {
       toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.revokeFailed')));
+    } finally {
+      setIsMutating(false);
     }
   };
 
@@ -626,8 +675,8 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
             </h1>
             <p className="text-muted-foreground">{t(iamSectionCopy[section].descriptionKey)}</p>
           </div>
-          <Button disabled={isLoading} onClick={() => void loadSectionData()} variant="outline">
-            <RefreshCw data-icon="inline-start" />
+          <Button disabled={isRefreshing} onClick={() => void loadSectionData()} variant="outline">
+            <RefreshCw className={isRefreshing ? 'animate-spin' : undefined} data-icon="inline-start" />
             {t('webAdmin.iam.actions.refresh')}
           </Button>
         </div>
@@ -658,9 +707,9 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
             fieldMode={editingFieldPermissionId ? 'edit' : 'create'}
             policyMode={editingPolicyId ? 'edit' : 'create'}
           />
-          <Tabs value={section}>
+          <Tabs className="min-w-0" value={section}>
             <TabsContent value="users">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 <Card>
                   <CardHeader>
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -715,6 +764,9 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
                                   }
                                   size="sm"
                                   variant="outline">
+                                  {isMutating ? (
+                                    <LoaderCircle className="animate-spin" data-icon="inline-start" />
+                                  ) : null}
                                   {user.status === 'ACTIVE'
                                     ? t('webAdmin.iam.actions.disableUser')
                                     : t('webAdmin.iam.actions.activateUser')}
@@ -723,6 +775,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
                                   description={t('webAdmin.iam.confirm.deleteDescription', { item: user.username })}
                                   disabled={isMutating || user.isSuperAdmin || !canManageUsers}
                                   onConfirm={() => void runMutation(token => deleteIamUser(token, user.id))}
+                                  pending={isMutating}
                                   size="sm"
                                   title={t('webAdmin.iam.confirm.deleteTitle')}
                                   variant="outline">
@@ -750,7 +803,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               />
             </TabsContent>
             <TabsContent value="permissions">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 <Card>
                   <CardHeader>
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -791,6 +844,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
                                 description={t('webAdmin.iam.confirm.deleteDescription', { item: permission.code })}
                                 disabled={isMutating || !canManageIam}
                                 onConfirm={() => void runMutation(token => deleteIamPermission(token, permission.id))}
+                                pending={isMutating}
                                 size="sm"
                                 title={t('webAdmin.iam.confirm.deleteTitle')}
                                 variant="outline">
@@ -807,7 +861,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               </section>
             </TabsContent>
             <TabsContent value="menus">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 <Card>
                   <CardHeader>
                     <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
@@ -854,6 +908,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
                                 description={t('webAdmin.iam.confirm.deleteDescription', { item: menu.name })}
                                 disabled={isMutating || !canManageIam}
                                 onConfirm={() => void runMutation(token => deleteIamMenu(token, menu.id))}
+                                pending={isMutating}
                                 size="sm"
                                 title={t('webAdmin.iam.confirm.deleteTitle')}
                                 variant="outline">
@@ -870,7 +925,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               </section>
             </TabsContent>
             <TabsContent value="sessions">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 {data.sessions.length > 0 ? (
                   <Card>
                     <CardHeader>
@@ -906,8 +961,9 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
                                   description={t('webAdmin.iam.confirm.revokeDescription', {
                                     item: session.username ?? session.userId,
                                   })}
-                                  disabled={session.status !== 'ONLINE' || !canRevokeSessions}
+                                  disabled={isMutating || session.status !== 'ONLINE' || !canRevokeSessions}
                                   onConfirm={() => void revokeSession(session.id)}
+                                  pending={isMutating}
                                   size="sm"
                                   title={t('webAdmin.iam.confirm.revokeTitle')}
                                   variant="outline">
@@ -932,7 +988,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               </section>
             </TabsContent>
             <TabsContent value="fields">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 <FieldPermissionsTable
                   canManageIam={canManageIam}
                   fieldPermissions={data.fieldPermissions}
@@ -946,7 +1002,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               </section>
             </TabsContent>
             <TabsContent value="policies">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 <PoliciesTable
                   canUpdatePolicy={canUpdatePolicy}
                   isMutating={isMutating}
@@ -958,9 +1014,9 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               </section>
             </TabsContent>
             <TabsContent value="operationLogs">
-              <section className="grid gap-4">
+              <section className="grid min-w-0 gap-4">
                 <OperationLogsTable
-                  isLoading={isLoading}
+                  isLoading={isRefreshing}
                   onQueryChange={setOperationLogQuery}
                   operationLogs={operationLogData}
                   query={operationLogQuery}
@@ -1172,6 +1228,7 @@ const CreateIamDialogs = ({
           </FieldGroup>
           <DialogFooter>
             <Button disabled={isMutating} onClick={onSubmitUser}>
+              {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('common.confirm')}
             </Button>
           </DialogFooter>
@@ -1213,6 +1270,7 @@ const CreateIamDialogs = ({
           </FieldGroup>
           <DialogFooter>
             <Button disabled={isMutating} onClick={onSubmitPermission}>
+              {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('common.confirm')}
             </Button>
           </DialogFooter>
@@ -1265,6 +1323,7 @@ const CreateIamDialogs = ({
           </FieldGroup>
           <DialogFooter>
             <Button disabled={isMutating} onClick={onSubmitMenu}>
+              {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('common.confirm')}
             </Button>
           </DialogFooter>
@@ -1304,6 +1363,7 @@ const CreateIamDialogs = ({
           </FieldGroup>
           <DialogFooter>
             <Button disabled={isMutating} onClick={onSubmitFieldPermission}>
+              {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('common.confirm')}
             </Button>
           </DialogFooter>
@@ -1342,6 +1402,7 @@ const CreateIamDialogs = ({
           </FieldGroup>
           <DialogFooter>
             <Button disabled={isMutating} onClick={onSubmitPolicy}>
+              {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('common.confirm')}
             </Button>
           </DialogFooter>
@@ -1440,16 +1501,22 @@ const RoleManagementPanel = ({
   const submitRoleEditor = async () => {
     const payload = roleEditorToPayload(editorForm);
     const roleId = editingRoleId;
+    const ok = await onMutate(token =>
+      roleId ? updateIamRole(token, roleId, payload) : createIamRole(token, payload),
+    );
 
-    await onMutate(token => (roleId ? updateIamRole(token, roleId, payload) : createIamRole(token, payload)));
-    setEditorOpen(false);
+    if (ok) {
+      setEditorOpen(false);
+    }
   };
 
   const deleteRoleSelection = async () => {
     const targets = selectedRoles.filter(role => role.code !== 'super-admin');
+    const ok = await onMutate(async token => Promise.all(targets.map(role => deleteIamRole(token, role.id))));
 
-    await onMutate(async token => Promise.all(targets.map(role => deleteIamRole(token, role.id))));
-    setSelectedRoleIds([]);
+    if (ok) {
+      setSelectedRoleIds([]);
+    }
   };
 
   const openPermissionGrant = (role: RoleItem) => {
@@ -1468,8 +1535,11 @@ const RoleManagementPanel = ({
       return;
     }
 
-    await onMutate(token => updateIamRole(token, permissionRole.id, { permissionCodes: permissionDraft }));
-    setPermissionRole(null);
+    const ok = await onMutate(token => updateIamRole(token, permissionRole.id, { permissionCodes: permissionDraft }));
+
+    if (ok) {
+      setPermissionRole(null);
+    }
   };
 
   const openDataScopeEditor = (role: RoleItem) => {
@@ -1491,8 +1561,11 @@ const RoleManagementPanel = ({
       deptIds: dataScopeForm.deptIds,
     });
 
-    await onMutate(token => updateIamRole(token, dataScopeRole.id, { dataScope: payload.dataScope }));
-    setDataScopeRole(null);
+    const ok = await onMutate(token => updateIamRole(token, dataScopeRole.id, { dataScope: payload.dataScope }));
+
+    if (ok) {
+      setDataScopeRole(null);
+    }
   };
 
   const openAssignedUsers = (role: RoleItem) => {
@@ -1511,7 +1584,7 @@ const RoleManagementPanel = ({
       return;
     }
 
-    await onMutate(async token => {
+    const ok = await onMutate(async token => {
       const updates = users.flatMap(user => {
         const shouldHaveRole = assignedUserIds.includes(user.id);
         const hasRole = user.roleCodes.includes(assignRole.code);
@@ -1531,7 +1604,10 @@ const RoleManagementPanel = ({
 
       return Promise.all(updates);
     });
-    setAssignRole(null);
+
+    if (ok) {
+      setAssignRole(null);
+    }
   };
 
   const resetQuery = () => {
@@ -1542,7 +1618,7 @@ const RoleManagementPanel = ({
   };
 
   return (
-    <section className="flex flex-col gap-4">
+    <section className="flex min-w-0 flex-col gap-4">
       <Card>
         <CardHeader>
           <CardTitle>{t('webAdmin.iam.roleManager.filters.title')}</CardTitle>
@@ -1611,6 +1687,7 @@ const RoleManagementPanel = ({
                 })}
                 disabled={isMutating || !canDeleteSelected}
                 onConfirm={() => void deleteRoleSelection()}
+                pending={isMutating}
                 size="sm"
                 title={t('webAdmin.iam.confirm.deleteTitle')}
                 variant="outline">
@@ -1895,6 +1972,7 @@ const RoleEditorDialog = ({
         />
         <DialogFooter>
           <Button disabled={isMutating} onClick={onSubmit}>
+            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
             {t('common.confirm')}
           </Button>
         </DialogFooter>
@@ -1938,6 +2016,7 @@ const PermissionGrantDialog = ({
         <PermissionChecklist onToggle={onToggle} permissions={permissions} selectedPermissionCodes={draft} />
         <DialogFooter>
           <Button disabled={isMutating || !role} onClick={onSubmit}>
+            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
             {t('common.confirm')}
           </Button>
         </DialogFooter>
@@ -1997,6 +2076,7 @@ const DataScopeDialog = ({
         </FieldGroup>
         <DialogFooter>
           <Button disabled={isMutating || !role} onClick={onSubmit}>
+            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
             {t('common.confirm')}
           </Button>
         </DialogFooter>
@@ -2097,6 +2177,7 @@ const AssignedUsersDialog = ({
             {t('webAdmin.iam.selection.next')}
           </Button>
           <Button disabled={isMutating || !role} onClick={onSubmit}>
+            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
             {t('common.confirm')}
           </Button>
         </DialogFooter>
@@ -2193,6 +2274,7 @@ const PermissionChecklist = ({
 type ConfirmActionButtonProps = Omit<ComponentProps<typeof Button>, 'onClick'> & {
   description: string;
   onConfirm: () => void;
+  pending?: boolean;
   title: string;
 };
 
@@ -2201,6 +2283,7 @@ const ConfirmActionButton = ({
   description,
   disabled,
   onConfirm,
+  pending,
   title,
   ...buttonProps
 }: ConfirmActionButtonProps) => {
@@ -2210,6 +2293,7 @@ const ConfirmActionButton = ({
   return (
     <AlertDialog onOpenChange={setOpen} open={open}>
       <Button disabled={disabled} onClick={() => setOpen(true)} {...buttonProps}>
+        {pending ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
         {children}
       </Button>
       <AlertDialogContent>
@@ -2219,7 +2303,10 @@ const ConfirmActionButton = ({
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-          <AlertDialogAction onClick={onConfirm}>{t('common.confirm')}</AlertDialogAction>
+          <AlertDialogAction disabled={pending} onClick={onConfirm}>
+            {pending ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
+            {t('common.confirm')}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -2294,6 +2381,7 @@ const FieldPermissionsTable = ({
                         })}
                         disabled={isMutating || !canManageIam}
                         onConfirm={() => onDelete(fieldPermission.id)}
+                        pending={isMutating}
                         size="sm"
                         title={t('webAdmin.iam.confirm.deleteTitle')}
                         variant="outline">
@@ -2390,6 +2478,7 @@ const PoliciesTable = ({
                           })}
                           disabled={isMutating || !canUpdatePolicy}
                           onConfirm={() => onDelete(policy.id)}
+                          pending={isMutating}
                           size="sm"
                           title={t('webAdmin.iam.confirm.deleteTitle')}
                           variant="outline">
@@ -2465,7 +2554,11 @@ const OperationLogsTable = ({
                 </InputGroupAddon>
               </InputGroup>
               <Button className="shrink-0" disabled={isLoading} type="submit">
-                <Search data-icon="inline-start" />
+                {isLoading ? (
+                  <LoaderCircle className="animate-spin" data-icon="inline-start" />
+                ) : (
+                  <Search data-icon="inline-start" />
+                )}
                 {t('webAdmin.iam.operationLogs.search')}
               </Button>
             </div>
@@ -2519,6 +2612,7 @@ const OperationLogsTable = ({
               onClick={() => onQueryChange({ ...query, page: Math.max(1, query.page - 1) })}
               size="sm"
               variant="outline">
+              {isLoading ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('webAdmin.iam.selection.prev')}
             </Button>
             <span>{t('webAdmin.iam.operationLogs.pageInfo', { page: query.page, totalPages })}</span>
@@ -2527,6 +2621,7 @@ const OperationLogsTable = ({
               onClick={() => onQueryChange({ ...query, page: Math.min(totalPages, query.page + 1) })}
               size="sm"
               variant="outline">
+              {isLoading ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
               {t('webAdmin.iam.selection.next')}
             </Button>
           </div>
@@ -2659,7 +2754,7 @@ const SearchableSelectField = ({
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
-      <Button className="justify-between" onClick={() => setOpen(true)} type="button" variant="outline">
+      <Button className="w-full min-w-0 justify-between" onClick={() => setOpen(true)} type="button" variant="outline">
         <span className="truncate">{selected?.label ?? t('webAdmin.iam.selection.placeholder')}</span>
         <Search />
       </Button>
@@ -2759,7 +2854,7 @@ const MultiSearchSelectField = ({
   return (
     <Field>
       <FieldLabel>{label}</FieldLabel>
-      <Button className="justify-between" onClick={() => setOpen(true)} type="button" variant="outline">
+      <Button className="w-full min-w-0 justify-between" onClick={() => setOpen(true)} type="button" variant="outline">
         <span className="truncate">
           {selectedLabels.length ? selectedLabels.join(', ') : t('webAdmin.iam.selection.placeholder')}
         </span>

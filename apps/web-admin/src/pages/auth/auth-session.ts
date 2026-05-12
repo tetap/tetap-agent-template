@@ -30,6 +30,7 @@ export const createAdminAuthResult = async (email: string, password: string, rem
       accountNo: result.user.id,
       email: result.user.email,
       exp: Math.floor(new Date(result.accessTokenExpiresAt).getTime() / 1000),
+      isSuperAdmin: result.user.isSuperAdmin,
       name: result.user.username,
       roles: result.user.roleCodes,
     },

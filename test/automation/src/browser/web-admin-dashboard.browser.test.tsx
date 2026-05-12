@@ -1,18 +1,24 @@
 import { useAdminSessionStore } from '@tetap/hooks';
 import { AdminI18nProvider, createAdminI18n } from '@tetap/i18n/admin';
 import { createMemoryRouter, RouterProvider } from 'react-router';
+import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { render } from 'vitest-browser-react';
+import { cleanup, render } from 'vitest-browser-react';
+import '@tetap/ui/styles.css';
 import { AdminShell } from '../../../../apps/web-admin/src/layout/admin-shell.tsx';
 import { SignInPage } from '../../../../apps/web-admin/src/pages/auth/sign-in.tsx';
 import { AdminDashboardPage } from '../../../../apps/web-admin/src/pages/dashboard.tsx';
 import {
   AdminFieldPermissionsPage,
+  AdminMenusPage,
   AdminOperationLogsPage,
+  AdminPermissionsPage,
   AdminPoliciesPage,
   AdminRolesPage,
+  AdminSessionsPage,
   AdminUsersPage,
 } from '../../../../apps/web-admin/src/pages/iam.tsx';
+import { AdminStatePage } from '../../../../apps/web-admin/src/pages/state-page.tsx';
 
 const i18n = createAdminI18n({ locale: 'en-US' });
 const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
@@ -182,6 +188,18 @@ const createPermissionsResponse = () => ({
   ],
 });
 
+const createMenusResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: testMenus,
+});
+
+const createSessionsResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: [],
+});
+
 const createFieldPermissionsResponse = () => ({
   code: 0,
   message: 'ok',
@@ -278,6 +296,14 @@ const createAdminApiResponse = (input: RequestInfo | URL) => {
     return createPermissionsResponse();
   }
 
+  if (url.includes('/iam/menus')) {
+    return createMenusResponse();
+  }
+
+  if (url.includes('/iam/sessions')) {
+    return createSessionsResponse();
+  }
+
   return createLoginResponse();
 };
 
@@ -365,6 +391,34 @@ const renderIamPage = async () => {
         {
           index: true,
           element: <AdminUsersPage />,
+        },
+      ],
+    },
+  ]);
+
+  return renderWithI18n(router);
+};
+
+const renderAdminPage = async (element: ReactNode) => {
+  seedAdminSession();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
+
+  const router = createMemoryRouter([
+    {
+      path: '/',
+      element: <AdminShell />,
+      children: [
+        {
+          index: true,
+          element,
         },
       ],
     },
@@ -485,12 +539,98 @@ const renderPoliciesPage = async () => {
   return renderWithI18n(router);
 };
 
+const adminPageCases = [
+  {
+    name: 'dashboard',
+    element: <AdminDashboardPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.dashboard.title')) ?? false,
+  },
+  {
+    name: 'users',
+    element: <AdminUsersPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.users.title')) ?? false,
+  },
+  {
+    name: 'roles',
+    element: <AdminRolesPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.roles.title')) ?? false,
+  },
+  {
+    name: 'permissions',
+    element: <AdminPermissionsPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.permissions.title')) ?? false,
+  },
+  {
+    name: 'menus',
+    element: <AdminMenusPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.menus.title')) ?? false,
+  },
+  {
+    name: 'sessions',
+    element: <AdminSessionsPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.sessions.title')) ?? false,
+  },
+  {
+    name: 'field permissions',
+    element: <AdminFieldPermissionsPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.fields.title')) ?? false,
+  },
+  {
+    name: 'policies',
+    element: <AdminPoliciesPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.policies.title')) ?? false,
+  },
+  {
+    name: 'operation logs',
+    element: <AdminOperationLogsPage />,
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.iam.pages.operationLogs.title')) ?? false,
+  },
+  {
+    name: '404',
+    element: (
+      <AdminStatePage
+        descriptionKey="webAdmin.statePages.notFound.description"
+        titleKey="webAdmin.statePages.notFound.title"
+      />
+    ),
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.statePages.notFound.title')) ?? false,
+  },
+  {
+    name: '500',
+    element: (
+      <AdminStatePage
+        descriptionKey="webAdmin.statePages.internalError.description"
+        titleKey="webAdmin.statePages.internalError.title"
+      />
+    ),
+    marker: () => document.body.textContent?.includes(i18n.t('webAdmin.statePages.internalError.title')) ?? false,
+  },
+] as const;
+
+const assertAdminContentIsContained = () => {
+  const root = document.documentElement;
+  const body = document.body;
+  const content = document.getElementById('content');
+
+  expect(root.scrollWidth).toBeLessThanOrEqual(root.clientWidth + 1);
+  expect(body.scrollWidth).toBeLessThanOrEqual(body.clientWidth + 1);
+  expect(content).not.toBeNull();
+
+  const contentRect = content!.getBoundingClientRect();
+  const contentStyle = getComputedStyle(content!);
+
+  expect(contentRect.right).toBeLessThanOrEqual(window.innerWidth + 1);
+  expect(contentStyle.overflowY).toBe('auto');
+};
+
 describe('admin web dashboard browser behavior', () => {
   beforeEach(() => {
+    cleanup();
     useAdminSessionStore.getState().auth.reset();
   });
 
   afterEach(() => {
+    cleanup();
     vi.unstubAllGlobals();
   });
 
@@ -571,5 +711,108 @@ describe('admin web dashboard browser behavior', () => {
 
     await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.fields.effect')).query()).not.toBeNull();
     expect(screen.getByText(i18n.t('webAdmin.iam.fields.conditions')).query()).not.toBeNull();
+  });
+
+  it('shows visible disabled feedback while dashboard refresh is pending', async () => {
+    seedAdminSession();
+
+    let overviewCalls = 0;
+    let resolvePendingOverview: ((response: Response) => void) | undefined;
+
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+
+        if (url.includes('/iam/overview')) {
+          overviewCalls += 1;
+
+          if (overviewCalls > 1) {
+            return new Promise<Response>(resolve => {
+              resolvePendingOverview = resolve;
+            });
+          }
+        }
+
+        return new Response(JSON.stringify(createAdminApiResponse(input)), {
+          headers: { 'content-type': 'application/json' },
+          status: 200,
+        });
+      }),
+    );
+
+    const router = createMemoryRouter([
+      {
+        path: '/',
+        element: <AdminShell />,
+        children: [
+          {
+            index: true,
+            element: <AdminDashboardPage />,
+          },
+        ],
+      },
+    ]);
+    const screen = await renderWithI18n(router);
+
+    await expect.poll(() => screen.getByText(i18n.t('webAdmin.dashboard.title')).query()).not.toBeNull();
+
+    const refresh = screen.getByRole('button', { name: i18n.t('webAdmin.dashboard.actions.refresh') });
+    await refresh.click();
+
+    await expect.poll(() => (refresh.query() as HTMLButtonElement | null)?.disabled).toBe(true);
+    expect(refresh.query()?.querySelector('.animate-spin')).not.toBeNull();
+
+    resolvePendingOverview?.(
+      new Response(JSON.stringify(createOverviewResponse()), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      }),
+    );
+    await expect.poll(() => (refresh.query() as HTMLButtonElement | null)?.disabled).toBe(false);
+  });
+
+  it.each(adminPageCases)(
+    'keeps $name page inside the content scroller at the active browser viewport',
+    async pageCase => {
+      const screen = await renderAdminPage(pageCase.element);
+
+      await expect.poll(pageCase.marker).toBe(true);
+      assertAdminContentIsContained();
+      await screen.unmount();
+      vi.unstubAllGlobals();
+    },
+  );
+
+  it('keeps sign-in contained at the active browser viewport', async () => {
+    await renderSignIn();
+
+    await expect
+      .poll(() => document.body.textContent?.includes(i18n.t('webAdmin.auth.signIn.title')) ?? false)
+      .toBe(true);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(document.documentElement.clientWidth + 1);
+    expect(document.body.scrollWidth).toBeLessThanOrEqual(document.body.clientWidth + 1);
+  });
+
+  it('treats explicit super administrators as allowed for every frontend capability gate', () => {
+    const auth = useAdminSessionStore.getState().auth;
+
+    auth.setContext({
+      accessToken: 'browser-test-token',
+      capabilities: [],
+      menus: testMenus,
+      user: {
+        accountNo: 'browser-test-super-admin',
+        email: 'super-admin@example.com',
+        exp: Math.floor(Date.now() / 1000) + 3600,
+        isSuperAdmin: true,
+        name: 'Super Admin',
+        roles: [],
+      },
+    });
+
+    expect(useAdminSessionStore.getState().auth.can('iam:manage')).toBe(true);
+    expect(useAdminSessionStore.getState().auth.can('policy:update')).toBe(true);
+    expect(useAdminSessionStore.getState().auth.can('session:revoke')).toBe(true);
   });
 });

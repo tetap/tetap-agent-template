@@ -19,7 +19,8 @@
     "test:affected": "tsx scripts/run-targeted-tests.ts affected",
     "test:unit:target": "tsx scripts/run-targeted-tests.ts unit",
     "test:browser:target": "tsx scripts/run-targeted-tests.ts browser",
-    "test:smoke:target": "tsx scripts/run-targeted-tests.ts smoke"
+    "test:smoke:target": "tsx scripts/run-targeted-tests.ts smoke",
+    "audit:admin-responsive": "tsx scripts/admin-responsive-audit.ts"
   },
   "dependencies": {
     "@tetap/config": "workspace:*",

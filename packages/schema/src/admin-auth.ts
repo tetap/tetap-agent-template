@@ -5,6 +5,7 @@ export const adminSessionUserSchema = z.object({
   email: z.string().email(),
   name: z.string().min(1),
   roles: z.array(z.string().min(1)).min(1),
+  isSuperAdmin: z.boolean().optional(),
   exp: z.number().int().positive(),
 });
 

@@ -10,6 +10,7 @@ export type AdminSessionUser = {
   email: string;
   name: string;
   roles: readonly string[];
+  isSuperAdmin?: boolean;
   exp: number;
 };
 
@@ -180,6 +181,9 @@ const readCapabilities = (): readonly string[] => readJson<string[]>(ADMIN_CAPAB
 const readMenus = (): readonly AdminSessionMenuNode[] =>
   normalizeAdminMenus(readJson<AdminSessionMenuNode[]>(ADMIN_MENUS_STORAGE_KEY) ?? []);
 
+const isSuperAdminUser = (user: AdminSessionUser | null) =>
+  Boolean(user?.isSuperAdmin || user?.roles.some(role => role === 'super-admin' || role === 'SUPER_ADMIN'));
+
 export const useAdminSessionStore = create<AdminSessionStoreState>()((set, get) => ({
   auth: {
     user: readAdminUser(),
@@ -253,7 +257,7 @@ export const useAdminSessionStore = create<AdminSessionStoreState>()((set, get) 
           auth: { ...state.auth, accessToken: '', capabilities: [], menus: [], user: null },
         };
       }),
-    can: capability => get().auth.capabilities.includes(capability),
+    can: capability => isSuperAdminUser(get().auth.user) || get().auth.capabilities.includes(capability),
     isAuthenticated: () => Boolean(get().auth.accessToken),
   },
 }));

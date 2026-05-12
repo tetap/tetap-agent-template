@@ -49,6 +49,7 @@ const ProtectedRoute = ({ children }: { children: ReactNode }) => {
             accountNo: bootstrap.user.id,
             email: bootstrap.user.email,
             exp: currentUser?.exp ?? Math.floor(Date.now() / 1000) + 60 * 60,
+            isSuperAdmin: bootstrap.user.isSuperAdmin,
             name: bootstrap.user.username,
             roles: bootstrap.user.roleCodes,
           },

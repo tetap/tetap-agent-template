@@ -10,12 +10,13 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 
 ## Test Types
 
-| Type             | Location                            | Full Command         | Target Command                                    |
-| ---------------- | ----------------------------------- | -------------------- | ------------------------------------------------- |
-| Unit tests       | `src/unit/**/*.unit.test.ts`        | `pnpm test:unit`     | `pnpm test:unit:target -- config-env`             |
-| UI browser tests | `src/browser/**/*.browser.test.tsx` | `pnpm test:browser`  | `pnpm test:browser:target -- web-admin-dashboard` |
-| Smoke tests      | `src/smoke/**/*.smoke.test.ts`      | `pnpm test:smoke`    | `pnpm test:smoke:target -- backend-health`        |
-| Affected tests   | Git changed files                   | `pnpm test:affected` | `pnpm test:affected -- packages/ui/src/index.ts`  |
+| Type                   | Location                            | Full Command                                                  | Target Command                                                                                                                    |
+| ---------------------- | ----------------------------------- | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Unit tests             | `src/unit/**/*.unit.test.ts`        | `pnpm test:unit`                                              | `pnpm test:unit:target -- config-env`                                                                                             |
+| UI browser tests       | `src/browser/**/*.browser.test.tsx` | `pnpm test:browser`                                           | `pnpm test:browser:target -- web-admin-dashboard`                                                                                 |
+| Smoke tests            | `src/smoke/**/*.smoke.test.ts`      | `pnpm test:smoke`                                             | `pnpm test:smoke:target -- backend-health`                                                                                        |
+| Affected tests         | Git changed files                   | `pnpm test:affected`                                          | `pnpm test:affected -- packages/ui/src/index.ts`                                                                                  |
+| Admin responsive audit | `scripts/admin-responsive-audit.ts` | `pnpm --filter @tetap/test-automation audit:admin-responsive` | `ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filter @tetap/test-automation audit:admin-responsive` |
 
 ## Current Targets
 
@@ -49,11 +50,13 @@ pnpm test:affected
 pnpm test:affected --base main
 pnpm test:affected -- packages/config/src/env.ts packages/ui/src/components/ui/button.tsx
 pnpm test:target -- --list
+ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filter @tetap/test-automation audit:admin-responsive
 ```
 
 ## Coverage Notes
 
-- `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard tab interaction, sign-in form session storage, and admin IAM search controls.
+- `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard interaction, sign-in form session storage, admin IAM search controls, loading feedback, super-admin frontend gates, and active-viewport content containment.
+- `audit:admin-responsive` signs in to a running `apps/web-admin` instance and checks dashboard, system management pages, and 404/500 pages at desktop, tablet, and mobile viewport sizes.
 - `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend-session separation from admin sessions.
 - `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.
 - `unit:backend-security` covers shared backend SSRF/upload/HMAC utility behavior.

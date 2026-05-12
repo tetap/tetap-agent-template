@@ -136,29 +136,30 @@ flowchart LR
 
 ## Scripts
 
-| Command                                 | Description                                                                 |
-| --------------------------------------- | --------------------------------------------------------------------------- |
-| `pnpm dev`                              | Start development tasks through Turbo.                                      |
-| `pnpm check`                            | Run version, hooks, i18n, backend architecture, type-check, and unit tests. |
-| `pnpm build`                            | Run `pnpm check`, bump versions, then build all workspaces with Turbo.      |
-| `pnpm type-check`                       | Run TypeScript checks for every workspace.                                  |
-| `pnpm --filter site dev`                | Start the VitePress promotional site.                                       |
-| `pnpm lint` / `pnpm lint:fix`           | Run or fix ESLint, plus version/hooks/i18n/backend architecture checks.     |
-| `pnpm format` / `pnpm format:fix`       | Check or format repository files.                                           |
-| `pnpm test`                             | Run unit, browser, and smoke tests.                                         |
-| `pnpm test:unit`                        | Run Vitest unit tests.                                                      |
-| `pnpm test:browser`                     | Run Vitest Browser Mode UI tests.                                           |
-| `pnpm test:smoke`                       | Run runtime smoke tests.                                                    |
-| `pnpm test:affected`                    | Infer affected tests from git changes.                                      |
-| `pnpm test:target -- <type> <target>`   | Run targeted tests by type and module.                                      |
-| `pnpm versions:check`                   | Check root dependency version constraints.                                  |
-| `pnpm hooks:check`                      | Verify custom hooks live only in `packages/hooks/src/store`.                |
-| `pnpm i18n:boundaries:check`            | Verify each app imports only its allowed i18n scope.                        |
-| `pnpm backend:architecture:check`       | Verify Fastify routes remain registration-only.                             |
-| `pnpm db:generate` / `pnpm db:validate` | Generate or validate Prisma Client and schema.                              |
-| `pnpm db:push` / `pnpm db:studio`       | Push database schema or open Prisma Studio.                                 |
-| `pnpm backend-admin:bootstrap`          | Create/update baseline IAM records and the first super administrator.       |
-| `pnpm clean`                            | Clean build caches and outputs.                                             |
+| Command                                                       | Description                                                                                |
+| ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm dev`                                                    | Start development tasks through Turbo.                                                     |
+| `pnpm check`                                                  | Run version, hooks, i18n, backend architecture, type-check, and unit tests.                |
+| `pnpm build`                                                  | Run `pnpm check`, bump versions, then build all workspaces with Turbo.                     |
+| `pnpm type-check`                                             | Run TypeScript checks for every workspace.                                                 |
+| `pnpm --filter site dev`                                      | Start the VitePress promotional site.                                                      |
+| `pnpm lint` / `pnpm lint:fix`                                 | Run or fix ESLint, plus version/hooks/i18n/backend architecture checks.                    |
+| `pnpm format` / `pnpm format:fix`                             | Check or format repository files.                                                          |
+| `pnpm test`                                                   | Run unit, browser, and smoke tests.                                                        |
+| `pnpm test:unit`                                              | Run Vitest unit tests.                                                                     |
+| `pnpm test:browser`                                           | Run Vitest Browser Mode UI tests.                                                          |
+| `pnpm test:smoke`                                             | Run runtime smoke tests.                                                                   |
+| `pnpm --filter @tetap/test-automation audit:admin-responsive` | Run Playwright admin page containment checks across desktop, tablet, and mobile viewports. |
+| `pnpm test:affected`                                          | Infer affected tests from git changes.                                                     |
+| `pnpm test:target -- <type> <target>`                         | Run targeted tests by type and module.                                                     |
+| `pnpm versions:check`                                         | Check root dependency version constraints.                                                 |
+| `pnpm hooks:check`                                            | Verify custom hooks live only in `packages/hooks/src/store`.                               |
+| `pnpm i18n:boundaries:check`                                  | Verify each app imports only its allowed i18n scope.                                       |
+| `pnpm backend:architecture:check`                             | Verify Fastify routes remain registration-only.                                            |
+| `pnpm db:generate` / `pnpm db:validate`                       | Generate or validate Prisma Client and schema.                                             |
+| `pnpm db:push` / `pnpm db:studio`                             | Push database schema or open Prisma Studio.                                                |
+| `pnpm backend-admin:bootstrap`                                | Create/update baseline IAM records and the first super administrator.                      |
+| `pnpm clean`                                                  | Clean build caches and outputs.                                                            |
 
 ## Contributing
 

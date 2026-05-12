@@ -90,19 +90,19 @@ export const AdminDashboardPage = () => {
       trend: t('webAdmin.dashboard.metrics.backendStatus.trend'),
     },
   ];
-  const chartValues = overview
+  const chartItems = overview
     ? [
-        overview.metrics.users,
-        overview.metrics.roles,
-        overview.metrics.permissions,
-        overview.metrics.menus,
-        overview.metrics.fieldPermissions,
-        overview.metrics.policies,
-        overview.metrics.sessions,
-        overview.metrics.operationLogs,
+        { key: 'users', value: overview.metrics.users },
+        { key: 'roles', value: overview.metrics.roles },
+        { key: 'permissions', value: overview.metrics.permissions },
+        { key: 'menus', value: overview.metrics.menus },
+        { key: 'field-permissions', value: overview.metrics.fieldPermissions },
+        { key: 'policies', value: overview.metrics.policies },
+        { key: 'sessions', value: overview.metrics.sessions },
+        { key: 'operation-logs', value: overview.metrics.operationLogs },
       ]
     : [];
-  const chartMax = Math.max(...chartValues, 1);
+  const chartMax = Math.max(...chartItems.map(item => item.value), 1);
 
   return (
     <>
@@ -111,28 +111,28 @@ export const AdminDashboardPage = () => {
         <SearchCommand />
         <ThemeSwitch />
       </AdminHeader>
-      <AdminMain>
-        <div className="mb-2 flex items-center justify-between gap-4">
-          <h1 className="text-2xl font-bold tracking-tight">{t('webAdmin.dashboard.title')}</h1>
+      <AdminMain className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight">{t('webAdmin.dashboard.title')}</h1>
           <Button disabled={isLoading} onClick={() => void loadOverview()} variant="outline">
-            <RefreshCw data-icon="inline-start" />
+            <RefreshCw className={isLoading ? 'animate-spin' : undefined} data-icon="inline-start" />
             {t('webAdmin.dashboard.actions.refresh')}
           </Button>
         </div>
-        <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-4">
           {error ? (
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           ) : null}
-          <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <section className="grid min-w-0 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {metrics.map(metric => {
               const Icon = metric.icon;
 
               return (
                 <Card key={metric.label}>
                   <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2">
-                    <CardTitle className="text-sm font-medium">{metric.label}</CardTitle>
+                    <CardTitle className="min-w-0 truncate text-sm font-medium">{metric.label}</CardTitle>
                     <Icon className="text-muted-foreground" />
                   </CardHeader>
                   <CardContent>
@@ -141,29 +141,29 @@ export const AdminDashboardPage = () => {
                     ) : (
                       <div className="text-2xl font-bold">{metric.value}</div>
                     )}
-                    <p className="text-xs text-muted-foreground">{metric.trend}</p>
+                    <p className="truncate text-xs text-muted-foreground">{metric.trend}</p>
                   </CardContent>
                 </Card>
               );
             })}
           </section>
-          <section className="grid grid-cols-1 gap-4 lg:grid-cols-7">
+          <section className="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-7">
             <Card className="col-span-1 lg:col-span-4">
               <CardHeader>
-                <CardTitle>{t('webAdmin.dashboard.overview.title')}</CardTitle>
-                <CardDescription>{t('webAdmin.dashboard.overview.description')}</CardDescription>
+                <CardTitle className="truncate">{t('webAdmin.dashboard.overview.title')}</CardTitle>
+                <CardDescription className="truncate">{t('webAdmin.dashboard.overview.description')}</CardDescription>
               </CardHeader>
               <CardContent className="ps-2">
-                <div className="flex h-72 items-end gap-3">
+                <div className="flex h-72 min-w-0 items-end gap-3 overflow-x-auto pb-1">
                   {isLoading
                     ? Array.from({ length: 8 }).map((_, index) => (
                         <Skeleton className="h-full flex-1" key={`dashboard-chart-skeleton-${index}`} />
                       ))
-                    : chartValues.map((value, index) => (
-                        <div className="flex h-full flex-1 flex-col justify-end gap-2" key={`${value}-${index}`}>
+                    : chartItems.map((item, index) => (
+                        <div className="flex h-full flex-1 flex-col justify-end gap-2" key={item.key}>
                           <div
                             className="w-full rounded-md bg-primary"
-                            style={{ height: `${Math.max((value / chartMax) * 100, value > 0 ? 12 : 4)}%` }}
+                            style={{ height: `${Math.max((item.value / chartMax) * 100, item.value > 0 ? 12 : 4)}%` }}
                           />
                           <span className="text-xs text-muted-foreground">{index + 1}</span>
                         </div>
@@ -173,10 +173,10 @@ export const AdminDashboardPage = () => {
             </Card>
             <Card className="col-span-1 lg:col-span-3">
               <CardHeader>
-                <CardTitle>{t('webAdmin.dashboard.activity.title')}</CardTitle>
-                <CardDescription>{t('webAdmin.dashboard.activity.description')}</CardDescription>
+                <CardTitle className="truncate">{t('webAdmin.dashboard.activity.title')}</CardTitle>
+                <CardDescription className="truncate">{t('webAdmin.dashboard.activity.description')}</CardDescription>
               </CardHeader>
-              <CardContent className="flex flex-col gap-6">
+              <CardContent className="flex min-w-0 flex-col gap-6">
                 {isLoading ? (
                   <>
                     <Skeleton className="h-12 w-full" />
@@ -185,17 +185,19 @@ export const AdminDashboardPage = () => {
                   </>
                 ) : (
                   (activityLogs?.items ?? []).map((activity, index) => (
-                    <div className="flex items-center gap-4" key={activity.id}>
+                    <div className="flex min-w-0 items-center gap-4" key={activity.id}>
                       <Avatar className="size-9">
                         <AvatarFallback>{`0${index + 1}`}</AvatarFallback>
                       </Avatar>
-                      <div className="flex flex-1 flex-col gap-1">
-                        <p className="text-sm font-medium leading-none">{`${activity.operation}:${activity.result}`}</p>
-                        <p className="text-sm text-muted-foreground">
+                      <div className="flex min-w-0 flex-1 flex-col gap-1">
+                        <p className="truncate text-sm font-medium leading-none">{`${activity.operation}:${activity.result}`}</p>
+                        <p className="truncate text-sm text-muted-foreground">
                           {formatUserDateTime(activity.operationTime, timeZone)}
                         </p>
                       </div>
-                      <Badge variant="secondary">{activity.resource}</Badge>
+                      <Badge className="max-w-28 shrink-0 truncate" variant="secondary">
+                        {activity.resource}
+                      </Badge>
                     </div>
                   ))
                 )}

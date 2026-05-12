@@ -11,9 +11,9 @@ const getSidebarDefaultOpen = () => {
 };
 
 export const AdminShell = () => (
-  <SidebarProvider defaultOpen={getSidebarDefaultOpen()}>
+  <SidebarProvider className="h-svh min-h-0 overflow-hidden" defaultOpen={getSidebarDefaultOpen()}>
     <AppSidebar />
-    <SidebarInset className="@container/content has-data-[layout=fixed]:h-svh peer-data-[variant=inset]:has-data-[layout=fixed]:h-[calc(100svh-(var(--spacing)*4))]">
+    <SidebarInset className="@container/content min-h-0 min-w-0 overflow-hidden">
       <Outlet />
     </SidebarInset>
   </SidebarProvider>

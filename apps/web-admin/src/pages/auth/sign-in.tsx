@@ -1,6 +1,6 @@
 import { useNavigate, useSearchParams } from 'react-router';
 import { useState } from 'react';
-import { LogIn } from 'lucide-react';
+import { LoaderCircle, LogIn } from 'lucide-react';
 import { adminSignInInputSchema, type AdminSignInInput } from '@tetap/schema';
 import {
   Alert,
@@ -92,7 +92,11 @@ export const SignInPage = () => {
                 {passwordErrorKey ? <FieldError>{t(passwordErrorKey)}</FieldError> : null}
               </Field>
               <Button className="mt-2" disabled={form.formState.isSubmitting} type="submit">
-                <LogIn data-icon="inline-start" />
+                {form.formState.isSubmitting ? (
+                  <LoaderCircle className="animate-spin" data-icon="inline-start" />
+                ) : (
+                  <LogIn data-icon="inline-start" />
+                )}
                 {t('webAdmin.auth.actions.signIn')}
               </Button>
             </FieldGroup>
