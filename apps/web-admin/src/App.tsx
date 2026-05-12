@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { createBrowserRouter, Navigate, RouterProvider, useLocation } from 'react-router';
 import { useAdminSessionStore, useAdminI18n, useAdminThemeEffect } from '@tetap/hooks';
+import { ErrorBoundary } from '@tetap/ui';
 import { fetchAdminBootstrap } from './api/backend-admin.js';
 import { AdminShell } from './layout/admin-shell.js';
 import { OtpPage } from './pages/auth/otp.js';
@@ -18,7 +19,7 @@ import {
   AdminUsersPage,
 } from './pages/iam.js';
 import { AdminStatePage } from './pages/state-page.js';
-import { AdminSettingsPage } from './pages/settings.js';
+import { AdminErrorBoundaryFallback } from './pages/error-boundary-fallback.js';
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {
   const location = useLocation();
@@ -157,27 +158,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'security',
-        element: <Navigate replace to="/security/sessions" />,
+        path: 'system/sessions',
+        element: <Navigate replace to="/system/session" />,
       },
       {
-        path: 'security/iam',
-        element: <Navigate replace to="/system/permission" />,
-      },
-      {
-        path: 'security/operation-logs',
-        element: (
-          <PermissionRoute permission="operation-log:read">
-            <AdminOperationLogsPage />
-          </PermissionRoute>
-        ),
-      },
-      {
-        path: 'security/roles',
-        element: <Navigate replace to="/system/role" />,
-      },
-      {
-        path: 'security/sessions',
+        path: 'system/session',
         element: (
           <PermissionRoute permission="session:read">
             <AdminSessionsPage />
@@ -185,11 +170,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'security/permissions',
-        element: <Navigate replace to="/system/permission" />,
+        path: 'system/fields',
+        element: <Navigate replace to="/system/field" />,
       },
       {
-        path: 'security/fields',
+        path: 'system/field',
         element: (
           <PermissionRoute permission="field:read">
             <AdminFieldPermissionsPage />
@@ -197,11 +182,11 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'security/menus',
-        element: <Navigate replace to="/system/menu" />,
+        path: 'system/policies',
+        element: <Navigate replace to="/system/policy" />,
       },
       {
-        path: 'security/policies',
+        path: 'system/policy',
         element: (
           <PermissionRoute permission="policy:read">
             <AdminPoliciesPage />
@@ -209,24 +194,52 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: 'settings',
-        element: <Navigate replace to="/settings/account" />,
+        path: 'system/operation-logs',
+        element: <Navigate replace to="/system/operation-log" />,
       },
       {
-        path: 'settings/account',
-        element: <AdminSettingsPage section="account" />,
+        path: 'system/operation-log',
+        element: (
+          <PermissionRoute permission="operation-log:read">
+            <AdminOperationLogsPage />
+          </PermissionRoute>
+        ),
       },
       {
-        path: 'settings/appearance',
-        element: <AdminSettingsPage section="appearance" />,
+        path: 'security',
+        element: <Navigate replace to="/system/session" />,
       },
       {
-        path: 'settings/display',
-        element: <AdminSettingsPage section="display" />,
+        path: 'security/iam',
+        element: <Navigate replace to="/system/permission" />,
       },
       {
-        path: 'settings/notifications',
-        element: <AdminSettingsPage section="notifications" />,
+        path: 'security/operation-logs',
+        element: <Navigate replace to="/system/operation-log" />,
+      },
+      {
+        path: 'security/roles',
+        element: <Navigate replace to="/system/role" />,
+      },
+      {
+        path: 'security/sessions',
+        element: <Navigate replace to="/system/session" />,
+      },
+      {
+        path: 'security/permissions',
+        element: <Navigate replace to="/system/permission" />,
+      },
+      {
+        path: 'security/fields',
+        element: <Navigate replace to="/system/field" />,
+      },
+      {
+        path: 'security/menus',
+        element: <Navigate replace to="/system/menu" />,
+      },
+      {
+        path: 'security/policies',
+        element: <Navigate replace to="/system/policy" />,
       },
       {
         path: 'errors/unauthorized',
@@ -303,7 +316,11 @@ function App() {
     document.title = t('webAdmin.title');
   }, [locale, t]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ErrorBoundary fallback={<AdminErrorBoundaryFallback />}>
+      <RouterProvider router={router} />
+    </ErrorBoundary>
+  );
 }
 
 export default App;

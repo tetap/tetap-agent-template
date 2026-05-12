@@ -40,6 +40,8 @@
 
 All IAM APIs are protected by the admin auth hook and route permission metadata. Routes stay registration-only; request parsing, response validation, policy checks, and operation-log decisions live in `src/services/iam.ts` and `src/plugins/operation-log.ts`.
 
+`GET /iam/overview` is intentionally lightweight. It only returns dashboard count metrics; users, roles, permissions, menus, sessions, policies, fields, and operation logs are loaded by their own feature APIs. Operation logs are fetched through the paged `GET /iam/operation-logs?page=&pageSize=&search=&sort=` endpoint.
+
 ```text
 POST   /auth/login
 POST   /auth/refresh

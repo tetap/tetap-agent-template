@@ -6,7 +6,7 @@ import { render } from 'vitest-browser-react';
 import { AdminShell } from '../../../../apps/web-admin/src/layout/admin-shell.tsx';
 import { SignInPage } from '../../../../apps/web-admin/src/pages/auth/sign-in.tsx';
 import { AdminDashboardPage } from '../../../../apps/web-admin/src/pages/dashboard.tsx';
-import { AdminRolesPage, AdminUsersPage } from '../../../../apps/web-admin/src/pages/iam.tsx';
+import { AdminOperationLogsPage, AdminRolesPage, AdminUsersPage } from '../../../../apps/web-admin/src/pages/iam.tsx';
 
 const i18n = createAdminI18n({ locale: 'en-US' });
 const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
@@ -50,21 +50,10 @@ const testMenus = [
         order: 12,
         children: [],
       },
-    ],
-  },
-  {
-    id: 'security',
-    name: 'Security Center',
-    path: '/security',
-    component: 'AdminSecurityRedirectPage',
-    icon: 'ShieldCheck',
-    permissionCodes: [],
-    order: 20,
-    children: [
       {
         id: 'sessions',
         name: 'Online Users',
-        path: '/security/sessions',
+        path: '/system/session',
         component: 'AdminSessionsPage',
         icon: 'MonitorCog',
         permissionCodes: ['session:read'],
@@ -139,57 +128,121 @@ const createLoginResponse = () => ({
   },
 });
 
+const createUsersResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: [
+    {
+      id: '1',
+      username: 'admin',
+      email: 'admin@tetap.local',
+      status: 'ACTIVE',
+      deptId: '100',
+      tenantId: 'tenant-default',
+      isSuperAdmin: true,
+      roleCodes: ['super-admin'],
+      tokenVersion: 1,
+    },
+  ],
+});
+
+const createRolesResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: [
+    {
+      id: '1',
+      name: 'Super Admin',
+      code: 'super-admin',
+      description: 'Full access',
+      permissionCodes: ['iam:read'],
+      dataScope: { type: 'ALL' },
+    },
+  ],
+});
+
+const createPermissionsResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: [
+    {
+      id: '1',
+      code: 'iam:read',
+      name: 'Read IAM',
+      type: 'API',
+      resource: 'iam',
+      action: 'read',
+    },
+  ],
+});
+
+const createOperationLogsResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: {
+    items: [],
+    page: 1,
+    pageSize: 5,
+    search: '',
+    sort: 'desc',
+    total: 0,
+    totalPages: 1,
+  },
+});
+
 const createOverviewResponse = () => ({
   code: 0,
   message: 'ok',
   data: {
-    users: [
-      {
-        id: '1',
-        username: 'admin',
-        email: 'admin@tetap.local',
-        status: 'ACTIVE',
-        deptId: '100',
-        tenantId: 'tenant-default',
-        isSuperAdmin: true,
-        roleCodes: ['super-admin'],
-        tokenVersion: 1,
-      },
-    ],
-    roles: [
-      {
-        id: '1',
-        name: 'Super Admin',
-        code: 'super-admin',
-        description: 'Full access',
-        permissionCodes: ['iam:read'],
-        dataScope: { type: 'ALL' },
-      },
-    ],
-    permissions: [
-      {
-        id: '1',
-        code: 'iam:read',
-        name: 'Read IAM',
-        type: 'API',
-        resource: 'iam',
-        action: 'read',
-      },
-    ],
-    menus: testMenus,
-    fieldPermissions: [],
-    policies: [],
-    sessions: [],
-    operationLogs: [],
+    metrics: {
+      users: 1,
+      roles: 1,
+      permissions: 1,
+      menus: testMenus.length,
+      fieldPermissions: 0,
+      policies: 0,
+      sessions: 0,
+      operationLogs: 0,
+    },
   },
 });
+
+const createAdminApiResponse = (input: RequestInfo | URL) => {
+  const url = String(input);
+
+  if (url.includes('/auth/login')) {
+    return createLoginResponse();
+  }
+
+  if (url.includes('/iam/overview')) {
+    return createOverviewResponse();
+  }
+
+  if (url.includes('/iam/operation-logs')) {
+    return createOperationLogsResponse();
+  }
+
+  if (url.includes('/iam/users')) {
+    return createUsersResponse();
+  }
+
+  if (url.includes('/iam/roles')) {
+    return createRolesResponse();
+  }
+
+  if (url.includes('/iam/permissions')) {
+    return createPermissionsResponse();
+  }
+
+  return createLoginResponse();
+};
 
 const renderAdminShell = async () => {
   seedAdminSession();
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => {
-      return new Response(JSON.stringify(createOverviewResponse()), {
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -216,10 +269,7 @@ const renderSignIn = async () => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      const body = url.includes('/iam/overview') ? createOverviewResponse() : createLoginResponse();
-
-      return new Response(JSON.stringify(body), {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -255,8 +305,8 @@ const renderIamPage = async () => {
   seedAdminSession();
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => {
-      return new Response(JSON.stringify(createOverviewResponse()), {
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -283,8 +333,8 @@ const renderRolePage = async () => {
   seedAdminSession();
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => {
-      return new Response(JSON.stringify(createOverviewResponse()), {
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
         headers: { 'content-type': 'application/json' },
         status: 200,
       });
@@ -299,6 +349,34 @@ const renderRolePage = async () => {
         {
           index: true,
           element: <AdminRolesPage />,
+        },
+      ],
+    },
+  ]);
+
+  return renderWithI18n(router);
+};
+
+const renderOperationLogsPage = async () => {
+  seedAdminSession();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
+
+  const router = createMemoryRouter([
+    {
+      path: '/',
+      element: <AdminShell />,
+      children: [
+        {
+          index: true,
+          element: <AdminOperationLogsPage />,
         },
       ],
     },
@@ -362,5 +440,22 @@ describe('admin web dashboard browser behavior', () => {
     expect(screen.getByText(i18n.t('webAdmin.iam.roleManager.columns.index')).query()).not.toBeNull();
     expect(screen.getByText('super-admin').query()).not.toBeNull();
     expect(screen.getByText(i18n.t('webAdmin.iam.roleManager.actions.permissions')).query()).not.toBeNull();
+  });
+
+  it('uses an input group and explicit submit button for operation log search', async () => {
+    const screen = await renderOperationLogsPage();
+
+    await expect
+      .poll(() => screen.getByRole('heading', { name: i18n.t('webAdmin.iam.pages.operationLogs.title') }).query())
+      .not.toBeNull();
+
+    await screen.getByLabelText(i18n.t('webAdmin.iam.operationLogs.search')).fill('admin login');
+    expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes('search=admin+login'))).toBe(false);
+
+    await screen.getByRole('button', { name: i18n.t('webAdmin.iam.operationLogs.search') }).click();
+
+    await expect
+      .poll(() => vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes('search=admin+login')))
+      .toBe(true);
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
 import {
   Database,
   Edit,
@@ -12,8 +12,16 @@ import {
   Trash2,
   UserPlus,
 } from 'lucide-react';
-import { useAdminSessionStore, useAdminT } from '@tetap/hooks';
+import { formatUserDateTime, getUserTimeZone, useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
   Badge,
   Button,
   Card,
@@ -35,9 +43,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   Field,
+  FieldDescription,
   FieldGroup,
   FieldLabel,
   Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
   Select,
   SelectContent,
   SelectGroup,
@@ -57,9 +69,7 @@ import {
 } from '@tetap/ui';
 import { AdminHeader } from '../layout/header.js';
 import { AdminMain } from '../layout/main.js';
-import { ProfileDropdown } from '../layout/profile-dropdown.js';
 import { SearchCommand } from '../layout/search-command.js';
-import { ConfigDrawer } from '../layout/config-drawer.js';
 import { ThemeSwitch } from '../layout/theme-switch.js';
 import {
   createIamFieldPermission,
@@ -74,30 +84,56 @@ import {
   deleteIamPolicy,
   deleteIamRole,
   deleteIamUser,
-  fetchIamOverview,
+  fetchIamFieldPermissions,
+  fetchIamMenus,
+  fetchIamOperationLogs,
+  fetchIamPermissions,
+  fetchIamPolicies,
+  fetchIamRoles,
+  fetchIamSessions,
+  fetchIamUsers,
   revokeIamSession,
   updateIamRole,
   updateIamUser,
+  updateIamFieldPermission,
+  updateIamPolicy,
 } from '../api/backend-admin.js';
-import type { IamCreatePolicyRequest, IamCreateRoleRequest, IamMenuNode, IamOverviewData } from '@tetap/schema/iam';
+import type {
+  FieldPermission,
+  IamCreatePolicyRequest,
+  IamCreateRoleRequest,
+  IamMenuNode,
+  IamOperationLogsData,
+  IamPermission,
+  IamPolicy,
+  IamRole,
+  IamSession,
+  IamUser,
+} from '@tetap/schema/iam';
 
-type IamSection =
-  | 'overview'
-  | 'users'
-  | 'roles'
-  | 'permissions'
-  | 'menus'
-  | 'sessions'
-  | 'fields'
-  | 'policies'
-  | 'operationLogs';
+type IamSection = 'users' | 'roles' | 'permissions' | 'menus' | 'sessions' | 'fields' | 'policies' | 'operationLogs';
 type PermissionTypeInput = 'MENU' | 'API' | 'BUTTON' | 'FIELD' | 'DATA';
 type PolicyEffectInput = 'ALLOW' | 'DENY';
 type FieldPermissionTypeInput = 'HIDE' | 'MASK' | 'READONLY' | 'READWRITE';
 type DataScopeTypeInput = 'ALL' | 'DEPT' | 'DEPT_AND_CHILD' | 'SELF' | 'CUSTOM';
-type RoleItem = IamOverviewData['roles'][number];
-type UserItem = IamOverviewData['users'][number];
-type PermissionItem = IamOverviewData['permissions'][number];
+type RoleItem = IamRole;
+type UserItem = IamUser;
+type PermissionItem = IamPermission;
+type IamPageData = {
+  fieldPermissions: FieldPermission[];
+  menus: IamMenuNode[];
+  permissions: IamPermission[];
+  policies: IamPolicy[];
+  roles: IamRole[];
+  sessions: IamSession[];
+  users: IamUser[];
+};
+type OperationLogQueryState = {
+  page: number;
+  pageSize: number;
+  search: string;
+  sort: 'asc' | 'desc';
+};
 type RoleEditorState = {
   name: string;
   code: string;
@@ -121,6 +157,42 @@ const flattenIamMenuTree = (menus: IamMenuNode[], depth = 0): (IamMenuNode & { d
   menus.flatMap(menu => [{ ...menu, depth }, ...flattenIamMenuTree(menu.children, depth + 1)]);
 
 const parsePolicyConditions = (value: string) => JSON.parse(value) as IamCreatePolicyRequest['conditions'];
+
+const emptyIamPageData = (): IamPageData => ({
+  fieldPermissions: [],
+  menus: [],
+  permissions: [],
+  policies: [],
+  roles: [],
+  sessions: [],
+  users: [],
+});
+
+let cachedIamPageData: IamPageData = emptyIamPageData();
+let cachedOperationLogData: IamOperationLogsData | null = null;
+
+const hasSectionData = (section: IamSection, data: IamPageData, operationLogs: IamOperationLogsData | null) => {
+  switch (section) {
+    case 'users':
+      return data.users.length > 0;
+    case 'roles':
+      return data.roles.length > 0;
+    case 'permissions':
+      return data.permissions.length > 0;
+    case 'menus':
+      return data.menus.length > 0;
+    case 'sessions':
+      return data.sessions.length > 0;
+    case 'fields':
+      return data.fieldPermissions.length > 0;
+    case 'policies':
+      return data.policies.length > 0;
+    case 'operationLogs':
+      return Boolean(operationLogs);
+    default:
+      return false;
+  }
+};
 
 const toPermissionType = (value: string): PermissionTypeInput =>
   ['MENU', 'API', 'BUTTON', 'FIELD', 'DATA'].includes(value) ? (value as PermissionTypeInput) : 'API';
@@ -203,10 +275,6 @@ const dataScopeOptions: { label: string; value: DataScopeTypeInput }[] = [
 ];
 
 const iamSectionCopy = {
-  overview: {
-    titleKey: 'webAdmin.iam.pages.overview.title',
-    descriptionKey: 'webAdmin.iam.pages.overview.description',
-  },
   users: {
     titleKey: 'webAdmin.iam.pages.users.title',
     descriptionKey: 'webAdmin.iam.pages.users.description',
@@ -241,17 +309,25 @@ const iamSectionCopy = {
   },
 } as const;
 
-export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection }) => {
+export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) => {
   const t = useAdminT();
   const accessToken = useAdminSessionStore(state => state.auth.accessToken);
   const can = useAdminSessionStore(state => state.auth.can);
-  const [overview, setOverview] = useState<IamOverviewData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<IamPageData>(() => cachedIamPageData);
+  const [operationLogData, setOperationLogData] = useState<IamOperationLogsData | null>(() => cachedOperationLogData);
+  const [operationLogQuery, setOperationLogQuery] = useState<OperationLogQueryState>({
+    page: 1,
+    pageSize: 20,
+    search: '',
+    sort: 'desc',
+  });
+  const [isLoading, setIsLoading] = useState(() => !hasSectionData(section, cachedIamPageData, cachedOperationLogData));
   const [isMutating, setIsMutating] = useState(false);
-  const [createDialog, setCreateDialog] = useState<Exclude<
-    IamSection,
-    'overview' | 'roles' | 'sessions' | 'operationLogs'
-  > | null>(null);
+  const [createDialog, setCreateDialog] = useState<Exclude<IamSection, 'roles' | 'sessions' | 'operationLogs'> | null>(
+    null,
+  );
+  const [editingFieldPermissionId, setEditingFieldPermissionId] = useState<string | null>(null);
+  const [editingPolicyId, setEditingPolicyId] = useState<string | null>(null);
   const [userForm, setUserForm] = useState({
     username: '',
     email: '',
@@ -292,18 +368,74 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
   const canManageIam = can('iam:manage');
   const canUpdatePolicy = can('policy:update');
   const canRevokeSessions = can('session:revoke');
+  const timeZone = getUserTimeZone();
 
-  const loadOverview = async () => {
+  const changeCreateDialog = (dialog: CreateDialogKind | null) => {
+    setCreateDialog(dialog);
+
+    if (!dialog) {
+      setEditingFieldPermissionId(null);
+      setEditingPolicyId(null);
+    }
+  };
+
+  const loadSectionData = async () => {
     if (!accessToken) {
       setIsLoading(false);
       toast.error(t('webAdmin.iam.states.loginExpired'));
       return;
     }
 
-    setIsLoading(true);
+    setIsLoading(!hasSectionData(section, cachedIamPageData, cachedOperationLogData));
 
     try {
-      setOverview(await fetchIamOverview(accessToken));
+      const patch: Partial<IamPageData> = {};
+
+      if (section === 'users') {
+        const [users, roles] = await Promise.all([fetchIamUsers(accessToken), fetchIamRoles(accessToken)]);
+
+        patch.users = users;
+        patch.roles = roles;
+      } else if (section === 'roles') {
+        const [roles, users, permissions] = await Promise.all([
+          fetchIamRoles(accessToken),
+          fetchIamUsers(accessToken),
+          fetchIamPermissions(accessToken),
+        ]);
+
+        patch.roles = roles;
+        patch.users = users;
+        patch.permissions = permissions;
+      } else if (section === 'permissions') {
+        patch.permissions = await fetchIamPermissions(accessToken);
+      } else if (section === 'menus') {
+        const [menus, permissions] = await Promise.all([fetchIamMenus(accessToken), fetchIamPermissions(accessToken)]);
+
+        patch.menus = menus;
+        patch.permissions = permissions;
+      } else if (section === 'sessions') {
+        patch.sessions = await fetchIamSessions(accessToken);
+      } else if (section === 'fields') {
+        const [fieldPermissions, roles] = await Promise.all([
+          fetchIamFieldPermissions(accessToken),
+          fetchIamRoles(accessToken),
+        ]);
+
+        patch.fieldPermissions = fieldPermissions;
+        patch.roles = roles;
+      } else if (section === 'policies') {
+        patch.policies = await fetchIamPolicies(accessToken);
+      } else if (section === 'operationLogs') {
+        const logs = await fetchIamOperationLogs(accessToken, operationLogQuery);
+
+        cachedOperationLogData = logs;
+        setOperationLogData(logs);
+      }
+
+      if (Object.keys(patch).length > 0) {
+        cachedIamPageData = { ...cachedIamPageData, ...patch };
+        setData(cachedIamPageData);
+      }
     } catch {
       toast.error(t('webAdmin.iam.states.loadFailed'));
     } finally {
@@ -320,7 +452,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
     try {
       await revokeIamSession(accessToken, sessionId);
       toast.success(t('webAdmin.iam.states.mutationOk'));
-      await loadOverview();
+      await loadSectionData();
     } catch {
       toast.error(t('webAdmin.iam.states.revokeFailed'));
     }
@@ -337,7 +469,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
     try {
       await operation(accessToken);
       toast.success(t('webAdmin.iam.states.mutationOk'));
-      await loadOverview();
+      await loadSectionData();
       return true;
     } catch {
       toast.error(t('webAdmin.iam.states.mutationFailed'));
@@ -384,27 +516,82 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
 
   const submitFieldPermission = () =>
     runMutation(token =>
-      createIamFieldPermission(token, {
-        roleCode: fieldForm.roleCode,
-        resource: fieldForm.resource,
-        fieldName: fieldForm.fieldName,
-        permissionType: toFieldPermissionType(fieldForm.permissionType),
-      }),
+      editingFieldPermissionId
+        ? updateIamFieldPermission(token, editingFieldPermissionId, {
+            roleCode: fieldForm.roleCode,
+            resource: fieldForm.resource,
+            fieldName: fieldForm.fieldName,
+            permissionType: toFieldPermissionType(fieldForm.permissionType),
+          })
+        : createIamFieldPermission(token, {
+            roleCode: fieldForm.roleCode,
+            resource: fieldForm.resource,
+            fieldName: fieldForm.fieldName,
+            permissionType: toFieldPermissionType(fieldForm.permissionType),
+          }),
     );
 
   const submitPolicy = () =>
     runMutation(token =>
-      createIamPolicy(token, {
-        resource: policyForm.resource,
-        action: policyForm.action,
-        effect: toPolicyEffect(policyForm.effect),
-        conditions: parsePolicyConditions(policyForm.conditions),
-      }),
+      editingPolicyId
+        ? updateIamPolicy(token, editingPolicyId, {
+            resource: policyForm.resource,
+            action: policyForm.action,
+            effect: toPolicyEffect(policyForm.effect),
+            conditions: parsePolicyConditions(policyForm.conditions),
+          })
+        : createIamPolicy(token, {
+            resource: policyForm.resource,
+            action: policyForm.action,
+            effect: toPolicyEffect(policyForm.effect),
+            conditions: parsePolicyConditions(policyForm.conditions),
+          }),
     );
 
+  const openCreateFieldPermission = () => {
+    setEditingFieldPermissionId(null);
+    setFieldForm({ fieldName: '', permissionType: 'MASK', resource: '', roleCode: '' });
+    setCreateDialog('fields');
+  };
+
+  const openEditFieldPermission = (fieldPermission: FieldPermission) => {
+    setEditingFieldPermissionId(fieldPermission.id);
+    setFieldForm({
+      fieldName: fieldPermission.fieldName,
+      permissionType: fieldPermission.permissionType,
+      resource: fieldPermission.resource,
+      roleCode: fieldPermission.roleCode,
+    });
+    setCreateDialog('fields');
+  };
+
+  const openCreatePolicy = () => {
+    setEditingPolicyId(null);
+    setPolicyForm({ action: '', conditions: '{"all":[]}', effect: 'ALLOW', resource: '' });
+    setCreateDialog('policies');
+  };
+
+  const openEditPolicy = (policy: IamPolicy) => {
+    setEditingPolicyId(policy.id);
+    setPolicyForm({
+      action: policy.action,
+      conditions: JSON.stringify(policy.conditions),
+      effect: policy.effect,
+      resource: policy.resource,
+    });
+    setCreateDialog('policies');
+  };
+
   useEffect(() => {
-    void loadOverview();
-  }, [accessToken]);
+    void loadSectionData();
+  }, [
+    accessToken,
+    section,
+    operationLogQuery.page,
+    operationLogQuery.pageSize,
+    operationLogQuery.search,
+    operationLogQuery.sort,
+  ]);
 
   if (isLoading) {
     return (
@@ -425,62 +612,39 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
             </h1>
             <p className="text-muted-foreground">{t(iamSectionCopy[section].descriptionKey)}</p>
           </div>
-          <Button onClick={() => void loadOverview()} variant="outline">
+          <Button disabled={isLoading} onClick={() => void loadSectionData()} variant="outline">
             <RefreshCw data-icon="inline-start" />
             {t('webAdmin.iam.actions.refresh')}
           </Button>
         </div>
       </section>
 
-      {overview ? (
+      {hasSectionData(section, data, operationLogData) ? (
         <>
           <CreateIamDialogs
             dialog={createDialog}
             fieldForm={fieldForm}
             isMutating={isMutating}
             menuForm={menuForm}
-            onDialogChange={setCreateDialog}
+            onDialogChange={changeCreateDialog}
             onFieldFormChange={setFieldForm}
             onMenuFormChange={setMenuForm}
             onPermissionFormChange={setPermissionForm}
             onPolicyFormChange={setPolicyForm}
-            onSubmitFieldPermission={() => void submitFieldPermission().then(ok => ok && setCreateDialog(null))}
-            onSubmitMenu={() => void submitMenu().then(ok => ok && setCreateDialog(null))}
-            onSubmitPermission={() => void submitPermission().then(ok => ok && setCreateDialog(null))}
-            onSubmitPolicy={() => void submitPolicy().then(ok => ok && setCreateDialog(null))}
-            onSubmitUser={() => void submitUser().then(ok => ok && setCreateDialog(null))}
+            onSubmitFieldPermission={() => void submitFieldPermission().then(ok => ok && changeCreateDialog(null))}
+            onSubmitMenu={() => void submitMenu().then(ok => ok && changeCreateDialog(null))}
+            onSubmitPermission={() => void submitPermission().then(ok => ok && changeCreateDialog(null))}
+            onSubmitPolicy={() => void submitPolicy().then(ok => ok && changeCreateDialog(null))}
+            onSubmitUser={() => void submitUser().then(ok => ok && changeCreateDialog(null))}
             onUserFormChange={setUserForm}
-            overview={overview}
+            data={data}
             permissionForm={permissionForm}
             policyForm={policyForm}
             userForm={userForm}
+            fieldMode={editingFieldPermissionId ? 'edit' : 'create'}
+            policyMode={editingPolicyId ? 'edit' : 'create'}
           />
           <Tabs value={section}>
-            <TabsContent value="overview">
-              <section className="grid gap-4 md:grid-cols-4">
-                <MetricCard label={t('webAdmin.iam.metrics.users')} value={overview.users.length} />
-                <MetricCard label={t('webAdmin.iam.metrics.roles')} value={overview.roles.length} />
-                <MetricCard label={t('webAdmin.iam.metrics.permissions')} value={overview.permissions.length} />
-                <MetricCard label={t('webAdmin.iam.metrics.operationLogs')} value={overview.operationLogs.length} />
-              </section>
-              <section className="mt-4 grid gap-4 lg:grid-cols-2">
-                {overview.users.map(user => (
-                  <Card key={user.id}>
-                    <CardHeader>
-                      <CardTitle>{user.username}</CardTitle>
-                      <CardDescription>{user.email}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="flex flex-wrap gap-2">
-                      {user.roleCodes.map(role => (
-                        <Badge key={role} variant="secondary">
-                          {role}
-                        </Badge>
-                      ))}
-                    </CardContent>
-                  </Card>
-                ))}
-              </section>
-            </TabsContent>
             <TabsContent value="users">
               <section className="grid gap-4">
                 <Card>
@@ -508,7 +672,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {overview.users.map(user => (
+                        {data.users.map(user => (
                           <TableRow key={user.id}>
                             <TableCell>{user.username}</TableCell>
                             <TableCell>{user.email}</TableCell>
@@ -541,14 +705,16 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                                     ? t('webAdmin.iam.actions.disableUser')
                                     : t('webAdmin.iam.actions.activateUser')}
                                 </Button>
-                                <Button
+                                <ConfirmActionButton
+                                  description={t('webAdmin.iam.confirm.deleteDescription', { item: user.username })}
                                   disabled={isMutating || user.isSuperAdmin || !canManageUsers}
-                                  onClick={() => void runMutation(token => deleteIamUser(token, user.id))}
+                                  onConfirm={() => void runMutation(token => deleteIamUser(token, user.id))}
                                   size="sm"
+                                  title={t('webAdmin.iam.confirm.deleteTitle')}
                                   variant="outline">
                                   <Trash2 data-icon="inline-start" />
                                   {t('webAdmin.iam.actions.delete')}
-                                </Button>
+                                </ConfirmActionButton>
                               </div>
                             </TableCell>
                           </TableRow>
@@ -564,9 +730,9 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                 canManageRoles={canManageRoles}
                 isMutating={isMutating}
                 onMutate={runMutation}
-                permissions={overview.permissions}
-                roles={overview.roles}
-                users={overview.users}
+                permissions={data.permissions}
+                roles={data.roles}
+                users={data.users}
               />
             </TabsContent>
             <TabsContent value="permissions">
@@ -597,7 +763,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {overview.permissions.map(permission => (
+                        {data.permissions.map(permission => (
                           <TableRow key={permission.id}>
                             <TableCell>{permission.code}</TableCell>
                             <TableCell>{permission.name}</TableCell>
@@ -607,14 +773,16 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                             <TableCell>{permission.resource}</TableCell>
                             <TableCell>{permission.action}</TableCell>
                             <TableCell>
-                              <Button
+                              <ConfirmActionButton
+                                description={t('webAdmin.iam.confirm.deleteDescription', { item: permission.code })}
                                 disabled={isMutating || !canManageIam}
-                                onClick={() => void runMutation(token => deleteIamPermission(token, permission.id))}
+                                onConfirm={() => void runMutation(token => deleteIamPermission(token, permission.id))}
                                 size="sm"
+                                title={t('webAdmin.iam.confirm.deleteTitle')}
                                 variant="outline">
                                 <Trash2 data-icon="inline-start" />
                                 {t('webAdmin.iam.actions.delete')}
-                              </Button>
+                              </ConfirmActionButton>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -651,7 +819,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {flattenIamMenuTree(overview.menus).map(menu => (
+                        {flattenIamMenuTree(data.menus).map(menu => (
                           <TableRow key={menu.id}>
                             <TableCell>
                               <span style={{ paddingInlineStart: `${menu.depth * 16}px` }}>{menu.name}</span>
@@ -668,14 +836,16 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Button
+                              <ConfirmActionButton
+                                description={t('webAdmin.iam.confirm.deleteDescription', { item: menu.name })}
                                 disabled={isMutating || !canManageIam}
-                                onClick={() => void runMutation(token => deleteIamMenu(token, menu.id))}
+                                onConfirm={() => void runMutation(token => deleteIamMenu(token, menu.id))}
                                 size="sm"
+                                title={t('webAdmin.iam.confirm.deleteTitle')}
                                 variant="outline">
                                 <Trash2 data-icon="inline-start" />
                                 {t('webAdmin.iam.actions.delete')}
-                              </Button>
+                              </ConfirmActionButton>
                             </TableCell>
                           </TableRow>
                         ))}
@@ -687,7 +857,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
             </TabsContent>
             <TabsContent value="sessions">
               <section className="grid gap-4">
-                {overview.sessions.length > 0 ? (
+                {data.sessions.length > 0 ? (
                   <Card>
                     <CardHeader>
                       <CardTitle>{t('webAdmin.iam.tables.sessionsTitle')}</CardTitle>
@@ -707,7 +877,7 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                           </TableRow>
                         </TableHeader>
                         <TableBody>
-                          {overview.sessions.map(session => (
+                          {data.sessions.map(session => (
                             <TableRow key={session.id}>
                               <TableCell>{session.username ?? session.userId}</TableCell>
                               <TableCell>{session.email ?? '-'}</TableCell>
@@ -716,16 +886,20 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                               <TableCell>
                                 <Badge>{session.status}</Badge>
                               </TableCell>
-                              <TableCell>{session.lastActiveTime}</TableCell>
+                              <TableCell>{formatUserDateTime(session.lastActiveTime, timeZone)}</TableCell>
                               <TableCell>
-                                <Button
+                                <ConfirmActionButton
+                                  description={t('webAdmin.iam.confirm.revokeDescription', {
+                                    item: session.username ?? session.userId,
+                                  })}
                                   disabled={session.status !== 'ONLINE' || !canRevokeSessions}
-                                  onClick={() => void revokeSession(session.id)}
+                                  onConfirm={() => void revokeSession(session.id)}
                                   size="sm"
+                                  title={t('webAdmin.iam.confirm.revokeTitle')}
                                   variant="outline">
                                   <LogOut data-icon="inline-start" />
                                   {t('webAdmin.iam.actions.revoke')}
-                                </Button>
+                                </ConfirmActionButton>
                               </TableCell>
                             </TableRow>
                           ))}
@@ -749,12 +923,12 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                   description={t('webAdmin.iam.policy.fieldDescription')}
                   deleteLabel={t('webAdmin.iam.actions.delete')}
                   action={
-                    <Button disabled={isMutating || !canManageIam} onClick={() => setCreateDialog('fields')}>
+                    <Button disabled={isMutating || !canManageIam} onClick={openCreateFieldPermission}>
                       <Plus data-icon="inline-start" />
                       {t('webAdmin.iam.actions.createFieldPermission')}
                     </Button>
                   }
-                  items={overview.fieldPermissions.map(
+                  items={data.fieldPermissions.map(
                     item => `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
                   )}
                   onDelete={
@@ -763,7 +937,18 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                           void runMutation(token => deleteIamFieldPermission(token, fieldPermissionId))
                       : undefined
                   }
-                  rawItems={overview.fieldPermissions.map(item => ({
+                  onEdit={
+                    canManageIam
+                      ? fieldPermissionId => {
+                          const fieldPermission = data.fieldPermissions.find(item => item.id === fieldPermissionId);
+
+                          if (fieldPermission) {
+                            openEditFieldPermission(fieldPermission);
+                          }
+                        }
+                      : undefined
+                  }
+                  rawItems={data.fieldPermissions.map(item => ({
                     id: item.id,
                     label: `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
                   }))}
@@ -775,10 +960,10 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
               <section className="grid gap-4">
                 <PolicyCard
                   description={t('webAdmin.iam.policy.policyDescription')}
-                  items={overview.policies.map(item => `${item.effect}:${item.resource}:${item.action}`)}
+                  items={data.policies.map(item => `${item.effect}:${item.resource}:${item.action}`)}
                   deleteLabel={t('webAdmin.iam.actions.delete')}
                   action={
-                    <Button disabled={isMutating || !canUpdatePolicy} onClick={() => setCreateDialog('policies')}>
+                    <Button disabled={isMutating || !canUpdatePolicy} onClick={openCreatePolicy}>
                       <Plus data-icon="inline-start" />
                       {t('webAdmin.iam.actions.createPolicy')}
                     </Button>
@@ -788,7 +973,18 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
                       ? policyId => void runMutation(token => deleteIamPolicy(token, policyId))
                       : undefined
                   }
-                  rawItems={overview.policies.map(item => ({
+                  onEdit={
+                    canUpdatePolicy
+                      ? policyId => {
+                          const policy = data.policies.find(item => item.id === policyId);
+
+                          if (policy) {
+                            openEditPolicy(policy);
+                          }
+                        }
+                      : undefined
+                  }
+                  rawItems={data.policies.map(item => ({
                     id: item.id,
                     label: `${item.effect}:${item.resource}:${item.action}`,
                   }))}
@@ -798,7 +994,13 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
             </TabsContent>
             <TabsContent value="operationLogs">
               <section className="grid gap-4">
-                <OperationLogsTable operationLogs={overview.operationLogs} />
+                <OperationLogsTable
+                  isLoading={isLoading}
+                  onQueryChange={setOperationLogQuery}
+                  operationLogs={operationLogData}
+                  query={operationLogQuery}
+                  timeZone={timeZone}
+                />
               </section>
             </TabsContent>
           </Tabs>
@@ -807,8 +1009,6 @@ export const AdminIamPage = ({ section = 'overview' }: { section?: IamSection })
     </IamPageFrame>
   );
 };
-
-export const AdminIamOverviewPage = () => <AdminIamPage section="overview" />;
 
 export const AdminUsersPage = () => <AdminIamPage section="users" />;
 
@@ -832,8 +1032,6 @@ const IamPageFrame = ({ children }: { children: ReactNode }) => (
       <div className="me-auto" />
       <SearchCommand />
       <ThemeSwitch />
-      <ConfigDrawer />
-      <ProfileDropdown />
     </AdminHeader>
     <AdminMain aria-labelledby="admin-iam-title" className="flex flex-col gap-4">
       {children}
@@ -841,16 +1039,7 @@ const IamPageFrame = ({ children }: { children: ReactNode }) => (
   </>
 );
 
-const MetricCard = ({ label, value }: { label: string; value: number }) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>{label}</CardTitle>
-    </CardHeader>
-    <CardContent className="text-2xl font-semibold">{value}</CardContent>
-  </Card>
-);
-
-type CreateDialogKind = Exclude<IamSection, 'overview' | 'roles' | 'sessions' | 'operationLogs'>;
+type CreateDialogKind = Exclude<IamSection, 'roles' | 'sessions' | 'operationLogs'>;
 
 type UserFormState = {
   deptId: string;
@@ -908,8 +1097,10 @@ const CreateIamDialogs = ({
   onSubmitPolicy,
   onSubmitUser,
   onUserFormChange,
-  overview,
+  data,
+  fieldMode,
   permissionForm,
+  policyMode,
   policyForm,
   userForm,
 }: {
@@ -928,13 +1119,15 @@ const CreateIamDialogs = ({
   onSubmitPolicy: () => void;
   onSubmitUser: () => void;
   onUserFormChange: (form: UserFormState) => void;
-  overview: IamOverviewData;
+  data: IamPageData;
+  fieldMode: 'create' | 'edit';
   permissionForm: PermissionFormState;
+  policyMode: 'create' | 'edit';
   policyForm: PolicyFormState;
   userForm: UserFormState;
 }) => {
   const t = useAdminT();
-  const roleOptions = overview.roles.map(role => ({
+  const roleOptions = data.roles.map(role => ({
     description: role.description,
     label: `${role.name} (${role.code})`,
     value: role.code,
@@ -946,8 +1139,8 @@ const CreateIamDialogs = ({
       value: '',
     },
     ...uniqueStrings([
-      ...overview.users.map(user => user.deptId),
-      ...overview.roles.flatMap(role => role.dataScope.deptIds ?? []),
+      ...data.users.map(user => user.deptId),
+      ...data.roles.flatMap(role => role.dataScope.deptIds ?? []),
     ])
       .sort()
       .map(deptId => ({
@@ -955,7 +1148,7 @@ const CreateIamDialogs = ({
         value: deptId,
       })),
   ];
-  const permissionOptions = overview.permissions.map(permission => ({
+  const permissionOptions = data.permissions.map(permission => ({
     description: `${permission.type} / ${permission.resource}:${permission.action}`,
     label: permission.code,
     value: permission.code,
@@ -966,7 +1159,7 @@ const CreateIamDialogs = ({
       label: t('webAdmin.iam.selection.rootMenu'),
       value: '',
     },
-    ...overview.menus.flatMap(flattenIamMenus).map(menu => ({
+    ...data.menus.flatMap(flattenIamMenus).map(menu => ({
       description: menu.path,
       label: menu.name,
       value: menu.id,
@@ -1115,7 +1308,9 @@ const CreateIamDialogs = ({
       <Dialog onOpenChange={close} open={dialog === 'fields'}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('webAdmin.iam.forms.fieldTitle')}</DialogTitle>
+            <DialogTitle>
+              {fieldMode === 'edit' ? t('webAdmin.iam.forms.fieldEditTitle') : t('webAdmin.iam.forms.fieldTitle')}
+            </DialogTitle>
             <DialogDescription>{t('webAdmin.iam.forms.fieldDescription')}</DialogDescription>
           </DialogHeader>
           <FieldGroup>
@@ -1152,7 +1347,9 @@ const CreateIamDialogs = ({
       <Dialog onOpenChange={close} open={dialog === 'policies'}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t('webAdmin.iam.forms.policyTitle')}</DialogTitle>
+            <DialogTitle>
+              {policyMode === 'edit' ? t('webAdmin.iam.forms.policyEditTitle') : t('webAdmin.iam.forms.policyTitle')}
+            </DialogTitle>
             <DialogDescription>{t('webAdmin.iam.forms.policyDescription')}</DialogDescription>
           </DialogHeader>
           <FieldGroup>
@@ -1217,6 +1414,7 @@ const RoleManagementPanel = ({
   const [dataScopeForm, setDataScopeForm] = useState({ dataScopeType: 'DEPT_AND_CHILD', deptIds: '' });
   const [assignRole, setAssignRole] = useState<RoleItem | null>(null);
   const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
+  const [roleDeleteTarget, setRoleDeleteTarget] = useState<RoleItem | null>(null);
   const departmentOptions = uniqueStrings([
     ...users.map(user => user.deptId),
     ...roles.flatMap(role => role.dataScope.deptIds ?? []),
@@ -1442,14 +1640,18 @@ const RoleManagementPanel = ({
                 <Edit data-icon="inline-start" />
                 {t('webAdmin.iam.roleManager.actions.edit')}
               </Button>
-              <Button
+              <ConfirmActionButton
+                description={t('webAdmin.iam.confirm.deleteDescription', {
+                  item: selectedRoles.map(role => role.name).join(', '),
+                })}
                 disabled={isMutating || !canDeleteSelected}
-                onClick={() => void deleteRoleSelection()}
+                onConfirm={() => void deleteRoleSelection()}
                 size="sm"
+                title={t('webAdmin.iam.confirm.deleteTitle')}
                 variant="outline">
                 <Trash2 data-icon="inline-start" />
                 {t('webAdmin.iam.roleManager.actions.delete')}
-              </Button>
+              </ConfirmActionButton>
             </div>
           </div>
         </CardHeader>
@@ -1542,7 +1744,7 @@ const RoleManagementPanel = ({
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 disabled={isMutating || role.code === 'super-admin' || !canManageRoles}
-                                onClick={() => void onMutate(token => deleteIamRole(token, role.id))}>
+                                onClick={() => setRoleDeleteTarget(role)}>
                                 <Trash2 />
                                 {t('webAdmin.iam.roleManager.actions.delete')}
                               </DropdownMenuItem>
@@ -1604,6 +1806,33 @@ const RoleManagementPanel = ({
         role={assignRole}
         users={users}
       />
+      <AlertDialog
+        onOpenChange={open => setRoleDeleteTarget(open ? roleDeleteTarget : null)}
+        open={Boolean(roleDeleteTarget)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('webAdmin.iam.confirm.deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('webAdmin.iam.confirm.deleteDescription', { item: roleDeleteTarget?.name ?? '' })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                const role = roleDeleteTarget;
+
+                if (role) {
+                  void onMutate(token => deleteIamRole(token, role.id));
+                }
+
+                setRoleDeleteTarget(null);
+              }}>
+              {t('common.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 };
@@ -1996,57 +2225,137 @@ const PermissionChecklist = ({
   );
 };
 
+type ConfirmActionButtonProps = Omit<ComponentProps<typeof Button>, 'onClick'> & {
+  description: string;
+  onConfirm: () => void;
+  title: string;
+};
+
+const ConfirmActionButton = ({
+  children,
+  description,
+  disabled,
+  onConfirm,
+  title,
+  ...buttonProps
+}: ConfirmActionButtonProps) => {
+  const t = useAdminT();
+  const [open, setOpen] = useState(false);
+
+  return (
+    <AlertDialog onOpenChange={setOpen} open={open}>
+      <Button disabled={disabled} onClick={() => setOpen(true)} {...buttonProps}>
+        {children}
+      </Button>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+          <AlertDialogAction onClick={onConfirm}>{t('common.confirm')}</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+};
+
 const PolicyCard = ({
   action,
   description,
   deleteLabel,
+  editLabel,
   items,
   onDelete,
+  onEdit,
   rawItems,
   title,
 }: {
   action?: ReactNode;
   description: string;
   deleteLabel?: string;
+  editLabel?: string;
   items: string[];
   onDelete?: (id: string) => void;
+  onEdit?: (id: string) => void;
   rawItems?: { id: string; label: string }[];
   title: string;
-}) => (
-  <Card>
-    <CardHeader>
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-        <div className="flex flex-col gap-1">
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </div>
-        {action}
-      </div>
-    </CardHeader>
-    <CardContent>
-      <Table>
-        <TableBody>
-          {(rawItems ?? items.map(item => ({ id: item, label: item }))).map(item => (
-            <TableRow key={item.id}>
-              <TableCell>{item.label}</TableCell>
-              {onDelete ? (
-                <TableCell>
-                  <Button onClick={() => onDelete(item.id)} size="sm" variant="outline">
-                    <Trash2 data-icon="inline-start" />
-                    {deleteLabel}
-                  </Button>
-                </TableCell>
-              ) : null}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-    </CardContent>
-  </Card>
-);
-
-const OperationLogsTable = ({ operationLogs }: { operationLogs: IamOverviewData['operationLogs'] }) => {
+}) => {
   const t = useAdminT();
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex flex-col gap-1">
+            <CardTitle>{title}</CardTitle>
+            <CardDescription>{description}</CardDescription>
+          </div>
+          {action}
+        </div>
+      </CardHeader>
+      <CardContent>
+        <Table>
+          <TableBody>
+            {(rawItems ?? items.map(item => ({ id: item, label: item }))).map(item => (
+              <TableRow key={item.id}>
+                <TableCell>{item.label}</TableCell>
+                {onEdit || onDelete ? (
+                  <TableCell>
+                    <div className="flex flex-wrap gap-2">
+                      {onEdit ? (
+                        <Button onClick={() => onEdit(item.id)} size="sm" variant="outline">
+                          <Edit data-icon="inline-start" />
+                          {editLabel ?? t('webAdmin.iam.actions.edit')}
+                        </Button>
+                      ) : null}
+                      {onDelete ? (
+                        <ConfirmActionButton
+                          description={t('webAdmin.iam.confirm.deleteDescription', { item: item.label })}
+                          onConfirm={() => onDelete(item.id)}
+                          size="sm"
+                          title={t('webAdmin.iam.confirm.deleteTitle')}
+                          variant="outline">
+                          <Trash2 data-icon="inline-start" />
+                          {deleteLabel}
+                        </ConfirmActionButton>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                ) : null}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
+  );
+};
+
+const OperationLogsTable = ({
+  isLoading,
+  onQueryChange,
+  operationLogs,
+  query,
+  timeZone,
+}: {
+  isLoading: boolean;
+  onQueryChange: (query: OperationLogQueryState) => void;
+  operationLogs: IamOperationLogsData | null;
+  query: OperationLogQueryState;
+  timeZone: string;
+}) => {
+  const t = useAdminT();
+  const [searchDraft, setSearchDraft] = useState(query.search);
+  const logs = operationLogs?.items ?? [];
+  const total = operationLogs?.total ?? 0;
+  const totalPages = operationLogs?.totalPages ?? 1;
+  const submitSearch = () => onQueryChange({ ...query, page: 1, search: searchDraft });
+
+  useEffect(() => {
+    setSearchDraft(query.search);
+  }, [query.search]);
 
   return (
     <Card>
@@ -2054,7 +2363,46 @@ const OperationLogsTable = ({ operationLogs }: { operationLogs: IamOverviewData[
         <CardTitle>{t('webAdmin.iam.tabs.operationLogs')}</CardTitle>
         <CardDescription>{t('webAdmin.iam.policy.operationLogDescription')}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <form
+            className="min-w-0 flex-1"
+            onSubmit={event => {
+              event.preventDefault();
+              submitSearch();
+            }}>
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
+              <InputGroup className="min-w-0 flex-1">
+                <InputGroupInput
+                  aria-label={t('webAdmin.iam.operationLogs.search')}
+                  onChange={event => setSearchDraft(event.target.value)}
+                  placeholder={t('webAdmin.iam.operationLogs.search')}
+                  value={searchDraft}
+                />
+                <InputGroupAddon align="inline-start">
+                  <Search aria-hidden="true" />
+                </InputGroupAddon>
+              </InputGroup>
+              <Button className="shrink-0" disabled={isLoading} type="submit">
+                <Search data-icon="inline-start" />
+                {t('webAdmin.iam.operationLogs.search')}
+              </Button>
+            </div>
+          </form>
+          <Select
+            onValueChange={value => onQueryChange({ ...query, page: 1, sort: value === 'asc' ? 'asc' : 'desc' })}
+            value={query.sort}>
+            <SelectTrigger className="w-full md:w-44">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="desc">{t('webAdmin.iam.operationLogs.sortDesc')}</SelectItem>
+                <SelectItem value="asc">{t('webAdmin.iam.operationLogs.sortAsc')}</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
         <Table>
           <TableHeader>
             <TableRow>
@@ -2066,38 +2414,84 @@ const OperationLogsTable = ({ operationLogs }: { operationLogs: IamOverviewData[
             </TableRow>
           </TableHeader>
           <TableBody>
-            {operationLogs.map(log => (
+            {logs.map(log => (
               <TableRow key={log.id}>
                 <TableCell>{log.operator}</TableCell>
                 <TableCell>{log.operationItem}</TableCell>
                 <TableCell className="max-w-sm truncate">{JSON.stringify(log.operationDetail)}</TableCell>
-                <TableCell>{log.operationTime}</TableCell>
+                <TableCell>{formatUserDateTime(log.operationTime, timeZone)}</TableCell>
                 <TableCell>{log.operationIp ?? '-'}</TableCell>
               </TableRow>
             ))}
+            {!logs.length ? (
+              <TableRow>
+                <TableCell colSpan={5}>{t('webAdmin.iam.operationLogs.empty')}</TableCell>
+              </TableRow>
+            ) : null}
           </TableBody>
         </Table>
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
+          <span>{t('webAdmin.iam.operationLogs.total', { total })}</span>
+          <div className="flex items-center gap-2">
+            <Button
+              disabled={isLoading || query.page <= 1}
+              onClick={() => onQueryChange({ ...query, page: Math.max(1, query.page - 1) })}
+              size="sm"
+              variant="outline">
+              {t('webAdmin.iam.selection.prev')}
+            </Button>
+            <span>{t('webAdmin.iam.operationLogs.pageInfo', { page: query.page, totalPages })}</span>
+            <Button
+              disabled={isLoading || query.page >= totalPages}
+              onClick={() => onQueryChange({ ...query, page: Math.min(totalPages, query.page + 1) })}
+              size="sm"
+              variant="outline">
+              {t('webAdmin.iam.selection.next')}
+            </Button>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
 };
 
 const TextField = ({
+  description,
   label,
   onChange,
   type = 'text',
   value,
 }: {
+  description?: string;
   label: string;
   onChange: (value: string) => void;
   type?: string;
   value: string;
-}) => (
-  <Field>
-    <FieldLabel>{label}</FieldLabel>
-    <Input onChange={event => onChange(event.target.value)} type={type} value={value} />
-  </Field>
-);
+}) => <TextFieldInner description={description} label={label} onChange={onChange} type={type} value={value} />;
+
+const TextFieldInner = ({
+  description,
+  label,
+  onChange,
+  type,
+  value,
+}: {
+  description?: string;
+  label: string;
+  onChange: (value: string) => void;
+  type: string;
+  value: string;
+}) => {
+  const t = useAdminT();
+
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <Input onChange={event => onChange(event.target.value)} type={type} value={value} />
+      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.generic', { label })}</FieldDescription>
+    </Field>
+  );
+};
 
 type PickerOption = {
   description?: string;
@@ -2108,41 +2502,50 @@ type PickerOption = {
 const optionPageSize = 8;
 
 const EnumSelectField = <TValue extends string>({
+  description,
   label,
   onChange,
   options,
   value,
 }: {
+  description?: string;
   label: string;
   onChange: (value: TValue) => void;
   options: { label: string; value: TValue }[];
   value: TValue;
-}) => (
-  <Field>
-    <FieldLabel>{label}</FieldLabel>
-    <Select onValueChange={value => onChange(value as TValue)} value={value}>
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectGroup>
-          {options.map(option => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectGroup>
-      </SelectContent>
-    </Select>
-  </Field>
-);
+}) => {
+  const t = useAdminT();
+
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <Select onValueChange={value => onChange(value as TValue)} value={value}>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            {options.map(option => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
+      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.select', { label })}</FieldDescription>
+    </Field>
+  );
+};
 
 const SearchableSelectField = ({
+  description,
   label,
   onChange,
   options,
   value,
 }: {
+  description?: string;
   label: string;
   onChange: (value: string) => void;
   options: PickerOption[];
@@ -2179,6 +2582,7 @@ const SearchableSelectField = ({
         <span className="truncate">{selected?.label ?? t('webAdmin.iam.selection.placeholder')}</span>
         <Search />
       </Button>
+      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.searchableSelect', { label })}</FieldDescription>
       <Dialog onOpenChange={setOpen} open={open}>
         <DialogContent>
           <DialogHeader>
@@ -2230,11 +2634,13 @@ const SearchableSelectField = ({
 };
 
 const MultiSearchSelectField = ({
+  description,
   label,
   onChange,
   options,
   values,
 }: {
+  description?: string;
   label: string;
   onChange: (values: string[]) => void;
   options: PickerOption[];
@@ -2278,6 +2684,7 @@ const MultiSearchSelectField = ({
         </span>
         <Search />
       </Button>
+      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.multiSelect', { label })}</FieldDescription>
       <Dialog onOpenChange={setOpen} open={open}>
         <DialogContent>
           <DialogHeader>

@@ -3,8 +3,8 @@ import { useAdminT } from '@tetap/hooks';
 import type { AdminMessageKey } from '@tetap/i18n/admin';
 import { AdminHeader } from '../layout/header.js';
 import { AdminMain } from '../layout/main.js';
-import { ProfileDropdown } from '../layout/profile-dropdown.js';
 import { SearchCommand } from '../layout/search-command.js';
+import { ThemeSwitch } from '../layout/theme-switch.js';
 
 export const AdminStatePage = ({
   descriptionKey,
@@ -20,7 +20,7 @@ export const AdminStatePage = ({
       <AdminHeader>
         <div className="me-auto" />
         <SearchCommand />
-        <ProfileDropdown />
+        <ThemeSwitch />
       </AdminHeader>
       <AdminMain>
         <div className="mb-2">

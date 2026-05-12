@@ -35,8 +35,7 @@
 | `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                                                 |
 | `src/pages/auth`      | Sign-in and OTP pages backed by real backend-admin auth APIs and zustand session state.                                       |
 | `src/pages/iam.tsx`   | IAM management pages wired to backend-admin users, roles, permissions, menus, sessions, policies, fields, and operation logs. |
-| `src/pages/settings`  | Account, appearance, display, and notification settings surfaces.                                                             |
-| `src/pages/dashboard` | Control-console dashboard using backend-admin overview data and operation activity.                                           |
+| `src/pages/dashboard` | Control-console dashboard using lightweight backend-admin metrics plus paged operation activity.                              |
 | `vite.config.ts`      | Vite plugin setup and `@tetap/config/vite` env dir.                                                                           |
 | `tsconfig*.json`      | Admin web TypeScript configs without deprecated `baseUrl`.                                                                    |
 
@@ -48,7 +47,12 @@ This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-a
 
 - Login uses real `backend-admin` APIs. Admin accounts are created by authorized administrators, not public registration.
 - Sidebar menus come from backend IAM dynamic menus. Dashboard is the top-level home route.
+- The dashboard calls `/iam/overview` for metrics only; feature pages and activity panels fetch their own scoped APIs.
 - IAM create flows open dialogs from action buttons; oversized dialogs and pickers are scrollable.
+- Delete and force-offline actions require a confirmation dialog before writing to backend-admin.
+- Field permissions and dynamic policies support create and edit dialogs backed by real APIs.
+- Operation-log search uses `InputGroup` for the icon/input pair plus a separate submit `Button`; typing alone does not refresh data.
+- IAM form controls include helper descriptions so each input explains what it changes.
 - Enum inputs such as permission type, field permission type, policy effect, and data scope use `Select`.
 - Role, permission, menu parent, and department selections use searchable paged pickers instead of raw ID inputs.
 - Online users mean frontend user sessions only. Admin login sessions are not shown or kicked from this UI.
@@ -56,20 +60,19 @@ This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-a
 
 ## Current Pages
 
-| Route                    | Page                                                                                                         |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------ |
-| `/sign-in`               | Admin sign-in only; no social login, registration, forgot-password, or public self-service account creation. |
-| `/otp`                   | Admin OTP form shell backed by shared auth schemas.                                                          |
-| `/`                      | Dashboard/control console with IAM metrics and operation activity.                                           |
-| `/settings`              | Account, appearance, display, and notification settings with theme controls.                                 |
-| `/iam/users`             | Admin-user management backed by `GET/POST/PATCH/DELETE /iam/users`.                                          |
-| `/iam/roles`             | Role/data-scope management backed by role APIs.                                                              |
-| `/iam/permissions`       | Permission-code management with enum `Select` for permission type.                                           |
-| `/iam/menus`             | Tree menu management with searchable parent picker.                                                          |
-| `/iam/field-permissions` | Field hide/mask/readonly/readwrite rules.                                                                    |
-| `/iam/policies`          | Dynamic ABAC/PBAC policy rules.                                                                              |
-| `/iam/online-users`      | Frontend online sessions and forced-offline actions only.                                                    |
-| `/iam/operation-logs`    | Operation logs from backend-admin lifecycle and IAM service events.                                          |
+| Route                   | Page                                                                                                         |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `/sign-in`              | Admin sign-in only; no social login, registration, forgot-password, or public self-service account creation. |
+| `/otp`                  | Admin OTP form shell backed by shared auth schemas.                                                          |
+| `/`                     | Dashboard/control console with IAM metrics and operation activity.                                           |
+| `/system/user`          | Admin-user management backed by `GET/POST/PATCH/DELETE /iam/users`.                                          |
+| `/system/role`          | Role/data-scope management backed by role APIs.                                                              |
+| `/system/permission`    | Permission-code management with enum `Select` for permission type.                                           |
+| `/system/menu`          | Tree menu management with searchable parent picker.                                                          |
+| `/system/field`         | Field hide/mask/readonly/readwrite rules.                                                                    |
+| `/system/policy`        | Dynamic ABAC/PBAC policy rules.                                                                              |
+| `/system/session`       | Frontend online sessions and forced-offline actions only.                                                    |
+| `/system/operation-log` | Paged, searchable, timezone-formatted operation logs from backend-admin lifecycle and IAM service events.    |
 
 ## Scripts
 

@@ -23,6 +23,7 @@
 | `@tetap/ui/dropdown-menu`  | Dropdown menu direct export。                         |
 | `@tetap/ui/field`          | Field/form layout direct export。                     |
 | `@tetap/ui/input`          | Input direct export。                                 |
+| `@tetap/ui/input-group`    | Input group primitives for embedded addons。          |
 | `@tetap/ui/label`          | Label direct export。                                 |
 | `@tetap/ui/password-input` | Password input direct export。                        |
 | `@tetap/ui/scroll-area`    | Scroll area direct export。                           |
@@ -61,7 +62,7 @@
 - 不在 `apps/web` 或 `apps/web-admin` 创建 `components/ui`。
 - 不写 feature-level CSS 或 bespoke component styles。
 - 页面不创建本地 UI 系统；优先用现有 shadcn/ui 组件和 variants。
-- 保存、错误等短反馈使用 `toast`；固定枚举使用 `Select`。
+- 保存、错误等短反馈使用 `toast`；固定枚举使用 `Select`；搜索/过滤输入优先用 `InputGroup` 内嵌图标，显式提交时搭配独立 `Button`。
 - 大型表单使用 `DialogContent` 的 viewport 内滚动能力，避免弹窗超出 body。
 - 允许保留 shadcn/ui 生成的组件内部 class 和 design system runtime CSS。
 - 新组件要检查 accessibility、exports、peer dependency 和 docs。

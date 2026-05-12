@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, Search } from 'lucide-react';
 import {
@@ -10,7 +10,6 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  ScrollArea,
 } from '@tetap/ui';
 import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
 import { adminMenuTitleKeyMap } from './menu-labels.js';
@@ -35,6 +34,19 @@ export const SearchCommand = () => {
     void navigate(path);
   };
 
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        setOpen(open => !open);
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
   return (
     <>
       <Button
@@ -51,22 +63,20 @@ export const SearchCommand = () => {
       <CommandDialog closeLabel={t('common.close')} onOpenChange={setOpen} open={open}>
         <CommandInput placeholder={t('webAdmin.layout.search.placeholder')} />
         <CommandList>
-          <ScrollArea>
-            <CommandEmpty>{t('webAdmin.layout.search.empty')}</CommandEmpty>
-            <CommandGroup>
-              {searchableMenus.map(menu => {
-                const label = getMenuLabel(menu);
+          <CommandEmpty>{t('webAdmin.layout.search.empty')}</CommandEmpty>
+          <CommandGroup>
+            {searchableMenus.map(menu => {
+              const label = getMenuLabel(menu);
 
-                return (
-                  <CommandItem key={`${menu.id}-${menu.path}`} onSelect={() => runCommand(menu.path)} value={label}>
-                    <ArrowRight />
-                    {label}
-                  </CommandItem>
-                );
-              })}
-            </CommandGroup>
-            <CommandSeparator />
-          </ScrollArea>
+              return (
+                <CommandItem key={`${menu.id}-${menu.path}`} onSelect={() => runCommand(menu.path)} value={label}>
+                  <ArrowRight />
+                  {label}
+                </CommandItem>
+              );
+            })}
+          </CommandGroup>
+          <CommandSeparator />
         </CommandList>
       </CommandDialog>
     </>

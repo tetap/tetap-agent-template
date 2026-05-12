@@ -16,7 +16,6 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarRail,
   TetapLogo,
 } from '@tetap/ui';
 import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tetap/hooks';
@@ -36,13 +35,17 @@ const menuIconMap = {
   Users,
 } as const;
 
-const toNavItem = (menu: AdminSessionMenuNode): AdminNavItem => ({
-  title: menu.name,
-  titleKey: adminMenuTitleKeyMap[menu.id],
-  url: menu.path,
-  icon: menuIconMap[menu.icon as keyof typeof menuIconMap],
-  items: menu.children.map(toNavItem),
-});
+const toNavItem = (menu: AdminSessionMenuNode): AdminNavItem => {
+  const children = menu.children.map(toNavItem);
+
+  return {
+    title: menu.name,
+    titleKey: adminMenuTitleKeyMap[menu.id],
+    url: menu.path,
+    icon: menuIconMap[menu.icon as keyof typeof menuIconMap],
+    ...(children.length > 0 ? { items: children } : {}),
+  };
+};
 
 export const AppSidebar = () => {
   const t = useAdminT();
@@ -59,11 +62,12 @@ export const AppSidebar = () => {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg">
-              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <TetapLogo className="size-4" />
-              </div>
-              <div className="grid flex-1 text-start text-sm leading-tight">
+            <SidebarMenuButton
+              className="group-data-[collapsible=icon]:justify-center [&>svg]:!size-8"
+              size="lg"
+              tooltip={t('webAdmin.title')}>
+              <TetapLogo className="size-8" />
+              <div className="grid flex-1 text-start text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-semibold">{t('webAdmin.title')}</span>
                 <span className="truncate text-xs">{t('webAdmin.badge')}</span>
               </div>
@@ -79,7 +83,6 @@ export const AppSidebar = () => {
       <SidebarFooter>
         <NavUser />
       </SidebarFooter>
-      <SidebarRail aria-label={t('webAdmin.layout.sidebarToggle')} title={t('webAdmin.layout.sidebarToggle')} />
     </Sidebar>
   );
 };

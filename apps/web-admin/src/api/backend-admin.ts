@@ -6,14 +6,22 @@ import {
   iamCreateUserRequestSchema,
   iamCurrentUserResponseSchema,
   iamFieldPermissionMutationResponseSchema,
+  iamFieldPermissionsResponseSchema,
   iamMenuMutationResponseSchema,
+  iamMenusResponseSchema,
   iamCreateMenuRequestSchema,
   iamLoginRequestSchema,
   iamLoginResponseSchema,
+  iamOperationLogsQuerySchema,
+  iamOperationLogsResponseSchema,
   iamOverviewResponseSchema,
   iamPermissionMutationResponseSchema,
+  iamPermissionsResponseSchema,
   iamPolicyMutationResponseSchema,
+  iamPoliciesResponseSchema,
   iamRoleMutationResponseSchema,
+  iamRolesResponseSchema,
+  iamSessionsResponseSchema,
   iamSessionRevokeResponseSchema,
   iamUpdateFieldPermissionRequestSchema,
   iamUpdateMenuRequestSchema,
@@ -22,6 +30,7 @@ import {
   iamUpdateRoleRequestSchema,
   iamUpdateUserRequestSchema,
   iamUserMutationResponseSchema,
+  iamUsersResponseSchema,
   type IamCreateFieldPermissionRequest,
   type IamCreateMenuRequest,
   type IamCreatePermissionRequest,
@@ -29,6 +38,7 @@ import {
   type IamCreateRoleRequest,
   type IamCreateUserRequest,
   type IamLoginRequest,
+  type IamOperationLogsQuery,
   type IamUpdateFieldPermissionRequest,
   type IamUpdateMenuRequest,
   type IamUpdatePermissionRequest,
@@ -36,6 +46,7 @@ import {
   type IamUpdateRoleRequest,
   type IamUpdateUserRequest,
 } from '@tetap/schema/iam';
+import { getUserTimeZone } from '@tetap/hooks';
 
 const metaEnv = (import.meta as ImportMeta & { env?: Record<string, string | undefined> }).env;
 const backendAdminBaseUrl = metaEnv?.VITE_BACKEND_ADMIN_BASE_URL ?? 'http://127.0.0.1:3001';
@@ -44,8 +55,23 @@ const joinUrl = (path: string) => `${backendAdminBaseUrl.replace(/\/$/, '')}${pa
 
 const createHeaders = (accessToken?: string) => ({
   'content-type': 'application/json',
+  'x-time-zone': getUserTimeZone(),
   ...(accessToken ? { authorization: `Bearer ${accessToken}` } : {}),
 });
+
+const createQueryString = (query: Record<string, string | number | undefined>) => {
+  const searchParams = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(query)) {
+    if (value !== undefined && value !== '') {
+      searchParams.set(key, String(value));
+    }
+  }
+
+  const value = searchParams.toString();
+
+  return value ? `?${value}` : '';
+};
 
 const requestJson = async (path: string, options: RequestInit = {}) => {
   const response = await fetch(joinUrl(path), options);
@@ -92,6 +118,87 @@ export const fetchIamOverview = async (accessToken: string) => {
   });
 
   return iamOverviewResponseSchema.parse(response).data;
+};
+
+export const fetchIamUsers = async (accessToken: string) => {
+  const response = await requestJson('/iam/users', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamUsersResponseSchema.parse(response).data;
+};
+
+export const fetchIamRoles = async (accessToken: string) => {
+  const response = await requestJson('/iam/roles', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamRolesResponseSchema.parse(response).data;
+};
+
+export const fetchIamPermissions = async (accessToken: string) => {
+  const response = await requestJson('/iam/permissions', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamPermissionsResponseSchema.parse(response).data;
+};
+
+export const fetchIamMenus = async (accessToken: string) => {
+  const response = await requestJson('/iam/menus', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamMenusResponseSchema.parse(response).data;
+};
+
+export const fetchIamFieldPermissions = async (accessToken: string) => {
+  const response = await requestJson('/iam/field-permissions', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamFieldPermissionsResponseSchema.parse(response).data;
+};
+
+export const fetchIamPolicies = async (accessToken: string) => {
+  const response = await requestJson('/iam/policies', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamPoliciesResponseSchema.parse(response).data;
+};
+
+export const fetchIamSessions = async (accessToken: string) => {
+  const response = await requestJson('/iam/sessions', {
+    headers: createHeaders(accessToken),
+    method: 'GET',
+  });
+
+  return iamSessionsResponseSchema.parse(response).data;
+};
+
+export const fetchIamOperationLogs = async (accessToken: string, input: IamOperationLogsQuery = {}) => {
+  const query = iamOperationLogsQuerySchema.parse(input);
+  const response = await requestJson(
+    `/iam/operation-logs${createQueryString({
+      page: query.page,
+      pageSize: query.pageSize,
+      search: query.search,
+      sort: query.sort,
+    })}`,
+    {
+      headers: createHeaders(accessToken),
+      method: 'GET',
+    },
+  );
+
+  return iamOperationLogsResponseSchema.parse(response).data;
 };
 
 export const revokeIamSession = async (accessToken: string, sessionId: string) => {

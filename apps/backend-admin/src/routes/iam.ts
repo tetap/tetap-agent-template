@@ -99,6 +99,17 @@ const policyParamsSchema = {
   },
 };
 
+const operationLogsQuerySchema = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    page: { type: 'integer', minimum: 1, default: 1 },
+    pageSize: { type: 'integer', minimum: 1, maximum: 100, default: 20 },
+    search: { type: 'string' },
+    sort: { type: 'string', enum: ['asc', 'desc'], default: 'desc' },
+  },
+};
+
 const dataScopeSchema = {
   type: 'object',
   required: ['type'],
@@ -470,7 +481,7 @@ export const registerIamRoutes = (app: FastifyInstance) => {
     '/iam/operation-logs',
     {
       config: { auth: { permission: 'operation-log:read' }, skipSecurity: true },
-      schema: { response: { 200: responseSchema } },
+      schema: { querystring: operationLogsQuerySchema, response: { 200: responseSchema } },
     },
     listOperationLogs,
   );

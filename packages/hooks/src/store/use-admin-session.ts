@@ -25,6 +25,90 @@ export type AdminSessionMenuNode = {
   children: readonly AdminSessionMenuNode[];
 };
 
+const legacySecurityPathMap = new Map([
+  ['/security', '/system'],
+  ['/security/iam', '/system/permission'],
+  ['/security/roles', '/system/role'],
+  ['/security/permissions', '/system/permission'],
+  ['/security/menus', '/system/menu'],
+  ['/security/fields', '/system/field'],
+  ['/security/policies', '/system/policy'],
+  ['/security/sessions', '/system/session'],
+  ['/security/operation-logs', '/system/operation-log'],
+]);
+
+const legacySecurityIdMap = new Map([
+  ['security', 'system'],
+  ['iam', 'permissions'],
+]);
+
+const normalizeMenuPath = (path: string) => legacySecurityPathMap.get(path) ?? path.replace(/^\/security\//, '/system/');
+
+const dedupeMenus = (menus: readonly AdminSessionMenuNode[]) => {
+  const seen = new Set<string>();
+
+  return menus.filter(menu => {
+    const key = `${menu.parentId ?? 'root'}:${menu.path}`;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
+    seen.add(key);
+    return true;
+  });
+};
+
+const normalizeMenuNode = (menu: AdminSessionMenuNode, parentId?: string): AdminSessionMenuNode => {
+  const isLegacySecurityChild = parentId === 'system' || menu.parentId === 'security' || menu.path.startsWith('/security/');
+  const id = isLegacySecurityChild ? legacySecurityIdMap.get(menu.id) ?? menu.id : menu.id;
+
+  return {
+    ...menu,
+    id,
+    path: normalizeMenuPath(menu.path),
+    parentId: parentId ?? (isLegacySecurityChild ? 'system' : menu.parentId),
+    children: dedupeMenus(menu.children.map(child => normalizeMenuNode(child, id))),
+  };
+};
+
+const normalizeAdminMenus = (menus: readonly AdminSessionMenuNode[]): readonly AdminSessionMenuNode[] => {
+  const regularRoots: AdminSessionMenuNode[] = [];
+  const legacySecurityChildren: AdminSessionMenuNode[] = [];
+
+  for (const menu of menus) {
+    if (menu.id === 'security' || menu.path === '/security') {
+      legacySecurityChildren.push(...menu.children.map(child => normalizeMenuNode(child, 'system')));
+      continue;
+    }
+
+    regularRoots.push(normalizeMenuNode(menu));
+  }
+
+  const systemIndex = regularRoots.findIndex(menu => menu.id === 'system' || menu.path === '/system');
+
+  if (systemIndex >= 0) {
+    const systemMenu = regularRoots[systemIndex];
+    regularRoots[systemIndex] = {
+      ...systemMenu,
+      children: dedupeMenus([...systemMenu.children, ...legacySecurityChildren]),
+    };
+  } else if (legacySecurityChildren.length > 0) {
+    regularRoots.push({
+      id: 'system',
+      name: 'System Management',
+      path: '/system',
+      component: 'AdminSystemRedirectPage',
+      icon: 'Settings',
+      permissionCodes: [],
+      order: 10,
+      children: dedupeMenus(legacySecurityChildren),
+    });
+  }
+
+  return dedupeMenus(regularRoots);
+};
+
 type AdminSessionAuthState = {
   user: AdminSessionUser | null;
   accessToken: string;
@@ -92,7 +176,7 @@ const readAdminUser = (): AdminSessionUser | null => readJson<AdminSessionUser>(
 const readCapabilities = (): readonly string[] => readJson<string[]>(ADMIN_CAPABILITIES_STORAGE_KEY) ?? [];
 
 const readMenus = (): readonly AdminSessionMenuNode[] =>
-  readJson<AdminSessionMenuNode[]>(ADMIN_MENUS_STORAGE_KEY) ?? [];
+  normalizeAdminMenus(readJson<AdminSessionMenuNode[]>(ADMIN_MENUS_STORAGE_KEY) ?? []);
 
 export const useAdminSessionStore = create<AdminSessionStoreState>()((set, get) => ({
   auth: {
@@ -122,18 +206,22 @@ export const useAdminSessionStore = create<AdminSessionStoreState>()((set, get) 
       }),
     setMenus: menus =>
       set(state => {
-        writeStorage(ADMIN_MENUS_STORAGE_KEY, JSON.stringify(menus));
-        return { ...state, auth: { ...state.auth, menus } };
+        const normalizedMenus = normalizeAdminMenus(menus);
+
+        writeStorage(ADMIN_MENUS_STORAGE_KEY, JSON.stringify(normalizedMenus));
+        return { ...state, auth: { ...state.auth, menus: normalizedMenus } };
       }),
     setContext: context =>
       set(state => {
+        const normalizedMenus = normalizeAdminMenus(context.menus);
+
         if (context.accessToken) {
           writeStorage(ADMIN_ACCESS_TOKEN_STORAGE_KEY, context.accessToken);
         }
 
         writeStorage(ADMIN_USER_STORAGE_KEY, JSON.stringify(context.user));
         writeStorage(ADMIN_CAPABILITIES_STORAGE_KEY, JSON.stringify(context.capabilities));
-        writeStorage(ADMIN_MENUS_STORAGE_KEY, JSON.stringify(context.menus));
+        writeStorage(ADMIN_MENUS_STORAGE_KEY, JSON.stringify(normalizedMenus));
 
         return {
           ...state,
@@ -141,7 +229,7 @@ export const useAdminSessionStore = create<AdminSessionStoreState>()((set, get) 
             ...state.auth,
             accessToken: context.accessToken ?? state.auth.accessToken,
             capabilities: context.capabilities,
-            menus: context.menus,
+            menus: normalizedMenus,
             user: context.user,
           },
         };

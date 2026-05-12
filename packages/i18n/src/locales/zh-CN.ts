@@ -37,7 +37,9 @@ export const zhCN = {
     linksDescription: '保留常用文档入口，方便继续扩展前端能力。',
     viteDocs: 'Vite 文档',
     reactDocs: 'React 文档',
+    notFoundTitle: '页面未找到',
     notFound: '请求的页面不存在。',
+    unexpectedErrorTitle: '服务暂时不可用',
     unexpectedError: '应用遇到未知错误，请稍后重试。',
   },
   web: {
@@ -199,7 +201,7 @@ export const zhCN = {
     badge: '后台工作台',
     navigation: {
       label: '后台导航',
-      dashboard: '总览',
+      dashboard: '控制台',
       tasks: '任务',
       apps: '应用',
       chats: '会话',
@@ -407,6 +409,7 @@ export const zhCN = {
         activateUser: '启用账号',
         delete: '删除',
         disableUser: '禁用账号',
+        edit: '编辑',
         grantPermission: '授予表单权限码',
         refresh: '刷新',
         revoke: '强制下线',
@@ -454,6 +457,12 @@ export const zhCN = {
         rootDescription: '作为一级菜单展示。',
         rootMenu: '一级菜单',
         search: '搜索',
+      },
+      fieldHints: {
+        generic: '用于填写或筛选「{{label}}」，提交后会调用真实后台接口保存。',
+        multiSelect: '用于搜索并选择多个「{{label}}」，候选项分页展示。',
+        searchableSelect: '用于搜索并选择「{{label}}」，候选项分页展示。',
+        select: '用于选择「{{label}}」的枚举值，避免手写无效数据。',
       },
       dataScopes: {
         all: '全部数据权限',
@@ -518,17 +527,25 @@ export const zhCN = {
       },
       forms: {
         fieldDescription: '为角色配置字段隐藏、脱敏、只读或可编辑规则。',
+        fieldEditTitle: '编辑字段权限',
         fieldTitle: '新增字段权限',
         menuDescription: '维护后端返回给管理端的动态菜单树。',
         menuTitle: '新增菜单',
         permissionDescription: '维护可被角色、按钮、菜单和 API 使用的权限码。',
         permissionTitle: '新增权限码',
         policyDescription: '使用 JSON 条件创建 ABAC/PBAC 动态策略。',
+        policyEditTitle: '编辑策略',
         policyTitle: '新增策略',
         roleDescription: '创建角色并绑定权限码和数据范围。',
         roleTitle: '新增角色',
         userDescription: '创建后台用户并分配角色。',
         userTitle: '新增用户',
+      },
+      confirm: {
+        deleteDescription: '即将删除「{{item}}」。该操作会写入后台真实数据，确认后不可直接撤销。',
+        deleteTitle: '确认删除',
+        revokeDescription: '即将强制下线「{{item}}」。该会话的 token 会立即失效。',
+        revokeTitle: '确认强制下线',
       },
       metrics: {
         users: '用户',
@@ -555,10 +572,16 @@ export const zhCN = {
       },
       operationLogs: {
         detail: '操作详情',
+        empty: '暂无操作日志。',
         ip: '操作 IP',
         item: '操作事项',
         operator: '操作人',
+        pageInfo: '第 {{page}} / {{totalPages}} 页',
+        search: '搜索操作日志',
+        sortAsc: '操作时间升序',
+        sortDesc: '操作时间降序',
         time: '操作时间',
+        total: '共 {{total}} 条',
       },
       states: {
         loadFailed: '权限数据加载失败，请确认 backend-admin 服务已启动。',
@@ -619,7 +642,7 @@ export const zhCN = {
     },
     actions: {
       sync: '同步后台状态',
-      openDashboard: '返回总览',
+      openDashboard: '返回控制台',
     },
   },
   backend: {

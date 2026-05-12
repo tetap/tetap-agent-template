@@ -40,13 +40,14 @@
 | -------------------------------- | ------------------------------------------------------------------------------------------------------ |
 | `iamLoginRequestSchema`          | Admin login payload with device and remember-me defaults.                                              |
 | `iamBootstrapDataSchema`         | Current admin user, roles, capabilities, menus, data and field policy context.                         |
-| `iamOverviewDataSchema`          | Admin IAM overview aggregation for real UI/API data.                                                   |
+| `iamOverviewDataSchema`          | Lightweight admin dashboard metrics only; resource lists and logs use their own paged/list APIs.       |
 | `iamCreate*RequestSchema`        | Strict mutation contracts for users, roles, permissions, menus, field permissions, and policies.       |
 | `iamUpdate*RequestSchema`        | Strict partial update contracts for users, roles, permissions, menus, field permissions, and policies. |
 | `iam*MutationResponseSchema`     | Mutation response schemas for users, roles, permissions, menus, field permissions, and policies.       |
 | `iamSessionSchema`               | Frontend online-session rows visible to admin users.                                                   |
 | `iamSessionRevokeResponseSchema` | Forced-offline response containing revoked frontend sessions.                                          |
 | `operationLogSchema`             | Operation logs with operator, item, detail, time, IP, resource, and result.                            |
+| `iamOperationLogsDataSchema`     | Paged operation-log list with search, sort, total, and total-pages metadata.                           |
 | `permissionTypeSchema`           | `MENU`, `API`, `BUTTON`, `FIELD`, `DATA` enum.                                                         |
 | `fieldPermissionTypeSchema`      | `HIDE`, `MASK`, `READONLY`, `READWRITE` enum.                                                          |
 | `dataScopeTypeSchema`            | `ALL`, `DEPT`, `DEPT_AND_CHILD`, `SELF`, `CUSTOM` enum.                                                |

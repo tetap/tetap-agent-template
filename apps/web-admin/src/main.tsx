@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { AdminI18nProvider } from '@tetap/i18n/admin';
 import { Toaster } from '@tetap/ui';
@@ -12,10 +11,8 @@ if (!rootElement) {
 }
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <AdminI18nProvider initialLocale={navigator.language}>
-      <App />
-      <Toaster richColors />
-    </AdminI18nProvider>
-  </StrictMode>,
+  <AdminI18nProvider initialLocale={navigator.language}>
+    <App />
+    <Toaster richColors />
+  </AdminI18nProvider>,
 );

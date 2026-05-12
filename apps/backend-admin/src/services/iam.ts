@@ -12,6 +12,7 @@ import {
   iamOverviewDataSchema,
   iamOverviewResponseSchema,
   iamOperationLogsResponseSchema,
+  iamOperationLogsQuerySchema,
   iamPermissionMutationResponseSchema,
   iamPermissionsResponseSchema,
   iamPolicyMutationResponseSchema,
@@ -86,15 +87,19 @@ const runIamMutation = <TResult>(operation: () => TResult) => {
 
 export const getIamOverview = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
+  const menus = request.server.iam.getMenuTree(actor);
+  const sessions = request.server.iam.listSessions();
   const data = iamOverviewDataSchema.parse({
-    users: request.server.iam.users.map(user => request.server.iam.applyFieldPermissions(actor, 'user', user)),
-    roles: request.server.iam.roles,
-    permissions: request.server.iam.permissions,
-    menus: request.server.iam.getMenuTree(actor),
-    fieldPermissions: request.server.iam.fieldPermissions,
-    policies: request.server.iam.policies,
-    sessions: request.server.iam.listSessions(),
-    operationLogs: request.server.iam.operations,
+    metrics: {
+      users: request.server.iam.users.length,
+      roles: request.server.iam.roles.length,
+      permissions: request.server.iam.permissions.length,
+      menus: menus.length,
+      fieldPermissions: request.server.iam.fieldPermissions.length,
+      policies: request.server.iam.policies.length,
+      sessions: sessions.length,
+      operationLogs: request.server.iam.operations.length,
+    },
   });
 
   request.server.iam.recordOperation({
@@ -449,11 +454,50 @@ export const revokeUserSessions = async (request: FastifyRequest, reply: Fastify
   );
 };
 
-export const listOperationLogs = async (request: FastifyRequest, reply: FastifyReply) =>
-  sendSuccess(
-    reply,
-    request,
-    iamOperationLogsResponseSchema,
-    request.server.iam.operations,
-    'backendAdmin.iam.operationLogsOk',
-  );
+export const listOperationLogs = async (request: FastifyRequest, reply: FastifyReply) => {
+  const query = iamOperationLogsQuerySchema.parse(request.query);
+  const normalizedSearch = query.search.trim().toLowerCase();
+  const matchedLogs = request.server.iam.operations
+    .filter(log => {
+      if (!normalizedSearch) {
+        return true;
+      }
+
+      return [
+        log.operator,
+        log.operatorUserId,
+        log.operation,
+        log.operationItem,
+        JSON.stringify(log.operationDetail),
+        log.operationIp,
+        log.resource,
+        log.resourceId,
+        log.result,
+        log.userAgent,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(normalizedSearch);
+    })
+    .sort((left, right) =>
+      query.sort === 'asc'
+        ? left.operationTime.localeCompare(right.operationTime)
+        : right.operationTime.localeCompare(left.operationTime),
+    );
+  const total = matchedLogs.length;
+  const totalPages = Math.max(1, Math.ceil(total / query.pageSize));
+  const safePage = Math.min(query.page, totalPages);
+  const start = (safePage - 1) * query.pageSize;
+  const data = {
+    items: matchedLogs.slice(start, start + query.pageSize),
+    page: safePage,
+    pageSize: query.pageSize,
+    search: query.search,
+    sort: query.sort,
+    total,
+    totalPages,
+  };
+
+  return sendSuccess(reply, request, iamOperationLogsResponseSchema, data, 'backendAdmin.iam.operationLogsOk');
+};

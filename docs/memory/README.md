@@ -8,6 +8,7 @@ This directory stores persistent project memories that affect agent behavior acr
 | ---------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | [Plan Workflow Memory](plan-workflow.md)       | An agent outputs or executes a multi-step plan.                            | Mirror the plan into `docs/todolists`, keep checkboxes synchronized, and close the todolist at handoff.            |
 | [README Sync Memory](readme-sync-workflow.md)  | Code, package exports, routes, models, scripts, or workspace rules change. | Update the nearest README, package method/export lists, and relevant architecture docs in the same task.           |
+| [Real Data Only Memory](real-data-only-workflow.md) | Backend, admin, IAM, auth, menu, session, policy, or API integration changes. | Runtime code must use real backend/persistence data; mock/demo/fallback business data is forbidden.                |
 | [Testing Workflow Memory](testing-workflow.md) | A feature, package, app, architecture rule, or test strategy changes.      | Consider unit tests, Vitest Browser Mode UI tests, smoke tests, and targeted affected-test mapping before handoff. |
 
 ## Maintenance Rules

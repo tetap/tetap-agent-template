@@ -1,4 +1,3 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PublicI18nProvider } from '@tetap/i18n/public';
 import '@tetap/ui/styles.css';
@@ -14,9 +13,7 @@ if (!rootElement) {
 const router = createWebRouter();
 
 createRoot(rootElement).render(
-  <StrictMode>
-    <PublicI18nProvider initialLocale={navigator.language}>
-      <App router={router} />
-    </PublicI18nProvider>
-  </StrictMode>,
+  <PublicI18nProvider initialLocale={navigator.language}>
+    <App router={router} />
+  </PublicI18nProvider>,
 );

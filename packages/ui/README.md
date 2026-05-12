@@ -26,6 +26,7 @@
 | `@tetap/ui/dropdown-menu`  | Dropdown menu primitives.                      |
 | `@tetap/ui/field`          | Form field layout primitives.                  |
 | `@tetap/ui/input`          | Input direct export.                           |
+| `@tetap/ui/input-group`    | Input group primitives for embedded addons.    |
 | `@tetap/ui/label`          | Label direct export.                           |
 | `@tetap/ui/password-input` | Shared password input.                         |
 | `@tetap/ui/scroll-area`    | ScrollArea and ScrollBar direct export.        |
@@ -43,9 +44,11 @@
 
 The main `@tetap/ui` barrel exports brand logo, layout, overlay, feedback, form, navigation, and data-display primitives:
 
-`Alert`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Command`, `Dialog`, `DropdownMenu`, `Field`, `Input`, `Label`, `PasswordInput`, `ScrollArea`, `Select`, `Separator`, `Sheet`, `Sidebar`, `Skeleton`, `Table`, `Tabs`, `Tooltip`, `Toaster`, and `toast`.
+`Alert`, `Avatar`, `Badge`, `Button`, `Card`, `Checkbox`, `Collapsible`, `Command`, `Dialog`, `DropdownMenu`, `Field`, `Input`, `InputGroup`, `Label`, `PasswordInput`, `ScrollArea`, `Select`, `Separator`, `Sheet`, `Sidebar`, `Skeleton`, `Table`, `Tabs`, `Tooltip`, `Toaster`, and `toast`.
 
 Use `Select` for fixed enum fields such as permission type, field permission type, policy effect, and data scope. Use `toast` from `@tetap/ui` for save/error feedback instead of page-local alert state.
+
+Use `InputGroup` for compact search and filter controls that need embedded icons or addons; keep the actual submit action as an explicit `Button` when the search should not run on every keystroke.
 
 `DialogContent` is constrained to the viewport and scrolls internally, so large create/edit forms should stay in dialogs instead of overflowing the document body.
 

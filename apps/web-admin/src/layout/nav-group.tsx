@@ -45,8 +45,9 @@ export const NavGroup = ({ title, titleKey, items }: AdminNavGroup) => {
       <SidebarMenu>
         {items.map(item => {
           const key = `${getLabel(item)}-${item.url}`;
+          const hasChildren = Boolean(item.items?.length);
 
-          if (!item.items) {
+          if (!hasChildren) {
             return <SidebarMenuLink href={href} item={item} key={key} />;
           }
 

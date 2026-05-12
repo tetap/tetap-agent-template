@@ -12,6 +12,7 @@
 | 质量门禁、测试、构建规则       | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               |
 | 多步骤计划与 todolist 记忆     | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     |
 | README 同步记忆                | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       |
+| 真实数据与禁止 mock/demo 记忆   | [docs/memory/real-data-only-workflow.md](docs/memory/real-data-only-workflow.md)                                                 |
 | 测试策略与定向测试记忆         | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               |
 
 ## 2. 标准执行流程
@@ -41,6 +42,7 @@
 | Testing      | 功能完成必须考虑单元、Browser Mode UI、冒烟和影响映射；自动化测试统一用 Vitest。                               | [README.zh-CN.md#testing-规则](README.zh-CN.md#testing-规则)、[testing-workflow.md](docs/memory/testing-workflow.md)                                 |
 | Planning     | 每个多步骤计划都要同步 `docs/todolists`，完成后关闭。                                                          | [README.zh-CN.md#planning-规则](README.zh-CN.md#planning-规则)、[plan-workflow.md](docs/memory/plan-workflow.md)                                     |
 | Docs         | 代码、导出、接口、模型、脚本或行为变化必须同步最近 README、package 方法/导出列表、根 README 和相关架构文档。   | [README.zh-CN.md#documentation-规则](README.zh-CN.md#documentation-规则)、[readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)             |
+| Real Data    | 运行时代码禁止 mock/demo/fallback 业务数据；后台、IAM、菜单、会话、策略和日志必须来自真实 API/持久化层。       | [real-data-only-workflow.md](docs/memory/real-data-only-workflow.md)                                                                                 |
 | TypeScript   | TypeScript 错误不得交付；最终至少通过 `pnpm check`。                                                           | [README.zh-CN.md#typescript-门禁](README.zh-CN.md#typescript-门禁)、[02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md) |
 | Release      | 生产 build 会统一 bump 版本；版本 bump 必须独立提交和 tag。                                                    | [README.zh-CN.md#release-规则](README.zh-CN.md#release-规则)                                                                                         |
 
@@ -80,6 +82,7 @@ pnpm --filter @tetap/test-automation build
 - 不要在 `apps/*` 中复制 UI、hooks、config、schema、i18n、database 逻辑。
 - `apps/site` 只能作为 VitePress 宣传/文档站，文案走 `@tetap/i18n/site`，样式限制在 VitePress theme runtime。
 - 不要在业务 service 或 route 中手写权限算法；复用 `@tetap/iam`、auth hook 和 policy helper。
+- 不要新增或恢复 runtime mock/demo/fallback 业务数据；不得再使用 `ENABLE_DEMO_SEED` 或 `createDemoIamData` 作为运行时数据来源。
 - 不要在 Fastify route 中写业务逻辑、schema parse、响应体拼装或错误码选择。
 - 不要在公共 `apps/backend` 中实现后台管理接口；admin APIs 必须进入 `apps/backend-admin`。
 - 不要在公共 `apps/web` 中实现后台管理页面；admin pages 必须进入 `apps/web-admin`。

@@ -1,7 +1,20 @@
 export { cn } from './lib/utils.js';
+export { ErrorBoundary } from './components/error-boundary.js';
+export type { ErrorBoundaryFallback, ErrorBoundaryProps } from './components/error-boundary.js';
 export { TetapLogo } from './components/brand/tetap-logo.js';
 export type { TetapLogoProps } from './components/brand/tetap-logo.js';
 export { Alert, AlertDescription, AlertTitle } from './components/ui/alert.js';
+export {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './components/ui/alert-dialog.js';
 export { Avatar, AvatarFallback, AvatarImage } from './components/ui/avatar.js';
 export { Badge, badgeVariants } from './components/ui/badge.js';
 export type { BadgeProps } from './components/ui/badge.js';
@@ -63,6 +76,14 @@ export {
   FieldTitle,
 } from './components/ui/field.js';
 export { Input } from './components/ui/input.js';
+export {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupTextarea,
+  InputGroupText,
+} from './components/ui/input-group.js';
 export { Label } from './components/ui/label.js';
 export { PasswordInput } from './components/ui/password-input.js';
 export type { PasswordInputProps } from './components/ui/password-input.js';

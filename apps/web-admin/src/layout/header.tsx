@@ -1,5 +1,5 @@
 import { useEffect, useState, type HTMLAttributes } from 'react';
-import { cn, Separator, SidebarTrigger } from '@tetap/ui';
+import { cn, SidebarTrigger } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 
 type AdminHeaderProps = HTMLAttributes<HTMLElement> & {
@@ -37,7 +37,6 @@ export const AdminHeader = ({ children, className, fixed, ...props }: AdminHeade
             'after:absolute after:inset-0 after:-z-10 after:bg-background/20 after:backdrop-blur-lg',
         )}>
         <SidebarTrigger className="max-md:scale-125" label={t('webAdmin.layout.sidebarToggle')} variant="outline" />
-        <Separator className="h-6" orientation="vertical" />
         {children}
       </div>
     </header>

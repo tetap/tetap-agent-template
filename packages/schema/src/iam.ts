@@ -275,6 +275,21 @@ export const iamListQuerySchema = paginationInputSchema.extend({
   search: z.string().optional(),
 });
 
+export const iamOperationLogsQuerySchema = paginationInputSchema.extend({
+  search: z.string().trim().optional().default(''),
+  sort: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const iamOperationLogsDataSchema = z.object({
+  items: z.array(operationLogSchema),
+  page: z.number().int().min(1),
+  pageSize: z.number().int().min(1).max(100),
+  search: z.string(),
+  sort: z.enum(['asc', 'desc']),
+  total: z.number().int().min(0),
+  totalPages: z.number().int().min(1),
+});
+
 export const iamTokenPairSchema = z.object({
   accessToken: z.string().min(1),
   refreshToken: z.string().min(1),
@@ -299,14 +314,16 @@ export const iamBootstrapDataSchema = z.object({
 });
 
 export const iamOverviewDataSchema = z.object({
-  users: z.array(iamUserSchema),
-  roles: z.array(iamRoleSchema),
-  permissions: z.array(iamPermissionSchema),
-  menus: z.array(iamMenuNodeSchema),
-  fieldPermissions: z.array(fieldPermissionSchema),
-  policies: z.array(iamPolicySchema),
-  sessions: z.array(iamSessionSchema),
-  operationLogs: z.array(operationLogSchema),
+  metrics: z.object({
+    users: z.number().int().min(0),
+    roles: z.number().int().min(0),
+    permissions: z.number().int().min(0),
+    menus: z.number().int().min(0),
+    fieldPermissions: z.number().int().min(0),
+    policies: z.number().int().min(0),
+    sessions: z.number().int().min(0),
+    operationLogs: z.number().int().min(0),
+  }),
 });
 
 export const iamSessionRevokeDataSchema = z.object({
@@ -330,7 +347,7 @@ export const iamFieldPermissionsResponseSchema = createApiResponseSchema(z.array
 export const iamPolicyMutationResponseSchema = createApiResponseSchema(iamPolicySchema);
 export const iamPoliciesResponseSchema = createApiResponseSchema(z.array(iamPolicySchema));
 export const iamSessionsResponseSchema = createApiResponseSchema(z.array(iamSessionSchema));
-export const iamOperationLogsResponseSchema = createApiResponseSchema(z.array(operationLogSchema));
+export const iamOperationLogsResponseSchema = createApiResponseSchema(iamOperationLogsDataSchema);
 export const iamSessionRevokeResponseSchema = createApiResponseSchema(iamSessionRevokeDataSchema);
 
 export type IamPermission = z.output<typeof iamPermissionSchema>;
@@ -356,3 +373,5 @@ export type IamUpdatePolicyRequest = z.input<typeof iamUpdatePolicyRequestSchema
 export type IamLoginData = z.output<typeof iamLoginDataSchema>;
 export type IamBootstrapData = z.output<typeof iamBootstrapDataSchema>;
 export type IamOverviewData = z.output<typeof iamOverviewDataSchema>;
+export type IamOperationLogsData = z.output<typeof iamOperationLogsDataSchema>;
+export type IamOperationLogsQuery = z.input<typeof iamOperationLogsQuerySchema>;

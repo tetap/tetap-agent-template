@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Activity, KeyRound, RefreshCw, ShieldCheck, Users } from 'lucide-react';
-import { useAdminSessionStore, useAdminT } from '@tetap/hooks';
+import { formatUserDateTime, getUserTimeZone, useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
   Alert,
   AlertDescription,
@@ -15,13 +15,11 @@ import {
   CardTitle,
   Skeleton,
 } from '@tetap/ui';
-import type { IamOverviewData } from '@tetap/schema/iam';
-import { fetchIamOverview } from '../api/backend-admin.js';
+import type { IamOperationLogsData, IamOverviewData } from '@tetap/schema/iam';
+import { fetchIamOperationLogs, fetchIamOverview } from '../api/backend-admin.js';
 import { AdminHeader } from '../layout/header.js';
 import { AdminMain } from '../layout/main.js';
-import { ProfileDropdown } from '../layout/profile-dropdown.js';
 import { SearchCommand } from '../layout/search-command.js';
-import { ConfigDrawer } from '../layout/config-drawer.js';
 import { ThemeSwitch } from '../layout/theme-switch.js';
 
 export const AdminDashboardPage = () => {
@@ -29,9 +27,12 @@ export const AdminDashboardPage = () => {
   const accessToken = useAdminSessionStore(state => state.auth.accessToken);
   const capabilities = useAdminSessionStore(state => state.auth.capabilities);
   const [overview, setOverview] = useState<IamOverviewData | null>(null);
+  const [activityLogs, setActivityLogs] = useState<IamOperationLogsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const canReadIam = capabilities.includes('iam:read');
+  const canReadOperationLogs = capabilities.includes('operation-log:read');
+  const timeZone = getUserTimeZone();
 
   const loadOverview = async () => {
     if (!accessToken || !canReadIam) {
@@ -43,7 +44,15 @@ export const AdminDashboardPage = () => {
     setError(null);
 
     try {
-      setOverview(await fetchIamOverview(accessToken));
+      const [overviewData, operationLogsData] = await Promise.all([
+        fetchIamOverview(accessToken),
+        canReadOperationLogs
+          ? fetchIamOperationLogs(accessToken, { page: 1, pageSize: 5, sort: 'desc' })
+          : Promise.resolve(null),
+      ]);
+
+      setOverview(overviewData);
+      setActivityLogs(operationLogsData);
     } catch {
       setError(t('webAdmin.dashboard.states.loadFailed'));
     } finally {
@@ -53,44 +62,44 @@ export const AdminDashboardPage = () => {
 
   useEffect(() => {
     void loadOverview();
-  }, [accessToken, canReadIam]);
+  }, [accessToken, canReadIam, canReadOperationLogs]);
 
   const metrics = [
     {
       icon: Users,
       label: t('webAdmin.dashboard.metrics.activeUsers.label'),
-      value: overview?.users.length ?? 0,
+      value: overview?.metrics.users ?? 0,
       trend: t('webAdmin.dashboard.metrics.activeUsers.trend'),
     },
     {
       icon: KeyRound,
       label: t('webAdmin.dashboard.metrics.adminTasks.label'),
-      value: overview?.roles.length ?? 0,
+      value: overview?.metrics.roles ?? 0,
       trend: t('webAdmin.dashboard.metrics.adminTasks.trend'),
     },
     {
       icon: ShieldCheck,
       label: t('webAdmin.dashboard.metrics.securityEvents.label'),
-      value: overview?.operationLogs.length ?? 0,
+      value: overview?.metrics.operationLogs ?? 0,
       trend: t('webAdmin.dashboard.metrics.securityEvents.trend'),
     },
     {
       icon: Activity,
       label: t('webAdmin.dashboard.metrics.backendStatus.label'),
-      value: overview?.sessions.filter(session => session.status === 'ONLINE').length ?? 0,
+      value: overview?.metrics.sessions ?? 0,
       trend: t('webAdmin.dashboard.metrics.backendStatus.trend'),
     },
   ];
   const chartValues = overview
     ? [
-        overview.users.length,
-        overview.roles.length,
-        overview.permissions.length,
-        overview.menus.length,
-        overview.fieldPermissions.length,
-        overview.policies.length,
-        overview.sessions.length,
-        overview.operationLogs.length,
+        overview.metrics.users,
+        overview.metrics.roles,
+        overview.metrics.permissions,
+        overview.metrics.menus,
+        overview.metrics.fieldPermissions,
+        overview.metrics.policies,
+        overview.metrics.sessions,
+        overview.metrics.operationLogs,
       ]
     : [];
   const chartMax = Math.max(...chartValues, 1);
@@ -101,8 +110,6 @@ export const AdminDashboardPage = () => {
         <div className="me-auto" />
         <SearchCommand />
         <ThemeSwitch />
-        <ConfigDrawer />
-        <ProfileDropdown />
       </AdminHeader>
       <AdminMain>
         <div className="mb-2 flex items-center justify-between gap-4">
@@ -177,20 +184,22 @@ export const AdminDashboardPage = () => {
                     <Skeleton className="h-12 w-full" />
                   </>
                 ) : (
-                  (overview?.operationLogs.slice(0, 3) ?? []).map((activity, index) => (
+                  (activityLogs?.items ?? []).map((activity, index) => (
                     <div className="flex items-center gap-4" key={activity.id}>
                       <Avatar className="size-9">
                         <AvatarFallback>{`0${index + 1}`}</AvatarFallback>
                       </Avatar>
                       <div className="flex flex-1 flex-col gap-1">
                         <p className="text-sm font-medium leading-none">{`${activity.operation}:${activity.result}`}</p>
-                        <p className="text-sm text-muted-foreground">{activity.operationTime}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {formatUserDateTime(activity.operationTime, timeZone)}
+                        </p>
                       </div>
                       <Badge variant="secondary">{activity.resource}</Badge>
                     </div>
                   ))
                 )}
-                {!isLoading && !overview?.operationLogs.length ? (
+                {!isLoading && !activityLogs?.items.length ? (
                   <p className="text-sm text-muted-foreground">{t('webAdmin.dashboard.activity.empty')}</p>
                 ) : null}
               </CardContent>

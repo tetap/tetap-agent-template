@@ -12,6 +12,7 @@ import type {
   DataConstraint,
   DataScope,
   IamDataSet,
+  IamMenu,
   IamJwtPayload,
   IamMenuNode,
   IamMutationMeta,
@@ -77,6 +78,53 @@ const toPermissionCode = (value: string) => value as PermissionCode;
 const normalizeComparable = (value: string) => value.trim().toLowerCase();
 
 const createEntityId = () => randomUUID();
+
+const legacySecurityPathMap = new Map([
+  ['/security', '/system'],
+  ['/security/iam', '/system/permission'],
+  ['/security/roles', '/system/role'],
+  ['/security/permissions', '/system/permission'],
+  ['/security/menus', '/system/menu'],
+  ['/security/fields', '/system/field'],
+  ['/security/policies', '/system/policy'],
+  ['/security/sessions', '/system/session'],
+  ['/security/operation-logs', '/system/operation-log'],
+]);
+
+const legacySecurityIdMap = new Map([
+  ['security', 'system'],
+  ['iam', 'permissions'],
+]);
+
+const normalizeMenuPath = (path: string) => legacySecurityPathMap.get(path) ?? path.replace(/^\/security\//, '/system/');
+
+const normalizeAdminMenu = (menu: IamMenu, hasSystemRoot: boolean): IamMenu | null => {
+  if ((menu.id === 'security' || menu.path === '/security') && hasSystemRoot) {
+    return null;
+  }
+
+  const isLegacySecurityChild = menu.parentId === 'security' || menu.path.startsWith('/security/');
+  const normalizedId = legacySecurityIdMap.get(menu.id) ?? menu.id;
+
+  if (menu.id === 'security' || menu.path === '/security') {
+    return {
+      ...menu,
+      id: 'system',
+      name: 'System Management',
+      path: '/system',
+      component: 'AdminSystemRedirectPage',
+      icon: 'Settings',
+      order: 10,
+    };
+  }
+
+  return {
+    ...menu,
+    id: isLegacySecurityChild ? normalizedId : menu.id,
+    path: normalizeMenuPath(menu.path),
+    parentId: isLegacySecurityChild ? 'system' : menu.parentId,
+  };
+};
 
 const unique = <TValue>(values: TValue[]) => Array.from(new Set(values));
 
@@ -725,6 +773,8 @@ export class IamService {
 
   getMenuTree(user: IamUser) {
     const capabilities = new Set(this.getCapabilitiesForUser(user));
+    const hasSystemRoot = this.data.menus.some(menu => menu.id === 'system' || menu.path === '/system');
+    const seenMenus = new Set<string>();
     const allowedMenus = this.data.menus
       .filter(
         menu =>
@@ -732,6 +782,18 @@ export class IamService {
           menu.permissionCodes.length === 0 ||
           menu.permissionCodes.some(code => capabilities.has(code)),
       )
+      .map(menu => normalizeAdminMenu(menu, hasSystemRoot))
+      .filter((menu): menu is IamMenu => Boolean(menu))
+      .filter(menu => {
+        const key = `${menu.parentId ?? 'root'}:${menu.path}`;
+
+        if (seenMenus.has(key)) {
+          return false;
+        }
+
+        seenMenus.add(key);
+        return true;
+      })
       .sort((left, right) => left.order - right.order);
     const menuByParent = new Map<string | undefined, IamMenuNode[]>();
 

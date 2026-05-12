@@ -15,13 +15,13 @@
 
 ## 内部结构
 
-| Path                            | Responsibility                                           |
-| ------------------------------- | -------------------------------------------------------- |
-| `vitest.config.ts`              | Node/unit/smoke config，使用源码 alias 避免 stale dist。 |
-| `vitest.browser.config.ts`      | Browser Mode config，Playwright provider，React plugin。 |
-| `src/support/test-selection.ts` | target 列表和 changed-file impact map。                  |
-| `scripts/run-targeted-tests.ts` | CLI runner：target、affected、name pattern。             |
-| `SMOKE_TEST_DESIGN.md`          | 冒烟测试覆盖设计。                                       |
+| Path                            | Responsibility                                                                    |
+| ------------------------------- | --------------------------------------------------------------------------------- |
+| `vitest.config.ts`              | Node/unit/smoke config，使用源码 alias 避免 stale dist。                          |
+| `vitest.browser.config.ts`      | Browser Mode config，Playwright provider，React plugin，Radix deps pre-bundling。 |
+| `src/support/test-selection.ts` | target 列表和 changed-file impact map。                                           |
+| `scripts/run-targeted-tests.ts` | CLI runner：target、affected、name pattern。                                      |
+| `SMOKE_TEST_DESIGN.md`          | 冒烟测试覆盖设计。                                                                |
 
 ## 命令
 

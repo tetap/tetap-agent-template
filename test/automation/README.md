@@ -53,7 +53,7 @@ pnpm test:target -- --list
 
 ## Coverage Notes
 
-- `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard tab interaction, and sign-in form session storage.
+- `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard tab interaction, sign-in form session storage, and admin IAM search controls.
 - `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend session revocation.
 - `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.
 - `unit:backend-security` covers shared backend SSRF/upload/HMAC utility behavior.

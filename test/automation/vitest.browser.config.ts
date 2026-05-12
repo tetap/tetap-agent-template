@@ -23,6 +23,7 @@ export default defineConfig({
   optimizeDeps: {
     include: [
       '@hookform/resolvers/zod',
+      '@radix-ui/react-alert-dialog',
       '@radix-ui/react-separator',
       '@radix-ui/react-slot',
       '@radix-ui/react-tabs',

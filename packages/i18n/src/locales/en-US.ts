@@ -42,7 +42,9 @@ export const enUS = {
     linksDescription: 'Common documentation links stay available for continued frontend expansion.',
     viteDocs: 'Vite docs',
     reactDocs: 'React docs',
+    notFoundTitle: 'Page not found',
     notFound: 'The requested page could not be found.',
+    unexpectedErrorTitle: 'Service temporarily unavailable',
     unexpectedError: 'The app encountered an unexpected error. Please try again later.',
   },
   web: {
@@ -213,7 +215,7 @@ export const enUS = {
     badge: 'Admin workspace',
     navigation: {
       label: 'Admin navigation',
-      dashboard: 'Overview',
+      dashboard: 'Dashboard',
       tasks: 'Tasks',
       apps: 'Apps',
       chats: 'Chats',
@@ -422,6 +424,7 @@ export const enUS = {
         activateUser: 'Activate account',
         delete: 'Delete',
         disableUser: 'Disable account',
+        edit: 'Edit',
         grantPermission: 'Grant form permission',
         refresh: 'Refresh',
         revoke: 'Force offline',
@@ -469,6 +472,12 @@ export const enUS = {
         rootDescription: 'Show as a top-level menu.',
         rootMenu: 'Top-level menu',
         search: 'Search',
+      },
+      fieldHints: {
+        generic: 'Fill or filter "{{label}}"; submit saves through the real backend API.',
+        multiSelect: 'Search and select multiple "{{label}}" values from a paged candidate list.',
+        searchableSelect: 'Search and select "{{label}}" from a paged candidate list.',
+        select: 'Choose the enum value for "{{label}}" instead of typing unsafe data.',
       },
       dataScopes: {
         all: 'All data',
@@ -533,17 +542,25 @@ export const enUS = {
       },
       forms: {
         fieldDescription: 'Configure hide, mask, readonly, or editable field rules for a role.',
+        fieldEditTitle: 'Edit field permission',
         fieldTitle: 'New field permission',
         menuDescription: 'Maintain the dynamic menu tree returned to the admin app by the backend.',
         menuTitle: 'New menu',
         permissionDescription: 'Maintain permission codes used by roles, buttons, menus, and APIs.',
         permissionTitle: 'New permission',
         policyDescription: 'Create dynamic ABAC/PBAC policies with JSON conditions.',
+        policyEditTitle: 'Edit policy',
         policyTitle: 'New policy',
         roleDescription: 'Create a role and bind permission codes and a data scope.',
         roleTitle: 'New role',
         userDescription: 'Create an admin user and assign roles.',
         userTitle: 'New user',
+      },
+      confirm: {
+        deleteDescription: 'You are about to delete "{{item}}". This writes to real backend data and cannot be undone directly.',
+        deleteTitle: 'Confirm delete',
+        revokeDescription: 'You are about to force "{{item}}" offline. The session token will be invalidated immediately.',
+        revokeTitle: 'Confirm force offline',
       },
       metrics: {
         users: 'Users',
@@ -570,10 +587,16 @@ export const enUS = {
       },
       operationLogs: {
         detail: 'Operation detail',
+        empty: 'No operation logs.',
         ip: 'Operation IP',
         item: 'Operation item',
         operator: 'Operator',
+        pageInfo: 'Page {{page}} / {{totalPages}}',
+        search: 'Search operation logs',
+        sortAsc: 'Oldest first',
+        sortDesc: 'Newest first',
         time: 'Operation time',
+        total: '{{total}} total',
       },
       states: {
         loadFailed: 'Failed to load IAM data. Confirm the backend-admin service is running.',
@@ -634,7 +657,7 @@ export const enUS = {
     },
     actions: {
       sync: 'Sync admin status',
-      openDashboard: 'Back to overview',
+      openDashboard: 'Back to dashboard',
     },
   },
   backend: {

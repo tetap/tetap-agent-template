@@ -86,7 +86,7 @@ describe('backend-admin smoke: IAM auth and forced offline', () => {
       const overviewBody = iamOverviewResponseSchema.parse(overviewResponse.json());
 
       expect(overviewResponse.statusCode).toBe(200);
-      expect(overviewBody.data.permissions.length).toBeGreaterThan(0);
+      expect(overviewBody.data.metrics.permissions).toBeGreaterThan(0);
 
       const permissionResponse = await app.inject({
         headers: {
