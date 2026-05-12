@@ -8,7 +8,7 @@
 
 - JWT HMAC sign/verify helper。
 - Stateful session manager、token id、token version、clock-aware expiry、forced-offline invalidation、token blacklist cleanup。
-- Admin user sessions and frontend user online sessions are separate; online-user management only exposes frontend sessions。
+- Admin user sessions and frontend user online sessions are separate; online-user management only exposes real frontend sessions and does not seed fake online rows。
 - RBAC capability resolution and route permission checks。
 - Dynamic menu filtering。
 - Field permission filtering and masking。
@@ -34,7 +34,7 @@
 
 | Layer                | Responsibility                                                |
 | -------------------- | ------------------------------------------------------------- |
-| `@tetap/iam`         | Pure IAM engines and demo/in-memory service for local smoke.  |
+| `@tetap/iam`         | Pure IAM engines and in-memory service for local smoke.       |
 | `@tetap/schema`      | IAM HTTP request/response Zod contracts.                      |
 | `@tetap/prisma`      | IAM persistence models.                                       |
 | `apps/backend-admin` | Admin IAM routes, services, auth plugin, and API enforcement. |

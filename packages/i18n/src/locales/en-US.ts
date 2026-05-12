@@ -557,9 +557,11 @@ export const enUS = {
         userTitle: 'New user',
       },
       confirm: {
-        deleteDescription: 'You are about to delete "{{item}}". This writes to real backend data and cannot be undone directly.',
+        deleteDescription:
+          'You are about to delete "{{item}}". This writes to real backend data and cannot be undone directly.',
         deleteTitle: 'Confirm delete',
-        revokeDescription: 'You are about to force "{{item}}" offline. The session token will be invalidated immediately.',
+        revokeDescription:
+          'You are about to force "{{item}}" offline. The session token will be invalidated immediately.',
         revokeTitle: 'Confirm force offline',
       },
       metrics: {
@@ -579,6 +581,10 @@ export const enUS = {
         menusDescription: 'Backend-provided menu configuration rendered by the admin app.',
         sessionsTitle: 'Online sessions',
         sessionsDescription: 'Only current usable frontend user login sessions and device states.',
+        fieldPermissionsTitle: 'Field permissions',
+        policiesTitle: 'Policies',
+        emptyFieldPermissions: 'No field permissions.',
+        emptyPolicies: 'No policies.',
       },
       policy: {
         fieldDescription: 'Field rules trim or mask sensitive fields on the backend.',

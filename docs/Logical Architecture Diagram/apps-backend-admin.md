@@ -62,7 +62,7 @@ Admin 文案使用 `@tetap/i18n/backend-admin` 中的 `backendAdmin.*` key。
 - Protected route 通过 `config.auth.permission` 声明权限码。
 - `/auth/login` 和 `/auth/refresh` 是显式 public route。
 - 在线会话和 token id 由 `@tetap/iam` 管理，强制下线会让旧 token 返回 `40101`。
-- 在线用户只包含前台用户会话；后台管理员 session 不进入在线用户表格或强制下线列表。
+- 在线用户只包含真实前台用户会话；后台管理员 session 和本地 seed 数据不进入在线用户表格或强制下线列表。
 - Operation-log plugin 记录每个非 health、非 OPTIONS 后端操作的操作人、事项、详情、时间和 IP。
 - Fastify runtime 启用 body limit、helmet、CORS allowlist、rate-limit 和日志脱敏。
 - `ENABLE_DEMO_SEED=true` 时仅用于本地开发的默认管理员是 `admin@tetap.local` / `password1`，生产环境必须通过受控流程创建管理员并替换 demo secrets。

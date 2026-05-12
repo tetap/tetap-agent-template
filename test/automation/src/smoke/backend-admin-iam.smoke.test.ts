@@ -6,7 +6,6 @@ import {
   iamPermissionMutationResponseSchema,
   iamPolicyMutationResponseSchema,
   iamRoleMutationResponseSchema,
-  iamSessionRevokeResponseSchema,
   iamSessionsResponseSchema,
   iamUserMutationResponseSchema,
 } from '@tetap/schema/iam';
@@ -38,8 +37,8 @@ const smokeEnv = {
   SKIP_ROUTES: [],
 } satisfies AppEnv;
 
-describe('backend-admin smoke: IAM auth and forced offline', () => {
-  it('signs in, reads protected IAM data, revokes the session, and rejects the old token', async () => {
+describe('backend-admin smoke: IAM auth and management APIs', () => {
+  it('signs in, reads protected IAM data, mutates IAM records, and keeps online users scoped to frontend sessions', async () => {
     const app = await buildBackendAdminApp({ env: smokeEnv });
 
     try {
@@ -220,22 +219,9 @@ describe('backend-admin smoke: IAM auth and forced offline', () => {
         url: '/iam/sessions',
       });
       const sessionsBody = iamSessionsResponseSchema.parse(sessionsResponse.json());
-      const [session] = sessionsBody.data;
 
-      expect(session).toBeDefined();
-
-      const revokeResponse = await app.inject({
-        headers: {
-          authorization,
-          'accept-language': 'en-US',
-        },
-        method: 'POST',
-        url: `/iam/sessions/${session.id}/revoke`,
-      });
-      const revokeBody = iamSessionRevokeResponseSchema.parse(revokeResponse.json());
-
-      expect(revokeResponse.statusCode).toBe(200);
-      expect(revokeBody.data.revokedSessions[0]?.status).toBe('REVOKED');
+      expect(sessionsResponse.statusCode).toBe(200);
+      expect(sessionsBody.data).toEqual([]);
 
       const stillAuthenticatedResponse = await app.inject({
         headers: {

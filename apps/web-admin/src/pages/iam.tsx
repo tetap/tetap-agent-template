@@ -78,6 +78,7 @@ import {
   createIamPolicy,
   createIamRole,
   createIamUser,
+  BackendAdminRequestError,
   deleteIamFieldPermission,
   deleteIamMenu,
   deleteIamPermission,
@@ -170,6 +171,7 @@ const emptyIamPageData = (): IamPageData => ({
 
 let cachedIamPageData: IamPageData = emptyIamPageData();
 let cachedOperationLogData: IamOperationLogsData | null = null;
+let cachedLoadedSections = new Set<IamSection>();
 
 const hasSectionData = (section: IamSection, data: IamPageData, operationLogs: IamOperationLogsData | null) => {
   switch (section) {
@@ -193,6 +195,14 @@ const hasSectionData = (section: IamSection, data: IamPageData, operationLogs: I
       return false;
   }
 };
+
+const isSectionLoaded = (section: IamSection, loadedSections: Set<IamSection>) =>
+  loadedSections.has(section) || hasSectionData(section, cachedIamPageData, cachedOperationLogData);
+
+const stringifyPolicyConditions = (conditions: IamPolicy['conditions']) => JSON.stringify(conditions);
+
+const resolveBackendErrorMessage = (error: unknown, fallback: string) =>
+  error instanceof BackendAdminRequestError && error.message ? error.message : fallback;
 
 const toPermissionType = (value: string): PermissionTypeInput =>
   ['MENU', 'API', 'BUTTON', 'FIELD', 'DATA'].includes(value) ? (value as PermissionTypeInput) : 'API';
@@ -315,13 +325,14 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
   const can = useAdminSessionStore(state => state.auth.can);
   const [data, setData] = useState<IamPageData>(() => cachedIamPageData);
   const [operationLogData, setOperationLogData] = useState<IamOperationLogsData | null>(() => cachedOperationLogData);
+  const [loadedSections, setLoadedSections] = useState<Set<IamSection>>(() => new Set(cachedLoadedSections));
   const [operationLogQuery, setOperationLogQuery] = useState<OperationLogQueryState>({
     page: 1,
     pageSize: 20,
     search: '',
     sort: 'desc',
   });
-  const [isLoading, setIsLoading] = useState(() => !hasSectionData(section, cachedIamPageData, cachedOperationLogData));
+  const [isLoading, setIsLoading] = useState(() => !isSectionLoaded(section, cachedLoadedSections));
   const [isMutating, setIsMutating] = useState(false);
   const [createDialog, setCreateDialog] = useState<Exclude<IamSection, 'roles' | 'sessions' | 'operationLogs'> | null>(
     null,
@@ -386,7 +397,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       return;
     }
 
-    setIsLoading(!hasSectionData(section, cachedIamPageData, cachedOperationLogData));
+    setIsLoading(!isSectionLoaded(section, cachedLoadedSections));
 
     try {
       const patch: Partial<IamPageData> = {};
@@ -436,8 +447,11 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
         cachedIamPageData = { ...cachedIamPageData, ...patch };
         setData(cachedIamPageData);
       }
-    } catch {
-      toast.error(t('webAdmin.iam.states.loadFailed'));
+
+      cachedLoadedSections = new Set([...cachedLoadedSections, section]);
+      setLoadedSections(new Set(cachedLoadedSections));
+    } catch (error) {
+      toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.loadFailed')));
     } finally {
       setIsLoading(false);
     }
@@ -453,8 +467,8 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       await revokeIamSession(accessToken, sessionId);
       toast.success(t('webAdmin.iam.states.mutationOk'));
       await loadSectionData();
-    } catch {
-      toast.error(t('webAdmin.iam.states.revokeFailed'));
+    } catch (error) {
+      toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.revokeFailed')));
     }
   };
 
@@ -471,8 +485,8 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       toast.success(t('webAdmin.iam.states.mutationOk'));
       await loadSectionData();
       return true;
-    } catch {
-      toast.error(t('webAdmin.iam.states.mutationFailed'));
+    } catch (error) {
+      toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.mutationFailed')));
       return false;
     } finally {
       setIsMutating(false);
@@ -619,7 +633,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
         </div>
       </section>
 
-      {hasSectionData(section, data, operationLogData) ? (
+      {isSectionLoaded(section, loadedSections) ? (
         <>
           <CreateIamDialogs
             dialog={createDialog}
@@ -919,76 +933,27 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
             </TabsContent>
             <TabsContent value="fields">
               <section className="grid gap-4">
-                <PolicyCard
-                  description={t('webAdmin.iam.policy.fieldDescription')}
-                  deleteLabel={t('webAdmin.iam.actions.delete')}
-                  action={
-                    <Button disabled={isMutating || !canManageIam} onClick={openCreateFieldPermission}>
-                      <Plus data-icon="inline-start" />
-                      {t('webAdmin.iam.actions.createFieldPermission')}
-                    </Button>
+                <FieldPermissionsTable
+                  canManageIam={canManageIam}
+                  fieldPermissions={data.fieldPermissions}
+                  isMutating={isMutating}
+                  onCreate={openCreateFieldPermission}
+                  onDelete={fieldPermissionId =>
+                    void runMutation(token => deleteIamFieldPermission(token, fieldPermissionId))
                   }
-                  items={data.fieldPermissions.map(
-                    item => `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
-                  )}
-                  onDelete={
-                    canManageIam
-                      ? fieldPermissionId =>
-                          void runMutation(token => deleteIamFieldPermission(token, fieldPermissionId))
-                      : undefined
-                  }
-                  onEdit={
-                    canManageIam
-                      ? fieldPermissionId => {
-                          const fieldPermission = data.fieldPermissions.find(item => item.id === fieldPermissionId);
-
-                          if (fieldPermission) {
-                            openEditFieldPermission(fieldPermission);
-                          }
-                        }
-                      : undefined
-                  }
-                  rawItems={data.fieldPermissions.map(item => ({
-                    id: item.id,
-                    label: `${item.roleCode}:${item.resource}.${item.fieldName}:${item.permissionType}`,
-                  }))}
-                  title={t('webAdmin.iam.tabs.fields')}
+                  onEdit={openEditFieldPermission}
                 />
               </section>
             </TabsContent>
             <TabsContent value="policies">
               <section className="grid gap-4">
-                <PolicyCard
-                  description={t('webAdmin.iam.policy.policyDescription')}
-                  items={data.policies.map(item => `${item.effect}:${item.resource}:${item.action}`)}
-                  deleteLabel={t('webAdmin.iam.actions.delete')}
-                  action={
-                    <Button disabled={isMutating || !canUpdatePolicy} onClick={openCreatePolicy}>
-                      <Plus data-icon="inline-start" />
-                      {t('webAdmin.iam.actions.createPolicy')}
-                    </Button>
-                  }
-                  onDelete={
-                    canUpdatePolicy
-                      ? policyId => void runMutation(token => deleteIamPolicy(token, policyId))
-                      : undefined
-                  }
-                  onEdit={
-                    canUpdatePolicy
-                      ? policyId => {
-                          const policy = data.policies.find(item => item.id === policyId);
-
-                          if (policy) {
-                            openEditPolicy(policy);
-                          }
-                        }
-                      : undefined
-                  }
-                  rawItems={data.policies.map(item => ({
-                    id: item.id,
-                    label: `${item.effect}:${item.resource}:${item.action}`,
-                  }))}
-                  title={t('webAdmin.iam.tabs.policies')}
+                <PoliciesTable
+                  canUpdatePolicy={canUpdatePolicy}
+                  isMutating={isMutating}
+                  onCreate={openCreatePolicy}
+                  onDelete={policyId => void runMutation(token => deleteIamPolicy(token, policyId))}
+                  onEdit={openEditPolicy}
+                  policies={data.policies}
                 />
               </section>
             </TabsContent>
@@ -2261,26 +2226,20 @@ const ConfirmActionButton = ({
   );
 };
 
-const PolicyCard = ({
-  action,
-  description,
-  deleteLabel,
-  editLabel,
-  items,
+const FieldPermissionsTable = ({
+  canManageIam,
+  fieldPermissions,
+  isMutating,
+  onCreate,
   onDelete,
   onEdit,
-  rawItems,
-  title,
 }: {
-  action?: ReactNode;
-  description: string;
-  deleteLabel?: string;
-  editLabel?: string;
-  items: string[];
-  onDelete?: (id: string) => void;
-  onEdit?: (id: string) => void;
-  rawItems?: { id: string; label: string }[];
-  title: string;
+  canManageIam: boolean;
+  fieldPermissions: FieldPermission[];
+  isMutating: boolean;
+  onCreate: () => void;
+  onDelete: (id: string) => void;
+  onEdit: (fieldPermission: FieldPermission) => void;
 }) => {
   const t = useAdminT();
 
@@ -2289,45 +2248,167 @@ const PolicyCard = ({
       <CardHeader>
         <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
           <div className="flex flex-col gap-1">
-            <CardTitle>{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <CardTitle>{t('webAdmin.iam.tables.fieldPermissionsTitle')}</CardTitle>
+            <CardDescription>{t('webAdmin.iam.policy.fieldDescription')}</CardDescription>
           </div>
-          {action}
+          <Button disabled={isMutating || !canManageIam} onClick={onCreate}>
+            <Plus data-icon="inline-start" />
+            {t('webAdmin.iam.actions.createFieldPermission')}
+          </Button>
         </div>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableBody>
-            {(rawItems ?? items.map(item => ({ id: item, label: item }))).map(item => (
-              <TableRow key={item.id}>
-                <TableCell>{item.label}</TableCell>
-                {onEdit || onDelete ? (
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('webAdmin.iam.fields.roleCode')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.resource')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.fieldName')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.permissionType')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {fieldPermissions.map(fieldPermission => (
+                <TableRow key={fieldPermission.id}>
+                  <TableCell>{fieldPermission.roleCode}</TableCell>
+                  <TableCell>{fieldPermission.resource}</TableCell>
+                  <TableCell>{fieldPermission.fieldName}</TableCell>
+                  <TableCell>
+                    <Badge variant="secondary">{fieldPermission.permissionType}</Badge>
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-wrap gap-2">
-                      {onEdit ? (
-                        <Button onClick={() => onEdit(item.id)} size="sm" variant="outline">
+                      <Button
+                        disabled={isMutating || !canManageIam}
+                        onClick={() => onEdit(fieldPermission)}
+                        size="sm"
+                        variant="outline">
+                        <Edit data-icon="inline-start" />
+                        {t('webAdmin.iam.actions.edit')}
+                      </Button>
+                      <ConfirmActionButton
+                        description={t('webAdmin.iam.confirm.deleteDescription', {
+                          item: `${fieldPermission.roleCode}:${fieldPermission.resource}.${fieldPermission.fieldName}`,
+                        })}
+                        disabled={isMutating || !canManageIam}
+                        onConfirm={() => onDelete(fieldPermission.id)}
+                        size="sm"
+                        title={t('webAdmin.iam.confirm.deleteTitle')}
+                        variant="outline">
+                        <Trash2 data-icon="inline-start" />
+                        {t('webAdmin.iam.actions.delete')}
+                      </ConfirmActionButton>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {!fieldPermissions.length ? (
+                <TableRow>
+                  <TableCell colSpan={5}>{t('webAdmin.iam.tables.emptyFieldPermissions')}</TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+          </Table>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const PoliciesTable = ({
+  canUpdatePolicy,
+  isMutating,
+  onCreate,
+  onDelete,
+  onEdit,
+  policies,
+}: {
+  canUpdatePolicy: boolean;
+  isMutating: boolean;
+  onCreate: () => void;
+  onDelete: (id: string) => void;
+  onEdit: (policy: IamPolicy) => void;
+  policies: IamPolicy[];
+}) => {
+  const t = useAdminT();
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div className="flex flex-col gap-1">
+            <CardTitle>{t('webAdmin.iam.tables.policiesTitle')}</CardTitle>
+            <CardDescription>{t('webAdmin.iam.policy.policyDescription')}</CardDescription>
+          </div>
+          <Button disabled={isMutating || !canUpdatePolicy} onClick={onCreate}>
+            <Plus data-icon="inline-start" />
+            {t('webAdmin.iam.actions.createPolicy')}
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t('webAdmin.iam.fields.effect')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.resource')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.action')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.conditions')}</TableHead>
+                <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {policies.map(policy => {
+                const conditions = stringifyPolicyConditions(policy.conditions);
+
+                return (
+                  <TableRow key={policy.id}>
+                    <TableCell>
+                      <Badge variant={policy.effect === 'ALLOW' ? 'default' : 'secondary'}>{policy.effect}</Badge>
+                    </TableCell>
+                    <TableCell>{policy.resource}</TableCell>
+                    <TableCell>{policy.action}</TableCell>
+                    <TableCell className="max-w-md truncate" title={conditions}>
+                      {conditions}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          disabled={isMutating || !canUpdatePolicy}
+                          onClick={() => onEdit(policy)}
+                          size="sm"
+                          variant="outline">
                           <Edit data-icon="inline-start" />
-                          {editLabel ?? t('webAdmin.iam.actions.edit')}
+                          {t('webAdmin.iam.actions.edit')}
                         </Button>
-                      ) : null}
-                      {onDelete ? (
                         <ConfirmActionButton
-                          description={t('webAdmin.iam.confirm.deleteDescription', { item: item.label })}
-                          onConfirm={() => onDelete(item.id)}
+                          description={t('webAdmin.iam.confirm.deleteDescription', {
+                            item: `${policy.effect}:${policy.resource}:${policy.action}`,
+                          })}
+                          disabled={isMutating || !canUpdatePolicy}
+                          onConfirm={() => onDelete(policy.id)}
                           size="sm"
                           title={t('webAdmin.iam.confirm.deleteTitle')}
                           variant="outline">
                           <Trash2 data-icon="inline-start" />
-                          {deleteLabel}
+                          {t('webAdmin.iam.actions.delete')}
                         </ConfirmActionButton>
-                      ) : null}
-                    </div>
-                  </TableCell>
-                ) : null}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+              {!policies.length ? (
+                <TableRow>
+                  <TableCell colSpan={5}>{t('webAdmin.iam.tables.emptyPolicies')}</TableCell>
+                </TableRow>
+              ) : null}
+            </TableBody>
+          </Table>
+        </div>
       </CardContent>
     </Card>
   );

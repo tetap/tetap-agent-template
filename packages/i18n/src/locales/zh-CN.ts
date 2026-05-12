@@ -564,6 +564,10 @@ export const zhCN = {
         menusDescription: '后端返回并由前端渲染的菜单配置。',
         sessionsTitle: '在线会话',
         sessionsDescription: '仅展示前台用户当前仍可用的登录会话和设备状态。',
+        fieldPermissionsTitle: '字段权限列表',
+        policiesTitle: '策略列表',
+        emptyFieldPermissions: '暂无字段权限。',
+        emptyPolicies: '暂无策略。',
       },
       policy: {
         fieldDescription: '字段规则在后端裁剪或脱敏敏感字段。',

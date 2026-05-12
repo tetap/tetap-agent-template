@@ -79,7 +79,7 @@ POST   /iam/users/:userId/revoke-sessions
 GET    /iam/operation-logs
 ```
 
-Online-session routes only manage frontend user sessions. Admin sessions are private auth infrastructure and are not returned by online-user APIs.
+Online-session routes only manage real frontend user sessions. Admin sessions are private auth infrastructure and are not returned by online-user APIs; local IAM seed data does not create fake online users.
 
 ## Local Demo Account
 

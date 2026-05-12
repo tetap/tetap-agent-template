@@ -6,7 +6,13 @@ import { render } from 'vitest-browser-react';
 import { AdminShell } from '../../../../apps/web-admin/src/layout/admin-shell.tsx';
 import { SignInPage } from '../../../../apps/web-admin/src/pages/auth/sign-in.tsx';
 import { AdminDashboardPage } from '../../../../apps/web-admin/src/pages/dashboard.tsx';
-import { AdminOperationLogsPage, AdminRolesPage, AdminUsersPage } from '../../../../apps/web-admin/src/pages/iam.tsx';
+import {
+  AdminFieldPermissionsPage,
+  AdminOperationLogsPage,
+  AdminPoliciesPage,
+  AdminRolesPage,
+  AdminUsersPage,
+} from '../../../../apps/web-admin/src/pages/iam.tsx';
 
 const i18n = createAdminI18n({ locale: 'en-US' });
 const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
@@ -176,6 +182,36 @@ const createPermissionsResponse = () => ({
   ],
 });
 
+const createFieldPermissionsResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: [
+    {
+      id: 'field-1',
+      roleCode: 'super-admin',
+      resource: 'user',
+      fieldName: 'email',
+      permissionType: 'MASK',
+    },
+  ],
+});
+
+const createPoliciesResponse = () => ({
+  code: 0,
+  message: 'ok',
+  data: [
+    {
+      id: 'policy-1',
+      resource: 'session',
+      action: 'revoke',
+      effect: 'ALLOW',
+      conditions: {
+        any: [{ source: 'user', path: 'isSuperAdmin', operator: 'eq', value: true }],
+      },
+    },
+  ],
+});
+
 const createOperationLogsResponse = () => ({
   code: 0,
   message: 'ok',
@@ -220,6 +256,14 @@ const createAdminApiResponse = (input: RequestInfo | URL) => {
 
   if (url.includes('/iam/operation-logs')) {
     return createOperationLogsResponse();
+  }
+
+  if (url.includes('/iam/field-permissions')) {
+    return createFieldPermissionsResponse();
+  }
+
+  if (url.includes('/iam/policies')) {
+    return createPoliciesResponse();
   }
 
   if (url.includes('/iam/users')) {
@@ -385,6 +429,62 @@ const renderOperationLogsPage = async () => {
   return renderWithI18n(router);
 };
 
+const renderFieldPermissionsPage = async () => {
+  seedAdminSession();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
+
+  const router = createMemoryRouter([
+    {
+      path: '/',
+      element: <AdminShell />,
+      children: [
+        {
+          index: true,
+          element: <AdminFieldPermissionsPage />,
+        },
+      ],
+    },
+  ]);
+
+  return renderWithI18n(router);
+};
+
+const renderPoliciesPage = async () => {
+  seedAdminSession();
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (input: RequestInfo | URL) => {
+      return new Response(JSON.stringify(createAdminApiResponse(input)), {
+        headers: { 'content-type': 'application/json' },
+        status: 200,
+      });
+    }),
+  );
+
+  const router = createMemoryRouter([
+    {
+      path: '/',
+      element: <AdminShell />,
+      children: [
+        {
+          index: true,
+          element: <AdminPoliciesPage />,
+        },
+      ],
+    },
+  ]);
+
+  return renderWithI18n(router);
+};
+
 describe('admin web dashboard browser behavior', () => {
   beforeEach(() => {
     useAdminSessionStore.getState().auth.reset();
@@ -457,5 +557,19 @@ describe('admin web dashboard browser behavior', () => {
     await expect
       .poll(() => vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes('search=admin+login')))
       .toBe(true);
+  });
+
+  it('renders field permissions as a headed management table', async () => {
+    const screen = await renderFieldPermissionsPage();
+
+    await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.fields.roleCode')).query()).not.toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.iam.fields.permissionType')).query()).not.toBeNull();
+  });
+
+  it('renders policies as a headed management table', async () => {
+    const screen = await renderPoliciesPage();
+
+    await expect.poll(() => screen.getByText(i18n.t('webAdmin.iam.fields.effect')).query()).not.toBeNull();
+    expect(screen.getByText(i18n.t('webAdmin.iam.fields.conditions')).query()).not.toBeNull();
   });
 });

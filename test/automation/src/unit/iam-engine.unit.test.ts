@@ -32,7 +32,7 @@ describe('IAM engines', () => {
     expect(login.capabilities).toContain('session:revoke');
     expect(iam.verifyAccessToken(login.accessToken).user.username).toBe('admin');
 
-    expect(iam.listSessions().every(session => session.userId.startsWith('front-'))).toBe(true);
+    expect(iam.listSessions()).toEqual([]);
 
     iam.logout(login.accessToken);
     expect(() => iam.verifyAccessToken(login.accessToken)).toThrow();

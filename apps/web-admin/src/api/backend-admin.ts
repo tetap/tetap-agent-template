@@ -73,12 +73,35 @@ const createQueryString = (query: Record<string, string | number | undefined>) =
   return value ? `?${value}` : '';
 };
 
+type BackendAdminErrorBody = {
+  code?: unknown;
+  data?: unknown;
+  message?: unknown;
+};
+
+export class BackendAdminRequestError extends Error {
+  readonly body: unknown;
+  readonly code?: unknown;
+  readonly status: number;
+
+  constructor(status: number, body: unknown) {
+    const errorBody = body && typeof body === 'object' ? (body as BackendAdminErrorBody) : {};
+    const message = typeof errorBody.message === 'string' ? errorBody.message : 'Backend admin request failed.';
+
+    super(message);
+    this.name = 'BackendAdminRequestError';
+    this.body = body;
+    this.code = errorBody.code;
+    this.status = status;
+  }
+}
+
 const requestJson = async (path: string, options: RequestInit = {}) => {
   const response = await fetch(joinUrl(path), options);
   const body = (await response.json()) as unknown;
 
   if (!response.ok) {
-    throw new Error(`Backend admin request failed with ${response.status}.`);
+    throw new BackendAdminRequestError(response.status, body);
   }
 
   return body;

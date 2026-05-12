@@ -50,13 +50,13 @@ This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-a
 - The dashboard calls `/iam/overview` for metrics only; feature pages and activity panels fetch their own scoped APIs.
 - IAM create flows open dialogs from action buttons; oversized dialogs and pickers are scrollable.
 - Delete and force-offline actions require a confirmation dialog before writing to backend-admin.
-- Field permissions and dynamic policies support create and edit dialogs backed by real APIs.
+- Field permissions and dynamic policies use table layouts with explicit headers and support create/edit dialogs backed by real APIs.
 - Operation-log search uses `InputGroup` for the icon/input pair plus a separate submit `Button`; typing alone does not refresh data.
 - IAM form controls include helper descriptions so each input explains what it changes.
 - Enum inputs such as permission type, field permission type, policy effect, and data scope use `Select`.
 - Role, permission, menu parent, and department selections use searchable paged pickers instead of raw ID inputs.
-- Online users mean frontend user sessions only. Admin login sessions are not shown or kicked from this UI.
-- Save and error feedback uses `toast` from `@tetap/ui/sonner`.
+- Online users mean real frontend user sessions only. Admin login sessions and seeded demo sessions are not shown or kicked from this UI.
+- Save and error feedback uses `toast` from `@tetap/ui/sonner`; backend-admin error messages are surfaced instead of being collapsed into generic failure text.
 
 ## Current Pages
 

@@ -19,19 +19,19 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 
 ## Current Targets
 
-| Target                 | Type    | Scope                                                                        |
-| ---------------------- | ------- | ---------------------------------------------------------------------------- |
-| `config-env`           | Unit    | Shared env parsing and config defaults.                                      |
-| `schema-response`      | Unit    | Unified responses, admin auth schemas, IAM response schemas.                 |
-| `iam-engine`           | Unit    | IAM auth, RBAC, menu, field, data-scope, policy, sessions, operation logs.   |
-| `backend-security`     | Unit    | SSRF/upload helpers, canonical paths, HMAC/body hash helpers.                |
-| `test-selection`       | Unit    | Target and affected-test selection logic.                                    |
-| `i18n-site`            | Unit    | VitePress site i18n scope.                                                   |
-| `ui-components`        | Browser | Shared UI primitives.                                                        |
-| `web-admin-dashboard`  | Browser | Real admin shell/dashboard/sign-in/settings/IAM UI behavior.                 |
-| `backend-health`       | Smoke   | Public Fastify health runtime.                                               |
-| `backend-admin-health` | Smoke   | Admin Fastify health runtime.                                                |
-| `backend-admin-iam`    | Smoke   | Admin auth, IAM CRUD, protected deletion, frontend sessions, forced offline. |
+| Target                 | Type    | Scope                                                                      |
+| ---------------------- | ------- | -------------------------------------------------------------------------- |
+| `config-env`           | Unit    | Shared env parsing and config defaults.                                    |
+| `schema-response`      | Unit    | Unified responses, admin auth schemas, IAM response schemas.               |
+| `iam-engine`           | Unit    | IAM auth, RBAC, menu, field, data-scope, policy, sessions, operation logs. |
+| `backend-security`     | Unit    | SSRF/upload helpers, canonical paths, HMAC/body hash helpers.              |
+| `test-selection`       | Unit    | Target and affected-test selection logic.                                  |
+| `i18n-site`            | Unit    | VitePress site i18n scope.                                                 |
+| `ui-components`        | Browser | Shared UI primitives.                                                      |
+| `web-admin-dashboard`  | Browser | Real admin shell/dashboard/sign-in/settings/IAM UI behavior.               |
+| `backend-health`       | Smoke   | Public Fastify health runtime.                                             |
+| `backend-admin-health` | Smoke   | Admin Fastify health runtime.                                              |
+| `backend-admin-iam`    | Smoke   | Admin auth, IAM CRUD, protected deletion, and frontend-session separation. |
 
 ## Targeted Commands
 
@@ -54,7 +54,7 @@ pnpm test:target -- --list
 ## Coverage Notes
 
 - `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard tab interaction, sign-in form session storage, and admin IAM search controls.
-- `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend session revocation.
+- `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend-session separation from admin sessions.
 - `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.
 - `unit:backend-security` covers shared backend SSRF/upload/HMAC utility behavior.
 - `unit:i18n-site` covers the VitePress promotional site copy scope.
