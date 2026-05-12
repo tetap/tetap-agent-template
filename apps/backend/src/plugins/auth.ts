@@ -29,7 +29,7 @@ export const registerAuthMiddleware = (app: FastifyInstance) => {
     }
 
     try {
-      request.auth = request.server.iam.verifyAccessToken(token);
+      request.auth = await request.server.iam.verifyAccessToken(token);
     } catch {
       throw new AppError({ code: ErrorCode.LoginExpired });
     }
@@ -39,7 +39,7 @@ export const registerAuthMiddleware = (app: FastifyInstance) => {
       authConfig && typeof authConfig === 'object' ? (authConfig.permission as PermissionCode | undefined) : undefined;
 
     if (permission && !request.auth.capabilities.includes(permission) && !request.auth.user.isSuperAdmin) {
-      request.server.iam.recordOperation({
+      await request.server.iam.recordOperation({
         actorUserId: request.auth.user.id,
         operation: 'PERMISSION_DENIED',
         operationItem: permission,

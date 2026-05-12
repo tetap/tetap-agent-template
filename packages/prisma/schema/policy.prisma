@@ -1,5 +1,5 @@
 model Policy {
-  id          BigInt   @id @default(autoincrement())
+  id          String   @id @default(uuid())
   resource    String
   action      String
   effect      String

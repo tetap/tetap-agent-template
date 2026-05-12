@@ -77,9 +77,9 @@ const mapIamError = (error: unknown): never => {
   throw error;
 };
 
-const runIamMutation = <TResult>(operation: () => TResult) => {
+const runIamMutation = async <TResult>(operation: () => TResult | Promise<TResult>) => {
   try {
-    return operation();
+    return await operation();
   } catch (error) {
     return mapIamError(error);
   }
@@ -102,7 +102,7 @@ export const getIamOverview = async (request: FastifyRequest, reply: FastifyRepl
     },
   });
 
-  request.server.iam.recordOperation({
+  await request.server.iam.recordOperation({
     actorUserId: actor.id,
     operation: 'IAM_READ',
     operationItem: 'iam:overview',
@@ -126,7 +126,7 @@ export const listUsers = async (request: FastifyRequest, reply: FastifyReply) =>
 export const createUser = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const input = iamCreateUserRequestSchema.parse(request.body);
-  const user = runIamMutation(() => request.server.iam.createUser(input, getMutationMeta(request, actor.id)));
+  const user = await runIamMutation(() => request.server.iam.createUser(input, getMutationMeta(request, actor.id)));
 
   return sendSuccess(reply, request, iamUserMutationResponseSchema, user, 'backendAdmin.iam.userCreated');
 };
@@ -135,7 +135,7 @@ export const updateUser = async (request: FastifyRequest, reply: FastifyReply) =
   const actor = getActorUser(request);
   const params = userIdParamsSchema.parse(request.params);
   const input = iamUpdateUserRequestSchema.parse(request.body);
-  const user = runIamMutation(() =>
+  const user = await runIamMutation(() =>
     request.server.iam.updateUser(params.userId, input, getMutationMeta(request, actor.id)),
   );
 
@@ -145,7 +145,9 @@ export const updateUser = async (request: FastifyRequest, reply: FastifyReply) =
 export const deleteUser = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const params = userIdParamsSchema.parse(request.params);
-  const user = runIamMutation(() => request.server.iam.deleteUser(params.userId, getMutationMeta(request, actor.id)));
+  const user = await runIamMutation(() =>
+    request.server.iam.deleteUser(params.userId, getMutationMeta(request, actor.id)),
+  );
 
   return sendSuccess(reply, request, iamUserMutationResponseSchema, user, 'backendAdmin.iam.userDeleted');
 };
@@ -156,7 +158,7 @@ export const listRoles = async (request: FastifyRequest, reply: FastifyReply) =>
 export const createRole = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const input = iamCreateRoleRequestSchema.parse(request.body);
-  const role = runIamMutation(() => request.server.iam.createRole(input, getMutationMeta(request, actor.id)));
+  const role = await runIamMutation(() => request.server.iam.createRole(input, getMutationMeta(request, actor.id)));
 
   return sendSuccess(reply, request, iamRoleMutationResponseSchema, role, 'backendAdmin.iam.roleCreated');
 };
@@ -165,7 +167,7 @@ export const updateRole = async (request: FastifyRequest, reply: FastifyReply) =
   const actor = getActorUser(request);
   const params = roleIdParamsSchema.parse(request.params);
   const input = iamUpdateRoleRequestSchema.parse(request.body);
-  const role = runIamMutation(() =>
+  const role = await runIamMutation(() =>
     request.server.iam.updateRole(params.roleId, input, getMutationMeta(request, actor.id)),
   );
 
@@ -175,7 +177,9 @@ export const updateRole = async (request: FastifyRequest, reply: FastifyReply) =
 export const deleteRole = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const params = roleIdParamsSchema.parse(request.params);
-  const role = runIamMutation(() => request.server.iam.deleteRole(params.roleId, getMutationMeta(request, actor.id)));
+  const role = await runIamMutation(() =>
+    request.server.iam.deleteRole(params.roleId, getMutationMeta(request, actor.id)),
+  );
 
   return sendSuccess(reply, request, iamRoleMutationResponseSchema, role, 'backendAdmin.iam.roleDeleted');
 };
@@ -192,7 +196,7 @@ export const listPermissions = async (request: FastifyRequest, reply: FastifyRep
 export const createPermission = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const input = iamCreatePermissionRequestSchema.parse(request.body);
-  const permission = runIamMutation(() =>
+  const permission = await runIamMutation(() =>
     request.server.iam.createPermission(input, getMutationMeta(request, actor.id)),
   );
 
@@ -209,7 +213,7 @@ export const updatePermission = async (request: FastifyRequest, reply: FastifyRe
   const actor = getActorUser(request);
   const params = permissionIdParamsSchema.parse(request.params);
   const input = iamUpdatePermissionRequestSchema.parse(request.body);
-  const permission = runIamMutation(() =>
+  const permission = await runIamMutation(() =>
     request.server.iam.updatePermission(params.permissionId, input, getMutationMeta(request, actor.id)),
   );
 
@@ -225,7 +229,7 @@ export const updatePermission = async (request: FastifyRequest, reply: FastifyRe
 export const deletePermission = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const params = permissionIdParamsSchema.parse(request.params);
-  const permission = runIamMutation(() =>
+  const permission = await runIamMutation(() =>
     request.server.iam.deletePermission(params.permissionId, getMutationMeta(request, actor.id)),
   );
 
@@ -253,7 +257,7 @@ export const listMenus = async (request: FastifyRequest, reply: FastifyReply) =>
 export const createMenu = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const input = iamCreateMenuRequestSchema.parse(request.body);
-  const menu = runIamMutation(() => request.server.iam.createMenu(input, getMutationMeta(request, actor.id)));
+  const menu = await runIamMutation(() => request.server.iam.createMenu(input, getMutationMeta(request, actor.id)));
 
   return sendSuccess(reply, request, iamMenuMutationResponseSchema, menu, 'backendAdmin.iam.menuCreated');
 };
@@ -262,7 +266,7 @@ export const updateMenu = async (request: FastifyRequest, reply: FastifyReply) =
   const actor = getActorUser(request);
   const params = menuIdParamsSchema.parse(request.params);
   const input = iamUpdateMenuRequestSchema.parse(request.body);
-  const menu = runIamMutation(() =>
+  const menu = await runIamMutation(() =>
     request.server.iam.updateMenu(params.menuId, input, getMutationMeta(request, actor.id)),
   );
 
@@ -272,7 +276,9 @@ export const updateMenu = async (request: FastifyRequest, reply: FastifyReply) =
 export const deleteMenu = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const params = menuIdParamsSchema.parse(request.params);
-  const menu = runIamMutation(() => request.server.iam.deleteMenu(params.menuId, getMutationMeta(request, actor.id)));
+  const menu = await runIamMutation(() =>
+    request.server.iam.deleteMenu(params.menuId, getMutationMeta(request, actor.id)),
+  );
 
   return sendSuccess(reply, request, iamMenuMutationResponseSchema, menu, 'backendAdmin.iam.menuDeleted');
 };
@@ -289,7 +295,7 @@ export const listFieldPermissions = async (request: FastifyRequest, reply: Fasti
 export const createFieldPermission = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const input = iamCreateFieldPermissionRequestSchema.parse(request.body);
-  const fieldPermission = runIamMutation(() =>
+  const fieldPermission = await runIamMutation(() =>
     request.server.iam.createFieldPermission(input, getMutationMeta(request, actor.id)),
   );
 
@@ -306,7 +312,7 @@ export const updateFieldPermission = async (request: FastifyRequest, reply: Fast
   const actor = getActorUser(request);
   const params = fieldPermissionIdParamsSchema.parse(request.params);
   const input = iamUpdateFieldPermissionRequestSchema.parse(request.body);
-  const fieldPermission = runIamMutation(() =>
+  const fieldPermission = await runIamMutation(() =>
     request.server.iam.updateFieldPermission(params.fieldPermissionId, input, getMutationMeta(request, actor.id)),
   );
 
@@ -322,7 +328,7 @@ export const updateFieldPermission = async (request: FastifyRequest, reply: Fast
 export const deleteFieldPermission = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const params = fieldPermissionIdParamsSchema.parse(request.params);
-  const fieldPermission = runIamMutation(() =>
+  const fieldPermission = await runIamMutation(() =>
     request.server.iam.deleteFieldPermission(params.fieldPermissionId, getMutationMeta(request, actor.id)),
   );
 
@@ -341,7 +347,7 @@ export const listPolicies = async (request: FastifyRequest, reply: FastifyReply)
 export const createPolicy = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const input = iamCreatePolicyRequestSchema.parse(request.body);
-  const policy = runIamMutation(() => request.server.iam.createPolicy(input, getMutationMeta(request, actor.id)));
+  const policy = await runIamMutation(() => request.server.iam.createPolicy(input, getMutationMeta(request, actor.id)));
 
   return sendSuccess(reply, request, iamPolicyMutationResponseSchema, policy, 'backendAdmin.iam.policyCreated');
 };
@@ -350,7 +356,7 @@ export const updatePolicy = async (request: FastifyRequest, reply: FastifyReply)
   const actor = getActorUser(request);
   const params = policyIdParamsSchema.parse(request.params);
   const input = iamUpdatePolicyRequestSchema.parse(request.body);
-  const policy = runIamMutation(() =>
+  const policy = await runIamMutation(() =>
     request.server.iam.updatePolicy(params.policyId, input, getMutationMeta(request, actor.id)),
   );
 
@@ -360,7 +366,7 @@ export const updatePolicy = async (request: FastifyRequest, reply: FastifyReply)
 export const deletePolicy = async (request: FastifyRequest, reply: FastifyReply) => {
   const actor = getActorUser(request);
   const params = policyIdParamsSchema.parse(request.params);
-  const policy = runIamMutation(() =>
+  const policy = await runIamMutation(() =>
     request.server.iam.deletePolicy(params.policyId, getMutationMeta(request, actor.id)),
   );
 
@@ -388,7 +394,7 @@ export const revokeSession = async (request: FastifyRequest, reply: FastifyReply
   );
 
   if (!decision.allowed) {
-    request.server.iam.recordOperation({
+    await request.server.iam.recordOperation({
       actorUserId: actor.id,
       operation: 'POLICY_DENIED',
       operationItem: `session:${params.sessionId}`,
@@ -402,7 +408,7 @@ export const revokeSession = async (request: FastifyRequest, reply: FastifyReply
     throw new AppError({ code: ErrorCode.PolicyDenied });
   }
 
-  const revokedSession = request.server.iam.revokeSession(params.sessionId, 'admin-forced-offline', actor.id);
+  const revokedSession = await request.server.iam.revokeSession(params.sessionId, 'admin-forced-offline', actor.id);
 
   if (!revokedSession) {
     throw new AppError({ code: ErrorCode.NotFound });
@@ -429,7 +435,7 @@ export const revokeUserSessions = async (request: FastifyRequest, reply: Fastify
   );
 
   if (!decision.allowed) {
-    request.server.iam.recordOperation({
+    await request.server.iam.recordOperation({
       actorUserId: actor.id,
       operation: 'POLICY_DENIED',
       operationItem: `user:${params.userId}`,
@@ -443,7 +449,7 @@ export const revokeUserSessions = async (request: FastifyRequest, reply: Fastify
     throw new AppError({ code: ErrorCode.PolicyDenied });
   }
 
-  const revokedSessions = request.server.iam.revokeUserSessions(params.userId, 'admin-forced-offline', actor.id);
+  const revokedSessions = await request.server.iam.revokeUserSessions(params.userId, 'admin-forced-offline', actor.id);
 
   return sendSuccess(
     reply,

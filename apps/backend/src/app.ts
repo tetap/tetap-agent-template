@@ -7,14 +7,15 @@ import { registerErrorHandler } from './plugins/error-handler.js';
 import { registerI18nMiddleware } from './plugins/i18n.js';
 import { registerSecurityMiddleware } from './plugins/security.js';
 import { registerRoutes } from './routes/index.js';
-import { createIamService } from './shared/iam-service.js';
+import { createIamService, type ManagedIamService } from './shared/iam-service.js';
 import type { AppEnv } from '@tetap/config';
 
 export type BuildBackendAppOptions = {
   env: AppEnv;
+  iamService?: ManagedIamService;
 };
 
-export const buildBackendApp = async ({ env }: BuildBackendAppOptions) => {
+export const buildBackendApp = async ({ env, iamService }: BuildBackendAppOptions) => {
   const app = fastify({
     bodyLimit: env.BODY_LIMIT_BYTES,
     logger: {
@@ -30,7 +31,14 @@ export const buildBackendApp = async ({ env }: BuildBackendAppOptions) => {
     trustProxy: true,
   });
 
-  app.decorate('iam', createIamService(env));
+  const iam = iamService ?? (await createIamService(env));
+
+  app.decorate('iam', iam);
+  app.addHook('onClose', async () => {
+    if (!iamService) {
+      await iam.close();
+    }
+  });
   registerErrorHandler(app);
   registerI18nMiddleware(app);
   registerSecurityMiddleware(app, env);

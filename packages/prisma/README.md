@@ -13,6 +13,7 @@
 - One Prisma model per dedicated `.prisma` file。
 - Do not introduce alternate ORMs or app-local SQL schema files。
 - DB commands must be called through root scripts。
+- IAM/admin identifiers use string IDs so backend tokens, menu trees, relation APIs, and Prisma records share one ID shape.
 
 ## Current Model Files
 
@@ -31,7 +32,9 @@
 | `department.prisma`                                           | Department hierarchy for data scopes.                            |
 | `token_blacklist.prisma`                                      | Revoked token ids with expiry.                                   |
 
-Admin users and frontend users must not share tables. Online-user management refers to frontend sessions only; admin sessions remain in `admin_user_session.prisma`.
+Admin users and frontend users must not share tables. Online-user management refers to frontend sessions only; admin sessions remain in `admin_user_session.prisma`. Runtime IAM data is loaded from these models by backend Prisma adapters; no schema-level demo seed toggle exists.
+
+Initial admin/IAM records are created only by explicit setup. After `pnpm db:push`, run `IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap` to create/update baseline permissions, system menus, roles, policies, field rules, and the first ACTIVE super administrator in the configured database.
 
 ## Current Persistence Domains
 
@@ -54,5 +57,6 @@ Admin users and frontend users must not share tables. Online-user management ref
 | `pnpm db:validate`                       | Run schema check and `prisma validate`.                                    |
 | `pnpm db:push`                           | Push schema to the configured database.                                    |
 | `pnpm db:studio`                         | Open Prisma Studio with shared env files.                                  |
+| `pnpm backend-admin:bootstrap`           | Create/update baseline IAM data and the first super administrator.         |
 | `pnpm --filter @tetap/prisma type-check` | Type-check package-level TypeScript wrappers.                              |
 | `pnpm --filter @tetap/prisma lint`       | Lint Prisma package scripts and helpers.                                   |

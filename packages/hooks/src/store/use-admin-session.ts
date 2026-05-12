@@ -42,7 +42,8 @@ const legacySecurityIdMap = new Map([
   ['iam', 'permissions'],
 ]);
 
-const normalizeMenuPath = (path: string) => legacySecurityPathMap.get(path) ?? path.replace(/^\/security\//, '/system/');
+const normalizeMenuPath = (path: string) =>
+  legacySecurityPathMap.get(path) ?? path.replace(/^\/security\//, '/system/');
 
 const dedupeMenus = (menus: readonly AdminSessionMenuNode[]) => {
   const seen = new Set<string>();
@@ -60,8 +61,9 @@ const dedupeMenus = (menus: readonly AdminSessionMenuNode[]) => {
 };
 
 const normalizeMenuNode = (menu: AdminSessionMenuNode, parentId?: string): AdminSessionMenuNode => {
-  const isLegacySecurityChild = parentId === 'system' || menu.parentId === 'security' || menu.path.startsWith('/security/');
-  const id = isLegacySecurityChild ? legacySecurityIdMap.get(menu.id) ?? menu.id : menu.id;
+  const isLegacySecurityChild =
+    parentId === 'system' || menu.parentId === 'security' || menu.path.startsWith('/security/');
+  const id = isLegacySecurityChild ? (legacySecurityIdMap.get(menu.id) ?? menu.id) : menu.id;
 
   return {
     ...menu,

@@ -3,6 +3,7 @@ import type { AppEnv } from '@tetap/config';
 import { describe, expect, it } from 'vitest';
 import { buildBackendAdminApp } from '../../../../apps/backend-admin/src/app.js';
 import { ErrorCode } from '../../../../apps/backend-admin/src/shared/error-code.js';
+import { createManagedIamTestFixtureService } from '../fixtures/iam.js';
 
 const smokeEnv = {
   NODE_ENV: 'test',
@@ -24,13 +25,15 @@ const smokeEnv = {
   AUTH_REFRESH_TOKEN_TTL_SECONDS: 604800,
   AES_SECRET_KEY: '12345678901234567890123456789012',
   AES_IV: '1234567890123456',
-  ENABLE_DEMO_SEED: false,
   SKIP_ROUTES: [],
 } satisfies AppEnv;
 
 describe('backend-admin smoke: GET /health', () => {
   it('boots the admin Fastify app and returns the unified health response', async () => {
-    const app = await buildBackendAdminApp({ env: smokeEnv });
+    const app = await buildBackendAdminApp({
+      env: smokeEnv,
+      iamService: createManagedIamTestFixtureService('tetap-auth-salt'),
+    });
 
     try {
       const response = await app.inject({

@@ -20,7 +20,7 @@ TETAP Agent Template은 AI 보조 개발을 위한 오픈소스 full-stack monor
 
 ## 주요 기능
 
-- **엔터프라이즈 IAM 기반**: JWT, RBAC, PBAC, 필드 권한, 동적 메뉴, 세션 무효화, 강제 로그아웃, 운영 로그.
+- **엔터프라이즈 IAM 기반**: JWT, RBAC, PBAC, 필드 권한, 동적 메뉴, 영속 세션, 토큰 블랙리스트, 강제 로그아웃, 운영 로그.
 - **Contract-first 개발**: request, response, form schema를 `@tetap/schema`에 두고 Zod로 재사용합니다.
 - **Scoped i18n**: site, public web, admin web, backend, backend-admin이 서로 다른 i18n entrypoint를 사용합니다.
 - **VitePress promotional site**: `apps/site`는 site 전용 i18n scope와 GitHub Pages 배포를 갖춘 기술 소개 사이트입니다.
@@ -33,8 +33,12 @@ TETAP Agent Template은 AI 보조 개발을 위한 오픈소스 full-stack monor
 
 ```sh
 pnpm install
+pnpm db:push
+IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap
 pnpm dev
 ```
+
+`backend-admin:bootstrap`은 기본 IAM 권한, 시스템 메뉴 트리, 역할, 정책, 필드 규칙, ACTIVE super administrator 한 명을 설정된 데이터베이스에 기록합니다. 런타임 seed나 fallback이 아니라 명시적인 setup 명령입니다. 기본 로그인 식별자는 `admin` / `admin@tetap.local`이며 password는 `IAM_BOOTSTRAP_ADMIN_PASSWORD` 값입니다.
 
 자주 사용하는 명령:
 
@@ -79,6 +83,7 @@ pnpm build
 - Pull Request는 변경 범위를 작게 유지하고 실행한 검증 명령을 설명에 남겨 주세요.
 - Code, exports, APIs, Prisma models, scripts, UI primitives를 변경하면 가까운 README와 관련 architecture docs도 같은 변경에서 업데이트하세요.
 - Package README는 현재 entrypoints, tools, helper methods, scripts, validation commands와 일치해야 합니다.
+- Frontend-facing 변경 후에는 `npx -y react-doctor@latest . --verbose --diff`를 한 번 실행하고, score/report를 검토한 뒤 실행 가능한 문제를 수정하세요.
 - 공개 issue에 secret, token, database connection string, exploit detail을 올리지 마세요.
 - 큰 변경 전에는 [AGENTS.md](AGENTS.md)와 [architecture docs](docs/Logical%20Architecture%20Diagram/README.md)를 읽어 주세요.
 

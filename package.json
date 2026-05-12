@@ -27,6 +27,7 @@
     "db:validate": "pnpm --filter @tetap/prisma validate",
     "db:push": "pnpm --filter @tetap/prisma push",
     "db:studio": "pnpm --filter @tetap/prisma studio",
+    "backend-admin:bootstrap": "pnpm --filter backend-admin bootstrap:admin",
     "clean": "turbo clean && rimraf .turbo node_modules/.cache",
     "backend:architecture:check": "node scripts/check-backend-architecture.mjs",
     "test": "turbo test --continue",

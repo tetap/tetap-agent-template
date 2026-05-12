@@ -7,7 +7,6 @@ export {
   normalizeBearerToken,
   redactSensitive,
 } from './engines.js';
-export { createDemoIamData } from './demo-data.js';
 export { signJwt, verifyJwt } from './jwt.js';
 export type {
   AuthenticatedUserContext,
@@ -25,10 +24,12 @@ export type {
   FieldPermission,
   FieldPermissionType,
   IamDataSet,
+  IamFrontendUser,
   IamJwtPayload,
   IamMutationMeta,
   IamMenu,
   IamMenuNode,
+  IamPersistenceAdapter,
   IamPermission,
   IamPolicy,
   IamRole,

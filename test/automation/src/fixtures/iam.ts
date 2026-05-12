@@ -1,5 +1,5 @@
-import { hashPassword } from './engines.js';
-import type { IamDataSet, PermissionCode } from './types.js';
+import { hashPassword, IamService } from '@tetap/iam';
+import type { IamDataSet, PermissionCode } from '@tetap/iam';
 
 const permissions = [
   ['iam:read', 'Read IAM overview', 'API', 'iam', 'read'],
@@ -18,10 +18,10 @@ const permissions = [
   ['data:read', 'Read data scopes', 'DATA', 'data', 'read'],
 ] as const;
 
-export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
+export const createIamTestFixtureData = (passwordSalt: string): IamDataSet => ({
   adminUsers: [
     {
-      id: '1',
+      id: 'admin-fixture-1',
       username: 'admin',
       email: 'admin@tetap.local',
       passwordHash: hashPassword('password1', passwordSalt),
@@ -33,7 +33,7 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       tokenVersion: 1,
     },
     {
-      id: '2',
+      id: 'admin-fixture-2',
       username: 'auditor',
       email: 'auditor@tetap.local',
       passwordHash: hashPassword('password1', passwordSalt),
@@ -45,11 +45,13 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       tokenVersion: 1,
     },
   ],
+  adminSessions: [],
   frontendUsers: [],
   frontendSessions: [],
+  tokenBlacklist: [],
   roles: [
     {
-      id: '1',
+      id: 'role-fixture-1',
       name: 'Super Admin',
       code: 'super-admin',
       description: 'Full IAM and platform administration.',
@@ -57,7 +59,7 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       dataScope: { type: 'ALL' },
     },
     {
-      id: '2',
+      id: 'role-fixture-2',
       name: 'Security Auditor',
       code: 'security-auditor',
       description: 'Read-only security and operation log visibility.',
@@ -75,7 +77,7 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
     },
   ],
   permissions: permissions.map(([code, name, type, resource, action], index) => ({
-    id: String(index + 1),
+    id: `permission-fixture-${index + 1}`,
     code: code as PermissionCode,
     name,
     type,
@@ -184,21 +186,21 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
   ],
   fieldPermissions: [
     {
-      id: '1',
+      id: 'field-permission-fixture-1',
       roleCode: 'security-auditor',
       resource: 'user',
       fieldName: 'email',
       permissionType: 'MASK',
     },
     {
-      id: '2',
+      id: 'field-permission-fixture-2',
       roleCode: 'security-auditor',
       resource: 'user',
       fieldName: 'phone',
       permissionType: 'MASK',
     },
     {
-      id: '3',
+      id: 'field-permission-fixture-3',
       roleCode: 'security-auditor',
       resource: 'user',
       fieldName: 'idCard',
@@ -207,7 +209,7 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
   ],
   policies: [
     {
-      id: '1',
+      id: 'policy-fixture-1',
       resource: 'session',
       action: 'revoke',
       effect: 'ALLOW',
@@ -229,7 +231,7 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       },
     },
     {
-      id: '2',
+      id: 'policy-fixture-2',
       resource: 'policy',
       action: 'update',
       effect: 'DENY',
@@ -245,4 +247,20 @@ export const createDemoIamData = (passwordSalt: string): IamDataSet => ({
       },
     },
   ],
+  operationLogs: [],
 });
+
+export const createIamTestFixtureService = (passwordSalt = 'unit-salt') =>
+  new IamService(createIamTestFixtureData(passwordSalt), {
+    accessTokenSecret: 'unit-access-secret',
+    refreshTokenSecret: 'unit-refresh-secret',
+    passwordSalt,
+  });
+
+export const createManagedIamTestFixtureService = (passwordSalt = 'unit-salt') => {
+  const iam = createIamTestFixtureService(passwordSalt) as IamService & { close: () => Promise<void> };
+
+  iam.close = async () => {};
+
+  return iam;
+};

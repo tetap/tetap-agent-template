@@ -20,7 +20,7 @@ TETAP Agent Template は、AI 支援開発向けのオープンソース full-st
 
 ## 主な特徴
 
-- **エンタープライズ IAM 基盤**: JWT、RBAC、PBAC、フィールド権限、動的メニュー、セッション失効、強制ログアウト、操作ログ。
+- **エンタープライズ IAM 基盤**: JWT、RBAC、PBAC、フィールド権限、動的メニュー、永続化セッション、トークン blacklist、強制ログアウト、操作ログ。
 - **Contract-first 開発**: request、response、form schema を `@tetap/schema` に集約し、Zod で再利用します。
 - **Scoped i18n**: site、public web、admin web、backend、backend-admin が別々の i18n entrypoint を使用します。
 - **VitePress promotional site**: `apps/site` は site 専用 i18n scope と GitHub Pages deployment を持つ技術紹介サイトです。
@@ -33,8 +33,12 @@ TETAP Agent Template は、AI 支援開発向けのオープンソース full-st
 
 ```sh
 pnpm install
+pnpm db:push
+IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap
 pnpm dev
 ```
+
+`backend-admin:bootstrap` は、基本 IAM permissions、system menu tree、roles、policies、field rules、ACTIVE super administrator を設定済み database に書き込みます。これは runtime seed や fallback ではなく、明示的な setup command です。デフォルトの login identifier は `admin` / `admin@tetap.local` で、password は `IAM_BOOTSTRAP_ADMIN_PASSWORD` の値です。
 
 よく使うコマンド:
 
@@ -79,6 +83,7 @@ pnpm build
 - Pull Request は変更範囲を小さく保ち、実行した validation commands を説明に記載してください。
 - Code、exports、APIs、Prisma models、scripts、UI primitives を変更した場合は、最寄りの README と関連 architecture docs も同じ変更で更新してください。
 - Package README は現在の entrypoints、tools、helper methods、scripts、validation commands と一致させてください。
+- Frontend-facing な変更後は `npx -y react-doctor@latest . --verbose --diff` を 1 回実行し、score/report を確認して実行可能な問題を修正してください。
 - public issue に secrets、tokens、database connection strings、exploit details を投稿しないでください。
 - 大きな変更の前に [AGENTS.md](AGENTS.md) と [architecture docs](docs/Logical%20Architecture%20Diagram/README.md) を確認してください。
 

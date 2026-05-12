@@ -18,5 +18,6 @@ All frontend and backend packages must load environment variables from this pack
 - `CORS_ORIGINS`, `BODY_LIMIT_BYTES`, `RATE_LIMIT_MAX`, and `RATE_LIMIT_WINDOW` drive Fastify security defaults.
 - `AUTH_SECRET`, `REFRESH_AUTH_SECRET`, `AUTH_SALT`, `AUTH_ACCESS_TOKEN_TTL_SECONDS`, and `AUTH_REFRESH_TOKEN_TTL_SECONDS` drive IAM JWT/session behavior.
 - `APP_ID`, `APP_SECRET`, `AES_SECRET_KEY`, and `AES_IV` are required application secrets and must be replaced outside local templates.
-- `ENABLE_DEMO_SEED=true` enables local demo IAM seed data, including the development admin account documented in `apps/backend-admin/README.md`.
 - `SKIP_ROUTES` is a comma-separated list for explicitly skipped route patterns.
+
+IAM data is not controlled by an env toggle. Backend runtimes read real persisted data through `@tetap/prisma`; initial admin users must be created by an explicit bootstrap/setup process.

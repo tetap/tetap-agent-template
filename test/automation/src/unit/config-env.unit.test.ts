@@ -27,12 +27,11 @@ describe('readAppEnv', () => {
       RATE_LIMIT_WINDOW: '1 minute',
       AUTH_ACCESS_TOKEN_TTL_SECONDS: 900,
       AUTH_REFRESH_TOKEN_TTL_SECONDS: 604800,
-      ENABLE_DEMO_SEED: false,
       SKIP_ROUTES: [],
     });
   });
 
-  it('parses numbers, booleans, and comma-separated route lists', () => {
+  it('parses numbers and comma-separated route lists', () => {
     expect(
       readAppEnv({
         ...requiredEnv,
@@ -40,7 +39,6 @@ describe('readAppEnv', () => {
         BACKEND_ADMIN_HOST: '127.0.0.1',
         BACKEND_ADMIN_PORT: '4001',
         CORS_ORIGINS: 'http://localhost:5173, http://localhost:5174 ,,',
-        ENABLE_DEMO_SEED: 'true',
         SKIP_ROUTES: '/health, /metrics ,,',
       }),
     ).toMatchObject({
@@ -48,7 +46,6 @@ describe('readAppEnv', () => {
       BACKEND_ADMIN_HOST: '127.0.0.1',
       BACKEND_ADMIN_PORT: 4001,
       CORS_ORIGINS: ['http://localhost:5173', 'http://localhost:5174'],
-      ENABLE_DEMO_SEED: true,
       SKIP_ROUTES: ['/health', '/metrics'],
     });
   });

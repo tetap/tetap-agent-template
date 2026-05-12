@@ -1,8 +1,8 @@
 model Department {
-  id        BigInt       @id @default(autoincrement())
+  id        String       @id @default(uuid())
   name      String
   code      String       @unique
-  parentId  BigInt?      @map("parent_id")
+  parentId  String?      @map("parent_id")
   tenantId  String?      @map("tenant_id")
   createdAt DateTime     @default(now()) @map("created_at")
   updatedAt DateTime     @updatedAt @map("updated_at")

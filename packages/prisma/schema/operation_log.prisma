@@ -1,7 +1,7 @@
 model OperationLog {
-  id               BigInt     @id @default(autoincrement())
+  id               String     @id @default(uuid())
   operator         String
-  operatorAdminUserId BigInt? @map("operator_admin_user_id")
+  operatorAdminUserId String? @map("operator_admin_user_id")
   operation        String
   operationItem    String     @map("operation_item")
   operationDetail  Json       @map("operation_detail")

@@ -8,14 +8,15 @@ import { registerI18nMiddleware } from './plugins/i18n.js';
 import { registerOperationLogMiddleware } from './plugins/operation-log.js';
 import { registerSecurityMiddleware } from './plugins/security.js';
 import { registerRoutes } from './routes/index.js';
-import { createIamService } from './shared/iam-service.js';
+import { createIamService, type ManagedIamService } from './shared/iam-service.js';
 import type { AppEnv } from '@tetap/config';
 
 export type BuildBackendAdminAppOptions = {
   env: AppEnv;
+  iamService?: ManagedIamService;
 };
 
-export const buildBackendAdminApp = async ({ env }: BuildBackendAdminAppOptions) => {
+export const buildBackendAdminApp = async ({ env, iamService }: BuildBackendAdminAppOptions) => {
   const app = fastify({
     bodyLimit: env.BODY_LIMIT_BYTES,
     logger: {
@@ -31,7 +32,14 @@ export const buildBackendAdminApp = async ({ env }: BuildBackendAdminAppOptions)
     trustProxy: true,
   });
 
-  app.decorate('iam', createIamService(env));
+  const iam = iamService ?? (await createIamService(env));
+
+  app.decorate('iam', iam);
+  app.addHook('onClose', async () => {
+    if (!iamService) {
+      await iam.close();
+    }
+  });
   registerErrorHandler(app);
   registerI18nMiddleware(app);
   registerSecurityMiddleware(app, env);

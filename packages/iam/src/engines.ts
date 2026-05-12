@@ -16,6 +16,7 @@ import type {
   IamJwtPayload,
   IamMenuNode,
   IamMutationMeta,
+  IamPersistenceAdapter,
   IamPolicy,
   IamSession,
   IamUser,
@@ -40,6 +41,7 @@ export type IamServiceOptions = {
   passwordSalt: string;
   accessTokenTtlSeconds?: number;
   refreshTokenTtlSeconds?: number;
+  persistence?: IamPersistenceAdapter;
   now?: () => Date;
 };
 
@@ -96,7 +98,8 @@ const legacySecurityIdMap = new Map([
   ['iam', 'permissions'],
 ]);
 
-const normalizeMenuPath = (path: string) => legacySecurityPathMap.get(path) ?? path.replace(/^\/security\//, '/system/');
+const normalizeMenuPath = (path: string) =>
+  legacySecurityPathMap.get(path) ?? path.replace(/^\/security\//, '/system/');
 
 const normalizeAdminMenu = (menu: IamMenu, hasSystemRoot: boolean): IamMenu | null => {
   if ((menu.id === 'security' || menu.path === '/security') && hasSystemRoot) {
@@ -235,22 +238,32 @@ export const redactSensitive = (input: unknown): unknown => {
 export class IamService {
   private readonly data: IamDataSet;
   private readonly options: Required<IamServiceOptions>;
+  private readonly persistence?: IamPersistenceAdapter;
   private readonly adminSessions = new Map<string, IamSession>();
   private readonly frontendSessions = new Map<string, IamSession>();
   private readonly blacklistedTokenIds = new Map<string, string>();
-  private readonly operationLogs: OperationLog[] = [];
+  private readonly operationLogs: OperationLog[];
 
   constructor(data: IamDataSet, options: IamServiceOptions) {
     this.data = data;
+    for (const session of data.adminSessions) {
+      this.adminSessions.set(session.id, session);
+    }
     for (const session of data.frontendSessions) {
       this.frontendSessions.set(session.id, session);
     }
+    for (const token of data.tokenBlacklist) {
+      this.blacklistedTokenIds.set(token.tokenId, token.expiresAt);
+    }
+    this.operationLogs = [...data.operationLogs];
+    this.persistence = options.persistence;
     this.options = {
       accessTokenSecret: options.accessTokenSecret,
       refreshTokenSecret: options.refreshTokenSecret,
       passwordSalt: options.passwordSalt,
       accessTokenTtlSeconds: options.accessTokenTtlSeconds ?? defaultAccessTokenTtlSeconds,
       refreshTokenTtlSeconds: options.refreshTokenTtlSeconds ?? defaultRefreshTokenTtlSeconds,
+      persistence: options.persistence ?? {},
       now: options.now ?? (() => new Date()),
     };
   }
@@ -279,7 +292,7 @@ export class IamService {
     return [...this.operationLogs].sort((left, right) => right.operationTime.localeCompare(left.operationTime));
   }
 
-  createUser(input: CreateUserInput, meta: IamMutationMeta = {}) {
+  async createUser(input: CreateUserInput, meta: IamMutationMeta = {}) {
     ensureNoDuplicate(
       this.data.adminUsers,
       user => normalizeComparable(user.username) === normalizeComparable(input.username),
@@ -306,7 +319,8 @@ export class IamService {
     };
 
     this.data.adminUsers.push(user);
-    this.recordIamMutation('user', user.id, 'create', meta, {
+    await this.persistence?.upsertAdminUser?.(user);
+    await this.recordIamMutation('user', user.id, 'create', meta, {
       username: user.username,
       roleCodes: user.roleCodes,
       status: user.status,
@@ -315,7 +329,7 @@ export class IamService {
     return omitPasswordHash(user);
   }
 
-  updateUser(userId: string, input: UpdateUserInput, meta: IamMutationMeta = {}) {
+  async updateUser(userId: string, input: UpdateUserInput, meta: IamMutationMeta = {}) {
     const user = this.findUserOrThrow(userId);
 
     const nextUsername = input.username;
@@ -360,10 +374,11 @@ export class IamService {
     });
 
     if (shouldInvalidateSessions) {
-      this.revokeAdminUserSessions(user.id, 'admin-security-state-changed', meta.actorUserId);
+      await this.revokeAdminUserSessions(user.id, 'admin-security-state-changed', meta.actorUserId);
     }
 
-    this.recordIamMutation('user', user.id, 'update', meta, {
+    await this.persistence?.upsertAdminUser?.(user);
+    await this.recordIamMutation('user', user.id, 'update', meta, {
       username: user.username,
       roleCodes: user.roleCodes,
       status: user.status,
@@ -372,7 +387,7 @@ export class IamService {
     return omitPasswordHash(user);
   }
 
-  deleteUser(userId: string, meta: IamMutationMeta = {}) {
+  async deleteUser(userId: string, meta: IamMutationMeta = {}) {
     const user = this.findUserOrThrow(userId);
 
     if (meta.actorUserId === userId) {
@@ -381,9 +396,10 @@ export class IamService {
 
     this.assertSuperAdminStillExists(user, { isSuperAdmin: false, status: 'DISABLED' });
     this.data.adminUsers = this.data.adminUsers.filter(item => item.id !== userId);
-    const revokedSessions = this.revokeAdminUserSessions(userId, 'admin-user-deleted', meta.actorUserId);
+    const revokedSessions = await this.revokeAdminUserSessions(userId, 'admin-user-deleted', meta.actorUserId);
+    await this.persistence?.deleteAdminUser?.(userId);
 
-    this.recordIamMutation('user', userId, 'delete', meta, {
+    await this.recordIamMutation('user', userId, 'delete', meta, {
       username: user.username,
       revokedSessions: revokedSessions.length,
     });
@@ -391,7 +407,7 @@ export class IamService {
     return omitPasswordHash(user);
   }
 
-  createRole(input: CreateRoleInput, meta: IamMutationMeta = {}) {
+  async createRole(input: CreateRoleInput, meta: IamMutationMeta = {}) {
     ensureNoDuplicate(
       this.data.roles,
       role => normalizeComparable(role.code) === normalizeComparable(input.code),
@@ -409,12 +425,13 @@ export class IamService {
     };
 
     this.data.roles.push(role);
-    this.recordIamMutation('role', role.id, 'create', meta, { code: role.code });
+    await this.persistence?.upsertRole?.(role);
+    await this.recordIamMutation('role', role.id, 'create', meta, { code: role.code });
 
     return role;
   }
 
-  updateRole(roleId: string, input: UpdateRoleInput, meta: IamMutationMeta = {}) {
+  async updateRole(roleId: string, input: UpdateRoleInput, meta: IamMutationMeta = {}) {
     const role = this.findRoleOrThrow(roleId);
     const oldCode = role.code;
 
@@ -452,12 +469,13 @@ export class IamService {
       }
     }
 
-    this.recordIamMutation('role', role.id, 'update', meta, { code: role.code });
+    await this.persistence?.upsertRole?.(role);
+    await this.recordIamMutation('role', role.id, 'update', meta, { code: role.code });
 
     return role;
   }
 
-  deleteRole(roleId: string, meta: IamMutationMeta = {}) {
+  async deleteRole(roleId: string, meta: IamMutationMeta = {}) {
     const role = this.findRoleOrThrow(roleId);
 
     if (this.data.adminUsers.some(user => user.roleCodes.includes(role.code))) {
@@ -466,12 +484,13 @@ export class IamService {
 
     this.data.roles = this.data.roles.filter(item => item.id !== roleId);
     this.data.fieldPermissions = this.data.fieldPermissions.filter(item => item.roleCode !== role.code);
-    this.recordIamMutation('role', role.id, 'delete', meta, { code: role.code });
+    await this.persistence?.deleteRole?.(roleId);
+    await this.recordIamMutation('role', role.id, 'delete', meta, { code: role.code });
 
     return role;
   }
 
-  createPermission(input: CreatePermissionInput, meta: IamMutationMeta = {}) {
+  async createPermission(input: CreatePermissionInput, meta: IamMutationMeta = {}) {
     ensureNoDuplicate(
       this.data.permissions,
       permission => permission.code === input.code,
@@ -488,12 +507,13 @@ export class IamService {
     };
 
     this.data.permissions.push(permission);
-    this.recordIamMutation('permission', permission.id, 'create', meta, { code: permission.code });
+    await this.persistence?.upsertPermission?.(permission);
+    await this.recordIamMutation('permission', permission.id, 'create', meta, { code: permission.code });
 
     return permission;
   }
 
-  updatePermission(permissionId: string, input: UpdatePermissionInput, meta: IamMutationMeta = {}) {
+  async updatePermission(permissionId: string, input: UpdatePermissionInput, meta: IamMutationMeta = {}) {
     const permission = this.findPermissionOrThrow(permissionId);
     const oldCode = permission.code;
 
@@ -523,12 +543,13 @@ export class IamService {
       }
     }
 
-    this.recordIamMutation('permission', permission.id, 'update', meta, { code: permission.code });
+    await this.persistence?.upsertPermission?.(permission);
+    await this.recordIamMutation('permission', permission.id, 'update', meta, { code: permission.code });
 
     return permission;
   }
 
-  deletePermission(permissionId: string, meta: IamMutationMeta = {}) {
+  async deletePermission(permissionId: string, meta: IamMutationMeta = {}) {
     const permission = this.findPermissionOrThrow(permissionId);
 
     if (
@@ -539,12 +560,13 @@ export class IamService {
     }
 
     this.data.permissions = this.data.permissions.filter(item => item.id !== permissionId);
-    this.recordIamMutation('permission', permission.id, 'delete', meta, { code: permission.code });
+    await this.persistence?.deletePermission?.(permissionId);
+    await this.recordIamMutation('permission', permission.id, 'delete', meta, { code: permission.code });
 
     return permission;
   }
 
-  createMenu(input: CreateMenuInput, meta: IamMutationMeta = {}) {
+  async createMenu(input: CreateMenuInput, meta: IamMutationMeta = {}) {
     this.assertMenuParentExists(input.parentId);
     this.assertPermissionCodesExist(input.permissionCodes ?? []);
 
@@ -560,12 +582,13 @@ export class IamService {
     };
 
     this.data.menus.push(menu);
-    this.recordIamMutation('menu', menu.id, 'create', meta, { path: menu.path });
+    await this.persistence?.upsertMenu?.(menu);
+    await this.recordIamMutation('menu', menu.id, 'create', meta, { path: menu.path });
 
     return menu;
   }
 
-  updateMenu(menuId: string, input: UpdateMenuInput, meta: IamMutationMeta = {}) {
+  async updateMenu(menuId: string, input: UpdateMenuInput, meta: IamMutationMeta = {}) {
     const menu = this.findMenuOrThrow(menuId);
 
     if (input.parentId === menuId) {
@@ -588,12 +611,13 @@ export class IamService {
       order: input.order,
     });
 
-    this.recordIamMutation('menu', menu.id, 'update', meta, { path: menu.path });
+    await this.persistence?.upsertMenu?.(menu);
+    await this.recordIamMutation('menu', menu.id, 'update', meta, { path: menu.path });
 
     return menu;
   }
 
-  deleteMenu(menuId: string, meta: IamMutationMeta = {}) {
+  async deleteMenu(menuId: string, meta: IamMutationMeta = {}) {
     const menu = this.findMenuOrThrow(menuId);
 
     if (this.data.menus.some(item => item.parentId === menuId)) {
@@ -601,12 +625,13 @@ export class IamService {
     }
 
     this.data.menus = this.data.menus.filter(item => item.id !== menuId);
-    this.recordIamMutation('menu', menu.id, 'delete', meta, { path: menu.path });
+    await this.persistence?.deleteMenu?.(menuId);
+    await this.recordIamMutation('menu', menu.id, 'delete', meta, { path: menu.path });
 
     return menu;
   }
 
-  createFieldPermission(input: CreateFieldPermissionInput, meta: IamMutationMeta = {}) {
+  async createFieldPermission(input: CreateFieldPermissionInput, meta: IamMutationMeta = {}) {
     this.assertRoleCodesExist([input.roleCode]);
     ensureNoDuplicate(
       this.data.fieldPermissions,
@@ -624,7 +649,8 @@ export class IamService {
     };
 
     this.data.fieldPermissions.push(fieldPermission);
-    this.recordIamMutation('field-permission', fieldPermission.id, 'create', meta, {
+    await this.persistence?.upsertFieldPermission?.(fieldPermission);
+    await this.recordIamMutation('field-permission', fieldPermission.id, 'create', meta, {
       roleCode: fieldPermission.roleCode,
       resource: fieldPermission.resource,
       fieldName: fieldPermission.fieldName,
@@ -633,7 +659,11 @@ export class IamService {
     return fieldPermission;
   }
 
-  updateFieldPermission(fieldPermissionId: string, input: UpdateFieldPermissionInput, meta: IamMutationMeta = {}) {
+  async updateFieldPermission(
+    fieldPermissionId: string,
+    input: UpdateFieldPermissionInput,
+    meta: IamMutationMeta = {},
+  ) {
     const fieldPermission = this.findFieldPermissionOrThrow(fieldPermissionId);
     const nextRoleCode = input.roleCode ?? fieldPermission.roleCode;
     const nextResource = input.resource ?? fieldPermission.resource;
@@ -657,7 +687,8 @@ export class IamService {
       permissionType: input.permissionType,
     });
 
-    this.recordIamMutation('field-permission', fieldPermission.id, 'update', meta, {
+    await this.persistence?.upsertFieldPermission?.(fieldPermission);
+    await this.recordIamMutation('field-permission', fieldPermission.id, 'update', meta, {
       roleCode: fieldPermission.roleCode,
       resource: fieldPermission.resource,
       fieldName: fieldPermission.fieldName,
@@ -666,11 +697,12 @@ export class IamService {
     return fieldPermission;
   }
 
-  deleteFieldPermission(fieldPermissionId: string, meta: IamMutationMeta = {}) {
+  async deleteFieldPermission(fieldPermissionId: string, meta: IamMutationMeta = {}) {
     const fieldPermission = this.findFieldPermissionOrThrow(fieldPermissionId);
 
     this.data.fieldPermissions = this.data.fieldPermissions.filter(item => item.id !== fieldPermissionId);
-    this.recordIamMutation('field-permission', fieldPermission.id, 'delete', meta, {
+    await this.persistence?.deleteFieldPermission?.(fieldPermissionId);
+    await this.recordIamMutation('field-permission', fieldPermission.id, 'delete', meta, {
       roleCode: fieldPermission.roleCode,
       resource: fieldPermission.resource,
       fieldName: fieldPermission.fieldName,
@@ -679,7 +711,7 @@ export class IamService {
     return fieldPermission;
   }
 
-  createPolicy(input: CreatePolicyInput, meta: IamMutationMeta = {}) {
+  async createPolicy(input: CreatePolicyInput, meta: IamMutationMeta = {}) {
     const policy = {
       id: createEntityId(),
       resource: input.resource.trim(),
@@ -691,7 +723,8 @@ export class IamService {
     };
 
     this.data.policies.push(policy);
-    this.recordIamMutation('policy', policy.id, 'create', meta, {
+    await this.persistence?.upsertPolicy?.(policy);
+    await this.recordIamMutation('policy', policy.id, 'create', meta, {
       resource: policy.resource,
       action: policy.action,
       effect: policy.effect,
@@ -700,7 +733,7 @@ export class IamService {
     return policy;
   }
 
-  updatePolicy(policyId: string, input: UpdatePolicyInput, meta: IamMutationMeta = {}) {
+  async updatePolicy(policyId: string, input: UpdatePolicyInput, meta: IamMutationMeta = {}) {
     const policy = this.findPolicyOrThrow(policyId);
 
     patchDefined(policy, {
@@ -712,7 +745,8 @@ export class IamService {
       enabled: input.enabled,
     });
 
-    this.recordIamMutation('policy', policy.id, 'update', meta, {
+    await this.persistence?.upsertPolicy?.(policy);
+    await this.recordIamMutation('policy', policy.id, 'update', meta, {
       resource: policy.resource,
       action: policy.action,
       effect: policy.effect,
@@ -721,11 +755,12 @@ export class IamService {
     return policy;
   }
 
-  deletePolicy(policyId: string, meta: IamMutationMeta = {}) {
+  async deletePolicy(policyId: string, meta: IamMutationMeta = {}) {
     const policy = this.findPolicyOrThrow(policyId);
 
     this.data.policies = this.data.policies.filter(item => item.id !== policyId);
-    this.recordIamMutation('policy', policy.id, 'delete', meta, {
+    await this.persistence?.deletePolicy?.(policyId);
+    await this.recordIamMutation('policy', policy.id, 'delete', meta, {
       resource: policy.resource,
       action: policy.action,
       effect: policy.effect,
@@ -897,7 +932,7 @@ export class IamService {
     const user = this.findUserByUsername(input.username);
 
     if (!user || user.status !== 'ACTIVE' || !this.verifyPassword(user, input.password)) {
-      this.recordOperation({
+      await this.recordOperation({
         operation: 'LOGIN',
         operationItem: 'auth:login',
         resource: 'auth',
@@ -912,8 +947,9 @@ export class IamService {
     const tokenPair = this.issueTokenPair(user, input);
     const capabilities = this.getCapabilitiesForUser(user);
     const menus = this.getMenuTree(user);
+    await this.persistence?.upsertAdminSession?.(tokenPair.session);
 
-    this.recordOperation({
+    await this.recordOperation({
       actorUserId: user.id,
       operation: 'LOGIN',
       operationItem: 'auth:login',
@@ -925,14 +961,18 @@ export class IamService {
     });
 
     return {
-      ...tokenPair,
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
+      accessTokenExpiresAt: tokenPair.accessTokenExpiresAt,
+      refreshTokenExpiresAt: tokenPair.refreshTokenExpiresAt,
+      tokenId: tokenPair.tokenId,
       user: omitPasswordHash(user),
       capabilities,
       menus,
     };
   }
 
-  refresh(refreshToken: string) {
+  async refresh(refreshToken: string) {
     const payload = verifyJwt(refreshToken, this.options.refreshTokenSecret, toEpochSeconds(this.options.now()));
 
     if (payload.type !== 'refresh') {
@@ -945,9 +985,10 @@ export class IamService {
       ip: context.session.ip,
       userAgent: context.session.userAgent,
     });
+    await this.persistence?.upsertAdminSession?.(tokenPair.session);
 
-    this.revokeAdminSession(context.session.id, 'refresh-rotated', context.user.id);
-    this.recordOperation({
+    await this.revokeAdminSession(context.session.id, 'refresh-rotated', context.user.id);
+    await this.recordOperation({
       actorUserId: context.user.id,
       operation: 'REFRESH',
       operationItem: 'auth:refresh',
@@ -958,10 +999,16 @@ export class IamService {
       userAgent: context.session.userAgent,
     });
 
-    return tokenPair;
+    return {
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
+      accessTokenExpiresAt: tokenPair.accessTokenExpiresAt,
+      refreshTokenExpiresAt: tokenPair.refreshTokenExpiresAt,
+      tokenId: tokenPair.tokenId,
+    };
   }
 
-  verifyAccessToken(accessToken: string): AuthenticatedUserContext {
+  async verifyAccessToken(accessToken: string): Promise<AuthenticatedUserContext> {
     const payload = verifyJwt(accessToken, this.options.accessTokenSecret, toEpochSeconds(this.options.now()));
 
     if (payload.type !== 'access') {
@@ -969,7 +1016,7 @@ export class IamService {
     }
 
     const context = this.resolveTokenContext(payload);
-    this.touchSession(context.session.id);
+    await this.touchSession(context.session.id);
 
     return {
       user: omitPasswordHash(context.user),
@@ -979,9 +1026,9 @@ export class IamService {
     };
   }
 
-  logout(accessToken: string) {
-    const context = this.verifyAccessToken(accessToken);
-    this.revokeAdminSession(context.session.id, 'logout', context.user.id);
+  async logout(accessToken: string) {
+    const context = await this.verifyAccessToken(accessToken);
+    await this.revokeAdminSession(context.session.id, 'logout', context.user.id);
 
     return { revoked: true };
   }
@@ -1000,7 +1047,7 @@ export class IamService {
       .sort((left, right) => right.lastActiveTime.localeCompare(left.lastActiveTime));
   }
 
-  revokeSession(sessionId: string, reason = 'admin-forced-offline', actorUserId?: string) {
+  async revokeSession(sessionId: string, reason = 'admin-forced-offline', actorUserId?: string) {
     const session = this.frontendSessions.get(sessionId);
 
     if (!session) {
@@ -1017,8 +1064,10 @@ export class IamService {
 
     this.frontendSessions.set(sessionId, revokedSession);
     this.blacklistedTokenIds.set(session.tokenId, revokedSession.expiresAt);
+    await this.persistence?.upsertFrontendSession?.(revokedSession);
+    await this.persistence?.upsertTokenBlacklist?.(session.tokenId, revokedSession.expiresAt, reason);
     this.pruneExpiredBlacklistedTokenIds();
-    this.recordOperation({
+    await this.recordOperation({
       actorUserId,
       operation: reason === 'logout' ? 'LOGOUT' : 'FORCE_LOGOUT',
       operationItem: `session:${sessionId}`,
@@ -1033,17 +1082,23 @@ export class IamService {
     return revokedSession;
   }
 
-  revokeUserSessions(userId: string, reason = 'admin-forced-offline', actorUserId?: string) {
-    return this.listSessions()
-      .filter(session => session.userId === userId && session.status === 'ONLINE')
-      .flatMap(session => {
-        const revokedSession = this.revokeSession(session.id, reason, actorUserId);
+  async revokeUserSessions(userId: string, reason = 'admin-forced-offline', actorUserId?: string) {
+    const revokedSessions = [];
 
-        return revokedSession ? [revokedSession] : [];
-      });
+    for (const session of this.listSessions().filter(
+      session => session.userId === userId && session.status === 'ONLINE',
+    )) {
+      const revokedSession = await this.revokeSession(session.id, reason, actorUserId);
+
+      if (revokedSession) {
+        revokedSessions.push(revokedSession);
+      }
+    }
+
+    return revokedSessions;
   }
 
-  private revokeAdminSession(sessionId: string, reason = 'admin-forced-offline', actorUserId?: string) {
+  private async revokeAdminSession(sessionId: string, reason = 'admin-forced-offline', actorUserId?: string) {
     const session = this.adminSessions.get(sessionId);
 
     if (!session) {
@@ -1060,8 +1115,10 @@ export class IamService {
 
     this.adminSessions.set(sessionId, revokedSession);
     this.blacklistedTokenIds.set(session.tokenId, revokedSession.expiresAt);
+    await this.persistence?.upsertAdminSession?.(revokedSession);
+    await this.persistence?.upsertTokenBlacklist?.(session.tokenId, revokedSession.expiresAt, reason);
     this.pruneExpiredBlacklistedTokenIds();
-    this.recordOperation({
+    await this.recordOperation({
       actorUserId,
       operation: reason === 'logout' ? 'LOGOUT' : 'FORCE_LOGOUT',
       operationItem: `admin-session:${sessionId}`,
@@ -1076,17 +1133,37 @@ export class IamService {
     return revokedSession;
   }
 
-  private revokeAdminUserSessions(userId: string, reason = 'admin-forced-offline', actorUserId?: string) {
-    return [...this.adminSessions.values()]
-      .filter(session => session.userId === userId && session.status === 'ONLINE')
-      .flatMap(session => {
-        const revokedSession = this.revokeAdminSession(session.id, reason, actorUserId);
+  private async revokeAdminUserSessions(userId: string, reason = 'admin-forced-offline', actorUserId?: string) {
+    const revokedSessions = [];
 
-        return revokedSession ? [revokedSession] : [];
-      });
+    for (const session of [...this.adminSessions.values()].filter(
+      session => session.userId === userId && session.status === 'ONLINE',
+    )) {
+      const revokedSession = await this.revokeAdminSession(session.id, reason, actorUserId);
+
+      if (revokedSession) {
+        revokedSessions.push(revokedSession);
+      }
+    }
+
+    return revokedSessions;
   }
 
   recordOperation(input: {
+    actorUserId?: string;
+    operation: OperationAction;
+    operationItem: string;
+    resource: string;
+    resourceId?: string;
+    ip?: string;
+    userAgent?: string;
+    result: 'SUCCESS' | 'FAILURE';
+    detail: Record<string, unknown>;
+  }) {
+    return this.persistOperation(input);
+  }
+
+  private async persistOperation(input: {
     actorUserId?: string;
     operation: OperationAction;
     operationItem: string;
@@ -1113,6 +1190,7 @@ export class IamService {
     };
 
     this.operationLogs.unshift(event);
+    await this.persistence?.recordOperation?.(event);
 
     return event;
   }
@@ -1232,14 +1310,14 @@ export class IamService {
     }
   }
 
-  private recordIamMutation(
+  private async recordIamMutation(
     resource: string,
     resourceId: string,
     operation: 'create' | 'update' | 'delete',
     meta: IamMutationMeta,
     detail: Record<string, unknown>,
   ) {
-    this.recordOperation({
+    await this.recordOperation({
       actorUserId: meta.actorUserId,
       operation: 'IAM_MUTATION',
       operationItem: `${resource}:${resourceId}`,
@@ -1252,7 +1330,12 @@ export class IamService {
     });
   }
 
-  private issueTokenPair(user: IamUser, input: Omit<LoginInput, 'username' | 'password'>): AuthTokenPair {
+  private issueTokenPair(
+    user: IamUser,
+    input: Omit<LoginInput, 'username' | 'password'>,
+  ): AuthTokenPair & {
+    session: IamSession;
+  } {
     const now = this.options.now();
     const nowSeconds = toEpochSeconds(now);
     const tokenId = randomUUID();
@@ -1299,6 +1382,7 @@ export class IamService {
       accessTokenExpiresAt: toIso(accessExpiresAt),
       refreshTokenExpiresAt: toIso(refreshExpiresAt),
       tokenId,
+      session,
     };
   }
 
@@ -1346,17 +1430,20 @@ export class IamService {
     }
   }
 
-  private touchSession(sessionId: string) {
+  private async touchSession(sessionId: string) {
     const session = this.adminSessions.get(sessionId);
 
     if (!session || session.status !== 'ONLINE') {
       return;
     }
 
-    this.adminSessions.set(sessionId, {
+    const touchedSession = {
       ...session,
       lastActiveTime: toIso(this.options.now()),
-    });
+    };
+
+    this.adminSessions.set(sessionId, touchedSession);
+    await this.persistence?.upsertAdminSession?.(touchedSession);
   }
 }
 

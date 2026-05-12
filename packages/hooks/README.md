@@ -22,6 +22,7 @@
 | `useIsMobile`                  | shared responsive media-query hook.                                  |
 | `useDisclosure`                | Open/close/toggle helper for dialogs, sheets, and popovers.          |
 | `useIsMounted`                 | Mounted-state ref for async React safety checks.                     |
+| `useToast` / `toast`           | shadcn toast state helper consumed by shared UI toaster components.  |
 | `useZodForm`                   | React Hook Form wrapper wired to a Zod resolver.                     |
 
 ## Rules
@@ -38,6 +39,7 @@
   - Store action: `setTheme`, persisted in `localStorage` under `tetap-admin-theme`.
 - `useAdminThemeEffect` applies the selected theme and listens to system color-scheme changes.
 - `useAdminT` / `usePublicT` expose scoped translation helpers without leaking locale modules across apps.
+- `useToast` and `toast` provide the shared toast state/action API while UI rendering stays in `@tetap/ui`.
 - `useZodForm` accepts any compatible Zod schema and returns `UseFormReturn` with the resolver already configured.
 
 ## Scripts

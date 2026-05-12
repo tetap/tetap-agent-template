@@ -1,6 +1,6 @@
 model AdminUserRole {
-  adminUserId BigInt    @map("admin_user_id")
-  roleId      BigInt    @map("role_id")
+  adminUserId String    @map("admin_user_id")
+  roleId      String    @map("role_id")
   createdAt   DateTime  @default(now()) @map("created_at")
   adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
   role        Role      @relation(fields: [roleId], references: [id], onDelete: Cascade)

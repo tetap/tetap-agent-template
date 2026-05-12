@@ -20,7 +20,7 @@ TETAP Agent Template is an open-source full-stack monorepo template for AI-assis
 
 ## Highlights
 
-- **Enterprise IAM foundation**: JWT, RBAC, PBAC, field permissions, dynamic menus, session invalidation, forced logout, and operation logs.
+- **Enterprise IAM foundation**: JWT, RBAC, PBAC, field permissions, dynamic menus, persisted sessions, token blacklists, forced logout, and operation logs.
 - **Contract-first development**: request, response, and form contracts live in `@tetap/schema` and use Zod.
 - **Scoped i18n**: site, public web, admin web, public backend, and backend-admin use isolated i18n entrypoints.
 - **VitePress promotional site**: `apps/site` provides a polished technical landing page, continuous scroll story, GitHub Pages deployment, and site-scoped copy.
@@ -33,8 +33,12 @@ TETAP Agent Template is an open-source full-stack monorepo template for AI-assis
 
 ```sh
 pnpm install
+pnpm db:push
+IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap
 pnpm dev
 ```
+
+The bootstrap command writes baseline IAM permissions, the system menu tree, roles, policies, field rules, and one active super administrator into the configured database. It is an explicit setup command, not a runtime seed or fallback. Default login identifier is `admin` / `admin@tetap.local`; the password is the value you provide through `IAM_BOOTSTRAP_ADMIN_PASSWORD`.
 
 Common commands:
 
@@ -125,6 +129,7 @@ flowchart LR
 | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | Quality gates, test strategy, build, and delivery rules.                               |
 | [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress promotional site architecture and boundaries.                                |
 | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | Long-term memory for syncing multi-step plans to todolists.                            |
+| [docs/memory/frontend-react-doctor-workflow.md](docs/memory/frontend-react-doctor-workflow.md)                                   | Long-term memory for running React Doctor after frontend changes.                      |
 | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | Long-term memory for keeping README and architecture docs accurate after code changes. |
 | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | Unit, Browser, smoke, and targeted testing memory.                                     |
 | [docs/todolists](docs/todolists)                                                                                                 | Checkbox execution records for planned tasks.                                          |
@@ -152,6 +157,7 @@ flowchart LR
 | `pnpm backend:architecture:check`       | Verify Fastify routes remain registration-only.                             |
 | `pnpm db:generate` / `pnpm db:validate` | Generate or validate Prisma Client and schema.                              |
 | `pnpm db:push` / `pnpm db:studio`       | Push database schema or open Prisma Studio.                                 |
+| `pnpm backend-admin:bootstrap`          | Create/update baseline IAM records and the first super administrator.       |
 | `pnpm clean`                            | Clean build caches and outputs.                                             |
 
 ## Contributing
@@ -203,6 +209,7 @@ flowchart LR
 - Permission, session, policy, field permission, data permission, and operation-log algorithms live in `@tetap/iam`.
 - HTTP request/response contracts still start in `@tetap/schema`.
 - Persistence models are maintained only through `@tetap/prisma`.
+- Backend runtimes must load real IAM data from persistence; runtime mock/demo/fallback IAM data is forbidden.
 - Frontend capabilities only control UI visibility; backend auth hooks and policy engine make final decisions.
 - Field-level permissions must be trimmed or masked on the backend before data reaches clients.
 - Tokens must be revocable: JWT requires token id, session state, and token version checks.
@@ -242,6 +249,7 @@ flowchart LR
 - Smoke tests live in `test/automation/src/smoke`; designs are recorded in `test/automation/SMOKE_TEST_DESIGN.md`.
 - Prefer `pnpm test:affected` or relevant `pnpm test:*:target` commands during development.
 - Update `test/automation/src/support/test-selection.ts` when modules, tests, or impact relationships change.
+- After frontend-facing changes, run `npx -y react-doctor@latest . --verbose --diff`, review the score/report, and fix actionable issues before handoff.
 
 ### Planning Rules
 

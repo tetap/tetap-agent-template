@@ -122,6 +122,9 @@ importers:
       '@tetap/iam':
         specifier: workspace:*
         version: link:../../packages/iam
+      '@tetap/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
       '@tetap/schema':
         specifier: workspace:*
         version: link:../../packages/schema
@@ -149,6 +152,9 @@ importers:
       '@tetap/iam':
         specifier: workspace:*
         version: link:../../packages/iam
+      '@tetap/prisma':
+        specifier: workspace:*
+        version: link:../../packages/prisma
       '@tetap/schema':
         specifier: workspace:*
         version: link:../../packages/schema

@@ -8,13 +8,14 @@
 
 - JWT HMAC sign/verify helper。
 - Stateful session manager、token id、token version、clock-aware expiry、forced-offline invalidation、token blacklist cleanup。
-- Admin user sessions and frontend user online sessions are separate; online-user management only exposes real frontend sessions and does not seed fake online rows。
+- Admin user sessions and frontend user online sessions are separate; online-user management only exposes real frontend sessions。
 - RBAC capability resolution and route permission checks。
 - Dynamic menu filtering。
 - Field permission filtering and masking。
 - Data-scope query constraint builder。
 - ABAC/PBAC policy condition evaluation。
 - Operation-log creation and sensitive-field redaction。
+- Optional persistence adapter contract for backend runtimes to store mutations, sessions, token blacklist entries, and operation logs without coupling this package to Prisma。
 
 ## 主要公开方法
 
@@ -32,13 +33,13 @@
 
 ## 边界
 
-| Layer                | Responsibility                                                |
-| -------------------- | ------------------------------------------------------------- |
-| `@tetap/iam`         | Pure IAM engines and in-memory service for local smoke.       |
-| `@tetap/schema`      | IAM HTTP request/response Zod contracts.                      |
-| `@tetap/prisma`      | IAM persistence models.                                       |
-| `apps/backend-admin` | Admin IAM routes, services, auth plugin, and API enforcement. |
-| `apps/web-admin`     | Admin IAM UI composition and backend-admin API client.        |
+| Layer                | Responsibility                                                                |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `@tetap/iam`         | Pure IAM engines and optional persistence adapter contract.                   |
+| `@tetap/schema`      | IAM HTTP request/response Zod contracts.                                      |
+| `@tetap/prisma`      | IAM persistence models.                                                       |
+| `apps/backend-admin` | Admin IAM routes, services, Prisma adapter, auth plugin, and API enforcement. |
+| `apps/web-admin`     | Admin IAM UI composition and backend-admin API client.                        |
 
 ## 规则
 

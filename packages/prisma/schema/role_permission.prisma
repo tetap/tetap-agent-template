@@ -1,6 +1,6 @@
 model RolePermission {
-  roleId       BigInt     @map("role_id")
-  permissionId BigInt     @map("permission_id")
+  roleId       String     @map("role_id")
+  permissionId String     @map("permission_id")
   createdAt    DateTime   @default(now()) @map("created_at")
   role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
   permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)

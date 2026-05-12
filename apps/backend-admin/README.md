@@ -79,34 +79,35 @@ POST   /iam/users/:userId/revoke-sessions
 GET    /iam/operation-logs
 ```
 
-Online-session routes only manage real frontend user sessions. Admin sessions are private auth infrastructure and are not returned by online-user APIs; local IAM seed data does not create fake online users.
+Online-session routes only manage real frontend user sessions. Admin sessions are private auth infrastructure and are not returned by online-user APIs.
 
-## Local Demo Account
+## IAM Persistence
 
-When `ENABLE_DEMO_SEED=true`, the in-memory IAM seed includes one local administrator:
+`src/shared/iam-service.ts` loads users, roles, permissions, menus, field permissions, policies, sessions, token blacklist entries, and operation logs from `@tetap/prisma`. Runtime startup does not create demo administrators or fallback IAM rows. If the database has no active super administrator, the service fails fast so setup problems are visible before exposing admin APIs.
 
-```text
-Email: admin@tetap.local
-Username: admin
-Password: password1
+Initial administrators must be created through an explicit bootstrap or controlled database setup process. Use:
+
+```sh
+IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap
 ```
 
-Production deployments must create admin users through controlled admin workflows and must replace all demo secrets in `packages/config/env`.
+The command writes baseline IAM permissions, the system menu tree, roles, policies, field rules, and one ACTIVE super administrator into the configured database. Default login identifier is `admin` / `admin@tetap.local`; the password is the environment value above. Test-only IAM fixtures live under `test/automation/src/fixtures` and are injected by tests only.
 
 ## Route Permission Metadata
 
 IAM routes declare backend-enforced permissions through Fastify route config:
 
-| Resource                    | Required Permission                    |
-| --------------------------- | -------------------------------------- |
-| Overview and operation logs | `iam:read`                             |
-| Users                       | `user:read`, `user:update`             |
-| Roles                       | `role:read`, `role:update`             |
-| Permissions                 | `permission:read`, `permission:update` |
-| Menus                       | `menu:read`, `menu:update`             |
-| Field permissions           | `field:read`, `field:update`           |
-| Policies                    | `policy:read`, `policy:update`         |
-| Frontend online sessions    | `session:read`, `session:revoke`       |
+| Resource                 | Required Permission              |
+| ------------------------ | -------------------------------- |
+| Overview                 | `iam:read`                       |
+| Users                    | `user:read`, `user:update`       |
+| Roles                    | `role:read`, `role:update`       |
+| Permissions              | `iam:read`, `iam:manage`         |
+| Menus                    | `menu:read`, `iam:manage`        |
+| Field permissions        | `field:read`, `iam:manage`       |
+| Policies                 | `policy:read`, `policy:update`   |
+| Frontend online sessions | `session:read`, `session:revoke` |
+| Operation logs           | `operation-log:read`             |
 
 ## Operation Logs
 
@@ -115,7 +116,7 @@ IAM routes declare backend-enforced permissions through Fastify route config:
 ## Security Baseline
 
 - `@fastify/helmet`, `@fastify/cors`, and `@fastify/rate-limit` are registered globally.
-- `BODY_LIMIT_BYTES`, rate limit, CORS origins, auth secrets, token TTLs, and demo seed toggles come from `@tetap/config`.
+- `BODY_LIMIT_BYTES`, rate limit, CORS origins, auth secrets, and token TTLs come from `@tetap/config`.
 - Request logs redact authorization, cookie, password, token, access-token, and refresh-token fields.
 - Auth middleware validates bearer tokens with session state, token id, token version, route permission metadata, and super-admin bypass.
 - SSRF/upload utility helpers live in `src/shared/security.ts` and share the backend security unit coverage.
@@ -124,6 +125,7 @@ IAM routes declare backend-enforced permissions through Fastify route config:
 
 ```sh
 pnpm --filter backend-admin dev
+IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap
 pnpm --filter backend-admin type-check
 pnpm --filter backend-admin lint
 pnpm --filter backend-admin build

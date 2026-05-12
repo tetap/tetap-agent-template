@@ -417,5 +417,5 @@ Validation passed:
 
 Notes:
 
-- The local runtime uses the `@tetap/iam` demo/in-memory service so smoke tests can run without external infrastructure. Prisma IAM models, token/session contracts, and session invalidation rules are in place for the production PostgreSQL/Redis adapter layer.
+- Superseded on 2026-05-12: backend runtimes now load IAM data from Prisma persistence; smoke tests inject explicit fixtures from `test/automation`.
 - `web-admin` production build passes but Vite reports the existing chunk-size warning for the admin bundle.

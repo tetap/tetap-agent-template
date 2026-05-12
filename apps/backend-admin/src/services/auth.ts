@@ -47,7 +47,7 @@ export const login = async (request: FastifyRequest, reply: FastifyReply) => {
 
 export const refreshToken = async (request: FastifyRequest, reply: FastifyReply) => {
   const input = iamRefreshRequestSchema.parse(request.body);
-  const result = request.server.iam.refresh(input.refreshToken);
+  const result = await request.server.iam.refresh(input.refreshToken);
 
   return sendSuccess(reply, request, iamRefreshResponseSchema, result, 'backendAdmin.auth.refreshOk');
 };
@@ -59,7 +59,7 @@ export const logout = async (request: FastifyRequest, reply: FastifyReply) => {
     throw new AppError({ code: ErrorCode.Unauthorized });
   }
 
-  request.server.iam.logout(token);
+  await request.server.iam.logout(token);
 
   return sendSuccess(reply, request, emptyResponseSchema, {}, 'backendAdmin.auth.logoutOk');
 };

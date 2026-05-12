@@ -6,32 +6,36 @@
 
 ## 根命令门禁
 
-| Command                           | Gate                                                                                       |
-| --------------------------------- | ------------------------------------------------------------------------------------------ |
-| `pnpm versions:check`             | React、React DOM、TypeScript、Zod、RHF、resolver 只能由根版本控制。                        |
-| `pnpm hooks:check`                | custom hooks 只能位于 `packages/hooks/src/store`。                                         |
-| `pnpm i18n:boundaries:check`      | apps 只能导入允许的 scoped i18n entrypoint。                                               |
-| `pnpm backend:architecture:check` | Fastify routes 必须保持 registration-only。                                                |
-| `pnpm type-check`                 | Turbo 运行所有 workspace `type-check`。                                                    |
-| `pnpm test:unit`                  | 运行集中单元测试。                                                                         |
-| `pnpm check`                      | 串联 versions、hooks、i18n boundaries、backend architecture、type-check、unit tests。      |
-| `pnpm lint`                       | 在 ESLint 前先执行 versions、hooks、i18n boundaries、backend architecture。                |
-| `pnpm build`                      | 先 `pnpm check`，再 version bump，最后 `turbo build`，其中 test package build 会跑 smoke。 |
+| Command                                         | Gate                                                                                       |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `pnpm versions:check`                           | React、React DOM、TypeScript、Zod、RHF、resolver 只能由根版本控制。                        |
+| `pnpm hooks:check`                              | custom hooks 只能位于 `packages/hooks/src/store`。                                         |
+| `pnpm i18n:boundaries:check`                    | apps 只能导入允许的 scoped i18n entrypoint。                                               |
+| `pnpm backend:architecture:check`               | Fastify routes 必须保持 registration-only。                                                |
+| `pnpm type-check`                               | Turbo 运行所有 workspace `type-check`。                                                    |
+| `pnpm test:unit`                                | 运行集中单元测试。                                                                         |
+| `pnpm check`                                    | 串联 versions、hooks、i18n boundaries、backend architecture、type-check、unit tests。      |
+| `pnpm lint`                                     | 在 ESLint 前先执行 versions、hooks、i18n boundaries、backend architecture。                |
+| `pnpm build`                                    | 先 `pnpm check`，再 version bump，最后 `turbo build`，其中 test package build 会跑 smoke。 |
+| `npx -y react-doctor@latest . --verbose --diff` | 前端相关修改后运行一次，获取评分/问题报告并修复可执行建议。                                |
 
 ## 推荐开发验证顺序
 
 ```mermaid
 flowchart TD
   A[Modify code/docs] --> B[pnpm test:affected or target test]
-  B --> C[pnpm lint:fix]
-  C --> D[pnpm format:fix]
-  D --> E[pnpm check]
-  E --> F{UI/runtime changed?}
-  F -- UI --> G[pnpm test:browser]
-  F -- runtime/API --> H[pnpm test:smoke]
-  G --> I[Handoff]
-  H --> I
-  F -- no --> I
+  B --> C{Frontend changed?}
+  C -- yes --> D[react-doctor --diff and fix actionable issues]
+  C -- no --> E[pnpm lint:fix]
+  D --> E
+  E --> F[pnpm format:fix]
+  F --> G[pnpm check]
+  G --> H{UI/runtime changed?}
+  H -- UI --> I[pnpm test:browser]
+  H -- runtime/API --> J[pnpm test:smoke]
+  I --> K[Handoff]
+  J --> K
+  H -- no --> K
 ```
 
 ## 定向测试策略
@@ -103,6 +107,7 @@ pnpm format:fix
 ## Handoff Checklist
 
 - 是否更新或说明 unit/browser/smoke 测试？
+- 如果修改了前端，是否运行 `npx -y react-doctor@latest . --verbose --diff` 并处理报告？
 - 是否更新 `test/automation/src/support/test-selection.ts`？
 - 是否同步最近的 README、package 方法/导出列表和相关架构文档？
 - 是否运行 `pnpm lint:fix`、`pnpm format:fix`？

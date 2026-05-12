@@ -20,7 +20,7 @@ TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的开源全栈 m
 
 ## 核心能力
 
-- **企业级 IAM 基础设施**：JWT、RBAC、PBAC、字段权限、动态菜单、会话失效、强制下线和操作日志基础能力。
+- **企业级 IAM 基础设施**：JWT、RBAC、PBAC、字段权限、动态菜单、持久化会话、Token 黑名单、强制下线和操作日志基础能力。
 - **前后端契约优先**：request、response、form schema 统一进入 `@tetap/schema`，基于 Zod 复用。
 - **多端 i18n 隔离**：site、public web、admin web、backend、backend-admin 使用不同 i18n scope，避免跨端读取错误文案 key。
 - **VitePress 宣传站**：`apps/site` 提供克制、清晰的技术宣传/文档入口，并使用独立 site 文案 scope。
@@ -33,8 +33,12 @@ TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的开源全栈 m
 
 ```sh
 pnpm install
+pnpm db:push
+IAM_BOOTSTRAP_ADMIN_PASSWORD='replace-with-a-strong-password' pnpm backend-admin:bootstrap
 pnpm dev
 ```
+
+`backend-admin:bootstrap` 会把基础权限、系统菜单、角色、策略、字段规则和一个 ACTIVE 超级管理员写入当前配置的数据库。它是显式初始化命令，不是运行时 seed 或 fallback。默认登录标识是 `admin` / `admin@tetap.local`，密码取自你传入的 `IAM_BOOTSTRAP_ADMIN_PASSWORD`。
 
 常用命令：
 
@@ -84,6 +88,7 @@ pnpm build
 | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | 质量门禁、测试策略、构建和交付规则。            |
 | [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress 宣传站架构和边界。                    |
 | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | 多步骤计划必须同步 todolist 的长期记忆。        |
+| [docs/memory/frontend-react-doctor-workflow.md](docs/memory/frontend-react-doctor-workflow.md)                                   | 前端修改后运行 React Doctor 的长期记忆。        |
 | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | 代码变更后同步 README 和架构文档的长期记忆。    |
 | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | 功能实现后的单元、Browser、冒烟和定向测试记忆。 |
 | [docs/todolists](docs/todolists)                                                                                                 | 每个计划任务的 checkbox 执行记录。              |
@@ -130,6 +135,7 @@ pnpm build
 - 权限、会话、策略、字段权限、数据权限和操作日志核心算法统一进入 `@tetap/iam`。
 - HTTP request/response contract 仍然先定义在 `@tetap/schema`。
 - 持久化模型只能通过 `@tetap/prisma` 维护。
+- 后端运行时必须从持久化层加载真实 IAM 数据，禁止 runtime mock/demo/fallback IAM 数据。
 - 前端 capability 只能决定 UI 显示，后端 auth hook/policy engine 必须做最终校验。
 - 字段级权限必须在后端裁剪或脱敏后再返回。
 - Token 必须可失效：JWT 需要 token id、session 状态和 token version 共同校验。
@@ -170,6 +176,7 @@ pnpm build
 - 冒烟测试放在 `test/automation/src/smoke`，设计记录在 `test/automation/SMOKE_TEST_DESIGN.md`。
 - 开发中优先运行 `pnpm test:affected` 或相关 `pnpm test:*:target`。
 - 新增模块、测试或影响关系时，必须更新 `test/automation/src/support/test-selection.ts`。
+- 每次前端相关修改完成后，运行 `npx -y react-doctor@latest . --verbose --diff`，查看评分和报告，并在交付前修复可执行问题。
 
 ### Planning 规则
 

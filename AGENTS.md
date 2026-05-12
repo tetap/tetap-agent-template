@@ -11,8 +11,9 @@
 | 工作区边界和依赖方向           | [docs/Logical Architecture Diagram/01-workspace-boundaries.md](docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md) |
 | 质量门禁、测试、构建规则       | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               |
 | 多步骤计划与 todolist 记忆     | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     |
+| 前端 React Doctor 记忆         | [docs/memory/frontend-react-doctor-workflow.md](docs/memory/frontend-react-doctor-workflow.md)                                   |
 | README 同步记忆                | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       |
-| 真实数据与禁止 mock/demo 记忆   | [docs/memory/real-data-only-workflow.md](docs/memory/real-data-only-workflow.md)                                                 |
+| 真实数据与禁止 mock/demo 记忆  | [docs/memory/real-data-only-workflow.md](docs/memory/real-data-only-workflow.md)                                                 |
 | 测试策略与定向测试记忆         | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               |
 
 ## 2. 标准执行流程
@@ -40,6 +41,7 @@
 | Hooks        | 自定义 React hooks 只能放在 `packages/hooks/src/store`。                                                       | [README.zh-CN.md#hooks-规则](README.zh-CN.md#hooks-规则)、[packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)               |
 | Dependencies | React、React DOM、TypeScript、Zod、RHF、resolver 版本由根目录统一控制。                                        | [README.zh-CN.md#dependency-规则](README.zh-CN.md#dependency-规则)                                                                                   |
 | Testing      | 功能完成必须考虑单元、Browser Mode UI、冒烟和影响映射；自动化测试统一用 Vitest。                               | [README.zh-CN.md#testing-规则](README.zh-CN.md#testing-规则)、[testing-workflow.md](docs/memory/testing-workflow.md)                                 |
+| React Doctor | 每次前端相关修改完成后必须运行一次 `npx -y react-doctor@latest . --verbose --diff`，查看评分并修复可执行建议。 | [frontend-react-doctor-workflow.md](docs/memory/frontend-react-doctor-workflow.md)                                                                   |
 | Planning     | 每个多步骤计划都要同步 `docs/todolists`，完成后关闭。                                                          | [README.zh-CN.md#planning-规则](README.zh-CN.md#planning-规则)、[plan-workflow.md](docs/memory/plan-workflow.md)                                     |
 | Docs         | 代码、导出、接口、模型、脚本或行为变化必须同步最近 README、package 方法/导出列表、根 README 和相关架构文档。   | [README.zh-CN.md#documentation-规则](README.zh-CN.md#documentation-规则)、[readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)             |
 | Real Data    | 运行时代码禁止 mock/demo/fallback 业务数据；后台、IAM、菜单、会话、策略和日志必须来自真实 API/持久化层。       | [real-data-only-workflow.md](docs/memory/real-data-only-workflow.md)                                                                                 |

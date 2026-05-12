@@ -1,11 +1,11 @@
 model AdminUser {
-  id           BigInt             @id @default(autoincrement())
+  id           String             @id @default(uuid())
   username     String             @unique
   email        String             @unique
   name         String?
   passwordHash String             @map("password_hash")
   status       String             @default("ACTIVE")
-  deptId       BigInt?            @map("dept_id")
+  deptId       String?            @map("dept_id")
   tenantId     String?            @map("tenant_id")
   isSuperAdmin Boolean            @default(false) @map("is_super_admin")
   tokenVersion Int                @default(1) @map("token_version")

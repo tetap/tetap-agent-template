@@ -19,6 +19,7 @@
     "@tetap/config": "workspace:*",
     "@tetap/i18n": "workspace:*",
     "@tetap/iam": "workspace:*",
+    "@tetap/prisma": "workspace:*",
     "@tetap/schema": "workspace:*",
     "fastify": "^5.3.3"
   }

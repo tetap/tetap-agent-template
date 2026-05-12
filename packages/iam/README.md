@@ -6,17 +6,18 @@
 
 - Admin users and frontend users are separate data domains; online-user APIs only expose frontend user sessions.
 - User, role, permission, menu, field-permission, and policy mutation APIs enforce uniqueness and protected-resource checks.
-- Role and permission code changes update dependent in-memory relationships so route capabilities and menu filtering stay consistent.
+- Role and permission code changes update dependent relationships so route capabilities and menu filtering stay consistent.
 - Admin user security changes increment token version and revoke admin sessions without exposing them as online users.
 - PBAC decisions default to deny when no allow policy matches.
 - IAM mutations, auth events, permission denials, and backend lifecycle hooks emit redacted operation logs.
+- Runtime data is supplied by the backend Prisma adapter. Tests may inject explicit fixtures from `test/automation`; the package does not export runtime demo data.
 
 ## Public Tools And Methods
 
 | Export / Method                                                                    | Purpose                                                                                                                              |
 | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `IamService`                                                                       | In-memory IAM engine used by local admin APIs, unit tests, and smoke.                                                                |
-| `createDemoIamData`                                                                | Seed local admin users, roles, permissions, menus, field permissions, and policies without fake frontend online sessions.            |
+| `IamService`                                                                       | Pure IAM engine for auth, RBAC, menus, field policy, data policy, PBAC, sessions, and operation logs.                                |
+| `IamPersistenceAdapter`                                                            | Optional adapter contract used by backend runtimes to persist IAM mutations, sessions, token blacklists, and operation logs.         |
 | `users` / `roles` / `permissions` / `policies` / `fieldPermissions` / `operations` | Read-only sorted/sanitized collections for admin services.                                                                           |
 | `createUser` / `updateUser` / `deleteUser`                                         | Admin-user management with uniqueness, role validation, protected super-admin guard, token-version invalidation, and operation logs. |
 | `createRole` / `updateRole` / `deleteRole`                                         | Role management with permission validation, dependent user/menu updates, and protected resource checks.                              |
@@ -32,10 +33,10 @@
 | `getFieldRulesForUser` / `applyFieldPermissions`                                   | Resolve field rules and hide/mask fields before returning data.                                                                      |
 | `getDataConstraint` / `buildDataConstraint`                                        | Convert data-scope policy into Prisma-compatible `where` fragments.                                                                  |
 | `evaluatePolicy`                                                                   | Evaluate ABAC/PBAC conditions with default-deny behavior.                                                                            |
-| `listSessions`                                                                     | Return real frontend online sessions only; admin sessions and demo data remain private/empty.                                        |
+| `listSessions`                                                                     | Return real frontend online sessions only; admin sessions remain private auth infrastructure.                                        |
 | `revokeSession` / `revokeUserSessions`                                             | Force frontend users offline and blacklist token ids.                                                                                |
 | `recordOperation`                                                                  | Record redacted operation logs with operator, item, detail, time, IP.                                                                |
-| `hashPassword`                                                                     | Deterministic test/demo password hashing helper.                                                                                     |
+| `hashPassword`                                                                     | Deterministic password hashing helper used by controlled bootstrap and tests.                                                        |
 | `normalizeBearerToken`                                                             | Parse HTTP `Authorization: Bearer ...` headers.                                                                                      |
 | `redactSensitive`                                                                  | Recursively redact password/token/secret/id-card/phone-like fields.                                                                  |
 | `maskField`                                                                        | Built-in field masking for phone, identity/id-card, email, and generic values.                                                       |

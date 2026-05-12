@@ -15,7 +15,7 @@ export const registerOperationLogMiddleware = (app: FastifyInstance) => {
       return;
     }
 
-    request.server.iam.recordOperation({
+    await request.server.iam.recordOperation({
       actorUserId: request.auth?.user.id,
       operation: 'BACKEND_OPERATION',
       operationItem: resolveOperationItem(request),

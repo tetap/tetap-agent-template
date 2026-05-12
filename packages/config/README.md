@@ -32,9 +32,9 @@
 
 ## Current Env Shape
 
-`AppEnv` currently includes service ports, database, optional Redis, CORS origins, body/rate limits, app secrets, auth token TTLs, AES keys, demo seed toggle, and skipped route patterns:
+`AppEnv` currently includes service ports, database, optional Redis, CORS origins, body/rate limits, app secrets, auth token TTLs, AES keys, and skipped route patterns:
 
-`NODE_ENV`, `HOST`, `PORT`, `BACKEND_ADMIN_HOST`, `BACKEND_ADMIN_PORT`, `DATABASE_URL`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_KEY_PREFIX`, `CORS_ORIGINS`, `BODY_LIMIT_BYTES`, `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW`, `APP_ID`, `APP_SECRET`, `AUTH_SECRET`, `REFRESH_AUTH_SECRET`, `AUTH_SALT`, `AUTH_ACCESS_TOKEN_TTL_SECONDS`, `AUTH_REFRESH_TOKEN_TTL_SECONDS`, `AES_SECRET_KEY`, `AES_IV`, `ENABLE_DEMO_SEED`, and `SKIP_ROUTES`.
+`NODE_ENV`, `HOST`, `PORT`, `BACKEND_ADMIN_HOST`, `BACKEND_ADMIN_PORT`, `DATABASE_URL`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_KEY_PREFIX`, `CORS_ORIGINS`, `BODY_LIMIT_BYTES`, `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW`, `APP_ID`, `APP_SECRET`, `AUTH_SECRET`, `REFRESH_AUTH_SECRET`, `AUTH_SALT`, `AUTH_ACCESS_TOKEN_TTL_SECONDS`, `AUTH_REFRESH_TOKEN_TTL_SECONDS`, `AES_SECRET_KEY`, `AES_IV`, and `SKIP_ROUTES`.
 
 ## Rules
 

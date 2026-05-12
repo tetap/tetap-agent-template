@@ -1,8 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 
-export type ErrorBoundaryFallback =
-  | ReactNode
-  | ((error: Error, reset: () => void) => ReactNode);
+export type ErrorBoundaryFallback = ReactNode | ((error: Error, reset: () => void) => ReactNode);
 
 export type ErrorBoundaryProps = {
   children: ReactNode;

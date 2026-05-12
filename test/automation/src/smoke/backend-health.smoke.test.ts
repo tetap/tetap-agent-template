@@ -3,6 +3,7 @@ import { healthResponseSchema } from '@tetap/schema/backend';
 import { buildBackendApp } from '../../../../apps/backend/src/app.js';
 import { ErrorCode } from '../../../../apps/backend/src/shared/error-code.js';
 import type { AppEnv } from '@tetap/config';
+import { createManagedIamTestFixtureService } from '../fixtures/iam.js';
 
 const smokeEnv = {
   NODE_ENV: 'test',
@@ -24,13 +25,15 @@ const smokeEnv = {
   AUTH_REFRESH_TOKEN_TTL_SECONDS: 604800,
   AES_SECRET_KEY: '12345678901234567890123456789012',
   AES_IV: '1234567890123456',
-  ENABLE_DEMO_SEED: false,
   SKIP_ROUTES: [],
 } satisfies AppEnv;
 
 describe('backend smoke: GET /health', () => {
   it('boots the Fastify app and returns the unified health response', async () => {
-    const app = await buildBackendApp({ env: smokeEnv });
+    const app = await buildBackendApp({
+      env: smokeEnv,
+      iamService: createManagedIamTestFixtureService('tetap-auth-salt'),
+    });
 
     try {
       const response = await app.inject({

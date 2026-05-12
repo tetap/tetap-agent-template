@@ -24,7 +24,6 @@ export type AppEnv = {
   AUTH_REFRESH_TOKEN_TTL_SECONDS: number;
   AES_SECRET_KEY: string;
   AES_IV: string;
-  ENABLE_DEMO_SEED: boolean;
   SKIP_ROUTES: string[];
 };
 
@@ -60,16 +59,6 @@ const readNumber = (source: EnvSource, key: string, fallback: number) => {
   return parsedValue;
 };
 
-const readBoolean = (source: EnvSource, key: string, fallback: boolean) => {
-  const value = source[key];
-
-  if (!value) {
-    return fallback;
-  }
-
-  return ['1', 'true', 'yes', 'on'].includes(value.toLowerCase());
-};
-
 const readList = (source: EnvSource, key: string) =>
   (source[key] ?? '')
     .split(',')
@@ -100,6 +89,5 @@ export const readAppEnv = (source: EnvSource): AppEnv => ({
   AUTH_REFRESH_TOKEN_TTL_SECONDS: readNumber(source, 'AUTH_REFRESH_TOKEN_TTL_SECONDS', 7 * 24 * 60 * 60),
   AES_SECRET_KEY: readString(source, 'AES_SECRET_KEY'),
   AES_IV: readString(source, 'AES_IV'),
-  ENABLE_DEMO_SEED: readBoolean(source, 'ENABLE_DEMO_SEED', false),
   SKIP_ROUTES: readList(source, 'SKIP_ROUTES'),
 });

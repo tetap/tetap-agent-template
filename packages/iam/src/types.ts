@@ -203,13 +203,35 @@ export type LoginResult = AuthTokenPair & {
 
 export type IamDataSet = {
   adminUsers: IamUser[];
+  adminSessions: IamSession[];
   frontendUsers: IamFrontendUser[];
   frontendSessions: IamSession[];
+  tokenBlacklist: Array<{ tokenId: string; expiresAt: string }>;
   roles: IamRole[];
   permissions: IamPermission[];
   menus: IamMenu[];
   fieldPermissions: FieldPermission[];
   policies: IamPolicy[];
+  operationLogs: OperationLog[];
+};
+
+export type IamPersistenceAdapter = {
+  upsertAdminUser?: (user: IamUser) => Promise<void>;
+  deleteAdminUser?: (userId: string) => Promise<void>;
+  upsertRole?: (role: IamRole) => Promise<void>;
+  deleteRole?: (roleId: string) => Promise<void>;
+  upsertPermission?: (permission: IamPermission) => Promise<void>;
+  deletePermission?: (permissionId: string) => Promise<void>;
+  upsertMenu?: (menu: IamMenu) => Promise<void>;
+  deleteMenu?: (menuId: string) => Promise<void>;
+  upsertFieldPermission?: (fieldPermission: FieldPermission) => Promise<void>;
+  deleteFieldPermission?: (fieldPermissionId: string) => Promise<void>;
+  upsertPolicy?: (policy: IamPolicy) => Promise<void>;
+  deletePolicy?: (policyId: string) => Promise<void>;
+  upsertAdminSession?: (session: IamSession) => Promise<void>;
+  upsertFrontendSession?: (session: IamSession) => Promise<void>;
+  upsertTokenBlacklist?: (tokenId: string, expiresAt: string, reason?: string) => Promise<void>;
+  recordOperation?: (event: OperationLog) => Promise<void>;
 };
 
 export type CreateUserInput = {

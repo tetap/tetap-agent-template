@@ -13,7 +13,7 @@
 
 - Fastify app creation and startup。
 - Plugins for i18n, security, and error handling。
-- Public auth and permission-denial operation logging through `@tetap/iam`。
+- Public auth and permission-denial operation logging through `@tetap/iam` backed by `@tetap/prisma` persistence。
 - Registration-only routes。
 - Services for business logic, validation orchestration, response building。
 - Backend-local shared helpers such as `ErrorCode` and `AppError`。
@@ -42,7 +42,7 @@
 GET /health
 ```
 
-The public backend currently exposes only the health route. Non-public routes added later must declare Fastify `schema`, auth/public policy metadata, and required permission metadata where applicable. The auth plugin already supports `Authorization: Bearer ...`, session/token-version validation, and permission-denial operation logging through `@tetap/iam`.
+The public backend currently exposes only the health route. Non-public routes added later must declare Fastify `schema`, auth/public policy metadata, and required permission metadata where applicable. The auth plugin already supports `Authorization: Bearer ...`, session/token-version validation, and permission-denial operation logging through `@tetap/iam`. IAM state is loaded from the real Prisma persistence layer; tests may inject explicit fixtures from `test/automation`.
 
 ## Security Baseline
 

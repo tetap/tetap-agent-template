@@ -6,22 +6,23 @@
 
 ## 内部结构
 
-| Path                                 | Responsibility                                               |
-| ------------------------------------ | ------------------------------------------------------------ |
-| `schema/schema.prisma`               | datasource/generator only，不允许 model。                    |
-| `schema/*.prisma`                    | 每个 Prisma model 一个独立文件。                             |
-| `scripts/check-schema-structure.mjs` | 检查 schema 拆分规则。                                       |
-| `index.js` / `index.d.ts`            | package entrypoint placeholder / generated client boundary。 |
+| Path                                 | Responsibility                                            |
+| ------------------------------------ | --------------------------------------------------------- |
+| `schema/schema.prisma`               | datasource/generator only，不允许 model。                 |
+| `schema/*.prisma`                    | 每个 Prisma model 一个独立文件。                          |
+| `scripts/check-schema-structure.mjs` | 检查 schema 拆分规则。                                    |
+| `index.js` / `index.d.ts`            | package entrypoint and generated Prisma Client boundary。 |
 
 ## 命令
 
-| Command                | Purpose                       |
-| ---------------------- | ----------------------------- |
-| `pnpm db:schema:check` | 检查 Prisma schema 文件结构。 |
-| `pnpm db:generate`     | 生成 Prisma Client。          |
-| `pnpm db:validate`     | 校验 Prisma schema。          |
-| `pnpm db:push`         | 推送 schema 到数据库。        |
-| `pnpm db:studio`       | 打开 Prisma Studio。          |
+| Command                        | Purpose                                   |
+| ------------------------------ | ----------------------------------------- |
+| `pnpm db:schema:check`         | 检查 Prisma schema 文件结构。             |
+| `pnpm db:generate`             | 生成 Prisma Client。                      |
+| `pnpm db:validate`             | 校验 Prisma schema。                      |
+| `pnpm db:push`                 | 推送 schema 到数据库。                    |
+| `pnpm db:studio`               | 打开 Prisma Studio。                      |
+| `pnpm backend-admin:bootstrap` | 显式写入基础 IAM 数据和第一个超级管理员。 |
 
 ## 规则
 
@@ -31,6 +32,8 @@
 - 后端需要持久化时通过 shared Prisma boundary 消费，不绕过 `@tetap/prisma`。
 - env 来源仍然使用 `packages/config/env`。
 - IAM model 包括前台 user、admin user、role、permission、menu、policy、field permission、前台 session、admin session、token blacklist、department 和 operation log。
+- IAM/admin 主键使用字符串 ID，以匹配 IAM 引擎生成的 UUID 和前端/后端统一字符串契约。
+- 初始后台账号和基础权限/菜单必须通过 `pnpm backend-admin:bootstrap` 显式写入数据库，不允许运行时自动 seed 或 fallback。
 
 ## 影响测试
 
