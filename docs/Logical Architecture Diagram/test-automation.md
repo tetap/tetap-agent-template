@@ -15,14 +15,14 @@
 
 ## 内部结构
 
-| Path                                | Responsibility                                                                                     |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------- |
-| `vitest.config.ts`                  | Node/unit/smoke config，使用源码 alias 避免 stale dist。                                           |
-| `vitest.browser.config.ts`          | Browser Mode config，Playwright provider，Tailwind/Vite React plugin，Radix deps pre-bundling。    |
-| `src/support/test-selection.ts`     | target 列表和 changed-file impact map。                                                            |
-| `scripts/run-targeted-tests.ts`     | CLI runner：target、affected、name pattern。                                                       |
-| `scripts/admin-responsive-audit.ts` | Playwright 页面级审查：登录运行中的 admin web，按 desktop/tablet/mobile 验证内容区滚动和页面溢出。 |
-| `SMOKE_TEST_DESIGN.md`              | 冒烟测试覆盖设计。                                                                                 |
+| Path                                | Responsibility                                                                                                   |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `vitest.config.ts`                  | Node/unit/smoke config，使用源码 alias 避免 stale dist。                                                         |
+| `vitest.browser.config.ts`          | Browser Mode config，Playwright provider，Tailwind/Vite React plugin，Radix deps pre-bundling。                  |
+| `src/support/test-selection.ts`     | target 列表和 changed-file impact map。                                                                          |
+| `scripts/run-targeted-tests.ts`     | CLI runner：target、affected、name pattern；默认 affected 模式从 Git 仓库根读取 unstaged/staged/untracked 变更。 |
+| `scripts/admin-responsive-audit.ts` | Playwright 页面级审查：登录运行中的 admin web，按 desktop/tablet/mobile 验证内容区滚动和页面溢出。               |
+| `SMOKE_TEST_DESIGN.md`              | 冒烟测试覆盖设计。                                                                                               |
 
 ## 命令
 

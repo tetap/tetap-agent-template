@@ -15,7 +15,7 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 | Unit tests             | `src/unit/**/*.unit.test.ts`        | `pnpm test:unit`                                              | `pnpm test:unit:target -- config-env`                                                                                             |
 | UI browser tests       | `src/browser/**/*.browser.test.tsx` | `pnpm test:browser`                                           | `pnpm test:browser:target -- web-admin-dashboard`                                                                                 |
 | Smoke tests            | `src/smoke/**/*.smoke.test.ts`      | `pnpm test:smoke`                                             | `pnpm test:smoke:target -- backend-health`                                                                                        |
-| Affected tests         | Git changed files                   | `pnpm test:affected`                                          | `pnpm test:affected -- packages/ui/src/index.ts`                                                                                  |
+| Affected tests         | Git changed files from repo root    | `pnpm test:affected`                                          | `pnpm test:affected -- packages/ui/src/index.ts`                                                                                  |
 | Admin responsive audit | `scripts/admin-responsive-audit.ts` | `pnpm --filter @tetap/test-automation audit:admin-responsive` | `ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filter @tetap/test-automation audit:admin-responsive` |
 
 ## Current Targets
@@ -65,7 +65,7 @@ ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filte
 
 ## Impact Map
 
-The affected runner uses `src/support/test-selection.ts` as the single source of truth.
+The affected runner resolves the Git repository root before reading unstaged, staged, and untracked files, then uses `src/support/test-selection.ts` as the single source of truth.
 
 | Changed Area                          | Tests Selected                                                                               |
 | ------------------------------------- | -------------------------------------------------------------------------------------------- |

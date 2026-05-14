@@ -1,5 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
+import { getGitChangedFiles } from '../../scripts/run-targeted-tests.ts';
 import { groupSelectionsByType, selectAffectedTests, selectTargets } from '../support/test-selection.js';
+
+const tempRepos: string[] = [];
+
+const createTempGitRepo = () => {
+  const repoRoot = mkdtempSync(join(tmpdir(), 'tetap-affected-'));
+  tempRepos.push(repoRoot);
+  execFileSync('git', ['init'], { cwd: repoRoot, stdio: 'ignore' });
+  return repoRoot;
+};
+
+afterEach(() => {
+  for (const repoRoot of tempRepos.splice(0)) {
+    rmSync(repoRoot, { force: true, recursive: true });
+  }
+});
 
 describe('targeted test selection', () => {
   it('resolves module aliases to concrete unit test files', () => {
@@ -38,5 +58,17 @@ describe('targeted test selection', () => {
     expect(selectAffectedTests(['test/automation/src/smoke/backend-health.smoke.test.ts'])).toEqual([
       { type: 'smoke', path: 'src/smoke/backend-health.smoke.test.ts' },
     ]);
+  });
+
+  it('detects untracked repository files when the runner cwd is the test package', () => {
+    const repoRoot = createTempGitRepo();
+    const packageCwd = join(repoRoot, 'test/automation');
+    const untrackedFile = join(repoRoot, 'packages/config/src/env.ts');
+
+    mkdirSync(packageCwd, { recursive: true });
+    mkdirSync(join(repoRoot, 'packages/config/src'), { recursive: true });
+    writeFileSync(untrackedFile, 'export const env = {};\n');
+
+    expect(getGitChangedFiles(undefined, packageCwd)).toContain('packages/config/src/env.ts');
   });
 });

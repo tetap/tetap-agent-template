@@ -1,6 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import {
   groupSelectionsByType,
   isTestType,
@@ -24,7 +25,7 @@ type ParsedArgs = {
   readonly positionals: readonly string[];
 };
 
-const parseArgs = (rawArgs: readonly string[]): ParsedArgs => {
+export const parseArgs = (rawArgs: readonly string[]): ParsedArgs => {
   const positionals: string[] = [];
   let base: string | undefined;
   let list = false;
@@ -98,7 +99,21 @@ const runCommand = (args: readonly string[]) => {
   return result.status ?? 1;
 };
 
-const getGitChangedFiles = (base?: string) => {
+export const getGitRoot = (cwd = process.cwd()) => {
+  const result = spawnSync('git', ['rev-parse', '--show-toplevel'], {
+    cwd,
+    encoding: 'utf8',
+  });
+
+  if (result.status !== 0) {
+    return cwd;
+  }
+
+  return result.stdout.trim() || cwd;
+};
+
+export const getGitChangedFiles = (base?: string, cwd = process.cwd()) => {
+  const gitRoot = getGitRoot(cwd);
   const commands = base
     ? [['diff', '--name-only', '--diff-filter=ACMR', `${base}...HEAD`]]
     : [
@@ -110,6 +125,7 @@ const getGitChangedFiles = (base?: string) => {
 
   for (const args of commands) {
     const result = spawnSync('git', args, {
+      cwd: gitRoot,
       encoding: 'utf8',
     });
 
@@ -193,7 +209,7 @@ const runAffectedTargets = (changedFiles: readonly string[], base?: string, name
   return 0;
 };
 
-const main = () => {
+export const main = () => {
   const parsedArgs = parseArgs(process.argv.slice(2));
   const [modeOrType, ...targets] = parsedArgs.positionals;
 
@@ -224,4 +240,8 @@ const main = () => {
   return runTypeTargets(modeOrType, targets, parsedArgs.namePattern);
 };
 
-process.exitCode = main();
+const entrypoint = process.argv[1] ? pathToFileURL(resolve(process.argv[1])).href : undefined;
+
+if (entrypoint === import.meta.url) {
+  process.exitCode = main();
+}
