@@ -21,7 +21,6 @@ body:
     attributes:
       label: Affected Area
       options:
-        - apps/site
         - apps/web
         - apps/web-admin
         - apps/backend

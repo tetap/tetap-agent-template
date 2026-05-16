@@ -54,10 +54,10 @@ flowchart TD
 | Command                                                                | When                                                      |
 | ---------------------------------------------------------------------- | --------------------------------------------------------- |
 | `pnpm test:affected`                                                   | 开发循环默认入口，根据 git changed files 选择受影响测试。 |
-| `pnpm test:unit:target -- i18n-site`                                   | 只跑 VitePress 宣传站文案 scope 的单元测试。              |
 | `pnpm test:target -- unit schema-response`                             | 只跑某个 unit target。                                    |
 | `pnpm test:target -- unit schema-response --name healthResponseSchema` | 按用例名过滤。                                            |
 | `pnpm test:browser:target -- ui-components`                            | 只跑共享 UI Browser Mode target。                         |
+| `pnpm test:browser:target -- web-home`                                 | 只跑公共 Web 宣传首页 Browser Mode target。               |
 | `pnpm test:browser:target -- web-admin-dashboard`                      | 只跑后台管理页面 Browser Mode target。                    |
 | `pnpm test:smoke:target -- backend-admin-iam`                          | 只跑后台管理 IAM 登录、鉴权、强制下线 smoke。             |
 | `pnpm test:unit:target -- iam-engine`                                  | 只跑 IAM 权限、字段、数据、操作日志核心单元测试。         |
@@ -73,7 +73,7 @@ flowchart TD
 | Browser | `test/automation/src/browser` | 使用 Vitest Browser Mode 验证真实浏览器 UI 行为。 | 修改页面、路由、UI interaction、shared UI components。                                         |
 | Smoke   | `test/automation/src/smoke`   | 验证 app boot、critical API flow、统一响应体。    | 修改 backend runtime、routing、middleware、security、API contract、build/runtime integration。 |
 
-`apps/site` 是静态 VitePress 宣传站，完成变更时至少运行 `pnpm test:unit:target -- i18n-site` 和 `pnpm --filter site build`；视觉变更还应通过浏览器预览或截图检查。
+`apps/web` 承载公共宣传页和公共页面 runtime，完成相关 UI 变更时至少运行 `pnpm test:browser:target -- web-home` 或 `pnpm test:affected`；视觉变更还应通过浏览器预览或截图检查。
 
 ## Backend Architecture Gate
 

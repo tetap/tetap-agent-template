@@ -2,7 +2,7 @@
 
 ## 定位
 
-`@tetap/i18n` 是站点、前端和后端共享多语言包，负责 locale resources、翻译核心、scoped React provider、site translator 和 Node request locale helper。任何用户可见文案都必须从这里输出，并且 apps 只能导入自己允许的 scope。
+`@tetap/i18n` 是前端和后端共享多语言包，负责 locale resources、翻译核心、scoped React provider 和 Node request locale helper。任何用户可见文案都必须从这里输出，并且 apps 只能导入自己允许的 scope。
 
 ## 公开入口
 
@@ -12,7 +12,6 @@
 | `@tetap/i18n/react`         | `I18nProvider`、React context types。             |
 | `@tetap/i18n/public`        | public web safe messages and provider。           |
 | `@tetap/i18n/admin`         | admin web safe messages and provider。            |
-| `@tetap/i18n/site`          | VitePress site safe messages。                    |
 | `@tetap/i18n/backend`       | public backend response messages。                |
 | `@tetap/i18n/backend-admin` | backend-admin response messages。                 |
 | `@tetap/i18n/node`          | Accept-Language parsing、request locale helper。  |
@@ -25,7 +24,6 @@
 | `createI18n` / `createAppI18n`                                | Core translator factory and full-app legacy translator. |
 | `createPublicI18n` / `PublicI18nProvider`                     | Public web scoped translator and React provider.        |
 | `createAdminI18n` / `AdminI18nProvider`                       | Admin web scoped translator and React provider.         |
-| `createSiteI18n`                                              | VitePress site scoped translator.                       |
 | `createBackendI18n` / `createBackendAdminI18n`                | Backend response translators scoped by service.         |
 | `parseAcceptLanguage` / `resolveLocale` / `createRequestI18n` | Node request locale resolving helpers.                  |
 
@@ -37,7 +35,6 @@
 | `src/locales/zh-CN.ts` | 默认首写 locale。                              |
 | `src/locales/en-US.ts` | 与 `zh-CN` 同结构的英文资源。                  |
 | `src/react.ts`         | React provider/context。                       |
-| `src/site.ts`          | VitePress site scoped translator。             |
 | `src/node.ts`          | Node request locale resolving。                |
 | `src/types.ts`         | dot-path keys、translation tree types。        |
 
@@ -47,10 +44,9 @@
 2. 在其他 locale 文件保持相同 key 结构。
 3. Public UI 使用 `@tetap/i18n/public` 和 `usePublicT`。
 4. Admin UI 使用 `@tetap/i18n/admin` 和 `useAdminT`。
-5. VitePress 宣传站使用 `@tetap/i18n/site`。
-6. Backend response 使用 `@tetap/i18n/backend` 或 `@tetap/i18n/backend-admin`。
-7. Backend request locale resolving 可以使用 `@tetap/i18n/node`。
-8. 测试中不要发明硬编码文案；从 i18n 或 API 输出断言。
+5. Backend response 使用 `@tetap/i18n/backend` 或 `@tetap/i18n/backend-admin`。
+6. Backend request locale resolving 可以使用 `@tetap/i18n/node`。
+7. 测试中不要发明硬编码文案；从 i18n 或 API 输出断言。
 
 ## 禁止
 
@@ -63,5 +59,5 @@
 
 - 文案影响 UI 时运行 Browser Mode 测试。
 - 文案影响 API response 时运行 smoke 测试。
-- 当前 affected map 将 `packages/i18n/**` 映射到 site i18n unit、browser 和 smoke。
+- 当前 affected map 将 `packages/i18n/**` 映射到公共 web Browser Mode、共享 UI Browser Mode、后台 Browser Mode 和 backend smoke。
 - 修改 scope 后运行 `pnpm i18n:boundaries:check`。

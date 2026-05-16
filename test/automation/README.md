@@ -27,8 +27,8 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 | `iam-engine`           | Unit    | IAM auth, RBAC, menu, field, data-scope, policy, sessions, operation logs. |
 | `backend-security`     | Unit    | SSRF/upload helpers, canonical paths, HMAC/body hash helpers.              |
 | `test-selection`       | Unit    | Target and affected-test selection logic.                                  |
-| `i18n-site`            | Unit    | VitePress site i18n scope.                                                 |
 | `ui-components`        | Browser | Shared UI primitives.                                                      |
+| `web-home`             | Browser | Public web promotional landing page.                                       |
 | `web-admin-dashboard`  | Browser | Real admin shell/dashboard/sign-in/settings/IAM UI behavior.               |
 | `backend-health`       | Smoke   | Public Fastify health runtime.                                             |
 | `backend-admin-health` | Smoke   | Admin Fastify health runtime.                                              |
@@ -42,8 +42,8 @@ Use targeted commands during development so each change runs only the module tes
 pnpm test:target -- unit schema-response
 pnpm test:target -- unit schema-response --name healthResponseSchema
 pnpm test:unit:target -- config-env
-pnpm test:unit:target -- i18n-site
 pnpm test:browser:target -- ui-components
+pnpm test:browser:target -- web-home
 pnpm test:browser:target -- web-admin-dashboard
 pnpm test:smoke:target -- backend-health
 pnpm test:affected
@@ -60,7 +60,7 @@ ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filte
 - `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend-session separation from admin sessions.
 - `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.
 - `unit:backend-security` covers shared backend SSRF/upload/HMAC utility behavior.
-- `unit:i18n-site` covers the VitePress promotional site copy scope.
+- `browser:web-home` covers the public web promotional landing content.
 - `unit:schema-response` also covers admin auth form schemas from `@tetap/schema/admin-auth`.
 
 ## Impact Map
@@ -75,11 +75,10 @@ The affected runner resolves the Git repository root before reading unstaged, st
 | `apps/backend/**`                     | `unit:backend-security`, `smoke:backend-health`                                              |
 | `apps/backend-admin/**`               | `unit:backend-security`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`             |
 | `packages/prisma/**`                  | `smoke:backend-health`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`              |
-| `apps/web/**`                         | `browser:ui-components`                                                                      |
+| `apps/web/**`                         | `browser:web-home`                                                                           |
 | `apps/web-admin/**`                   | `browser:web-admin-dashboard`                                                                |
-| `apps/site/**`                        | `unit:i18n-site`                                                                             |
-| `packages/hooks/**`, `packages/ui/**` | `browser:ui-components`, `browser:web-admin-dashboard`                                       |
-| `packages/i18n/**`                    | `unit:i18n-site`, browser targets, backend smoke targets                                     |
+| `packages/hooks/**`, `packages/ui/**` | `browser:ui-components`, `browser:web-home`, `browser:web-admin-dashboard`                   |
+| `packages/i18n/**`                    | `browser:web-home`, browser targets, backend smoke targets                                   |
 | `test/automation/src/**` test files   | The changed test file only.                                                                  |
 
 ## Rules

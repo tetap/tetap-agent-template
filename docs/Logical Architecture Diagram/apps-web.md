@@ -2,24 +2,25 @@
 
 ## 定位
 
-`apps/web` 是浏览器应用层，使用 React、Vite 和 React Router 负责页面 runtime、路由和页面组合。它不拥有 UI primitive、i18n 资源、schema 定义、env 策略或 custom hooks。
+`apps/web` 是公共浏览器应用层，使用 React、Vite 和 React Router 负责宣传首页、公共页面 runtime、路由和页面组合。它不拥有 UI primitive、i18n 资源、schema 定义、env 策略或 custom hooks。
 
 ## 职责
 
 - 挂载 React app 和全局 providers。
-- 定义浏览器路由和页面级组合。
+- 定义公共宣传首页、浏览器路由和页面级组合。
 - 消费 `@tetap/ui`、`@tetap/hooks`、`@tetap/i18n`、`@tetap/schema`、`@tetap/config`。
 - 展示业务页面，不沉淀跨项目 UI/样式系统。
 
 ## 内部结构
 
-| Path             | Responsibility                                                 |
-| ---------------- | -------------------------------------------------------------- |
-| `src/main.tsx`   | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。 |
-| `src/App.tsx`    | React Router 和 app shell 级组合。                             |
-| `src/pages/*`    | 页面组合；只拼装共享能力，不定义共享 primitives。              |
-| `vite.config.ts` | Vite 插件和 `@tetap/config/vite` env 目录配置。                |
-| `tsconfig*.json` | Web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。          |
+| Path                 | Responsibility                                                    |
+| -------------------- | ----------------------------------------------------------------- |
+| `src/main.tsx`       | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。    |
+| `src/App.tsx`        | React Router 和 app shell 级组合。                                |
+| `src/pages/home.tsx` | 公共宣传首页；只组合 `@tetap/ui`、`@tetap/hooks` 和 public i18n。 |
+| `src/pages/*`        | 页面组合；只拼装共享能力，不定义共享 primitives。                 |
+| `vite.config.ts`     | Vite 插件和 `@tetap/config/vite` env 目录配置。                   |
+| `tsconfig*.json`     | Web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。             |
 
 ## 页面渲染流
 
@@ -58,12 +59,12 @@ sequenceDiagram
 
 ## 扩展步骤
 
-1. 新增文案到 `@tetap/i18n`。
+1. 新增文案到 `@tetap/i18n/public` 对应 locale 资源。
 2. 新增或更新 route/page。
 3. 通过 `@tetap/ui` 组合界面。
 4. 如需要表单，使用 `@tetap/schema` 和 `@tetap/hooks/form`。
 5. 更新 Browser Mode UI 测试和 affected test mapping。
-6. 运行 `pnpm test:browser:target -- <target>` 或 `pnpm test:affected`。
+6. 运行 `pnpm test:browser:target -- web-home`、相关 `<target>` 或 `pnpm test:affected`。
 
 ## 常用命令
 
@@ -72,5 +73,6 @@ pnpm --filter web dev
 pnpm --filter web type-check
 pnpm --filter web lint
 pnpm --filter web build
+pnpm test:browser:target -- web-home
 pnpm test:browser
 ```

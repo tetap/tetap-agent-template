@@ -1,4 +1,5 @@
 const fallbackTimeZone = 'UTC';
+const dateTimeFormatters = new Map<string, Intl.DateTimeFormat>();
 
 export const getUserTimeZone = () => {
   if (typeof Intl === 'undefined') {
@@ -23,10 +24,17 @@ export const formatUserDateTime = (isoDatetime: string, timeZone = getUserTimeZo
     return isoDatetime;
   }
 
-  return new Intl.DateTimeFormat(locale, {
-    dateStyle: 'medium',
-    hour12: false,
-    timeStyle: 'medium',
-    timeZone,
-  }).format(date);
+  const formatterKey = `${locale}:${timeZone}`;
+  const formatter =
+    dateTimeFormatters.get(formatterKey) ??
+    new Intl.DateTimeFormat(locale, {
+      dateStyle: 'medium',
+      hour12: false,
+      timeStyle: 'medium',
+      timeZone,
+    });
+
+  dateTimeFormatters.set(formatterKey, formatter);
+
+  return formatter.format(date);
 };

@@ -28,8 +28,8 @@ describe('targeted test selection', () => {
       unknown: [],
     });
 
-    expect(selectTargets('unit', ['site-i18n'])).toMatchObject({
-      selected: [{ type: 'unit', path: 'src/unit/i18n-site.unit.test.ts' }],
+    expect(selectTargets('browser', ['web-home'])).toMatchObject({
+      selected: [{ type: 'browser', path: 'src/browser/web-home.browser.test.tsx' }],
       unknown: [],
     });
   });
@@ -40,11 +40,16 @@ describe('targeted test selection', () => {
       'packages/ui/src/components/ui/button.tsx',
       'apps/backend/src/routes/health.ts',
       'apps/backend-admin/src/routes/health.ts',
+      'apps/web/src/pages/home.tsx',
       'apps/web-admin/src/pages/dashboard.tsx',
     ]);
 
     expect(groupSelectionsByType(selections)).toEqual({
-      browser: ['src/browser/ui-components.browser.test.tsx', 'src/browser/web-admin-dashboard.browser.test.tsx'],
+      browser: [
+        'src/browser/ui-components.browser.test.tsx',
+        'src/browser/web-home.browser.test.tsx',
+        'src/browser/web-admin-dashboard.browser.test.tsx',
+      ],
       smoke: [
         'src/smoke/backend-health.smoke.test.ts',
         'src/smoke/backend-admin-health.smoke.test.ts',

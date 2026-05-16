@@ -34,10 +34,10 @@ pnpm test:smoke
 pnpm test:affected
 pnpm test:target -- unit schema-response
 pnpm test:target -- unit schema-response --name healthResponseSchema
-pnpm test:unit:target -- i18n-site
 pnpm test:unit:target -- iam-engine
 pnpm test:unit:target -- backend-security
 pnpm test:browser:target -- ui-components
+pnpm test:browser:target -- web-home
 pnpm test:browser:target -- web-admin-dashboard
 pnpm test:smoke:target -- backend-health
 pnpm test:smoke:target -- backend-admin-iam
@@ -63,6 +63,7 @@ flowchart LR
 - `packages/iam/**` selects IAM engine unit tests and admin IAM smoke.
 - `apps/backend/**` selects backend security unit tests and public health smoke.
 - `apps/backend-admin/**` selects backend security unit tests plus admin health and IAM smoke.
+- `apps/web/**` selects the public web home Browser Mode coverage.
 - `apps/web-admin/**` selects the admin Browser Mode dashboard/IAM coverage.
 
 ## 规则

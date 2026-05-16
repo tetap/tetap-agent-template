@@ -1,8 +1,8 @@
-import { useContext } from 'react';
+import { use } from 'react';
 import { AdminI18nContext, type AdminI18nReactContextValue } from '@tetap/i18n/admin';
 
 export const useAdminI18n = (): AdminI18nReactContextValue => {
-  const context = useContext(AdminI18nContext);
+  const context = use(AdminI18nContext);
 
   if (!context) {
     throw new Error('useAdminI18n must be used within AdminI18nProvider.');

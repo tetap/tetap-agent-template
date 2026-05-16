@@ -1,8 +1,8 @@
-import { useContext } from 'react';
+import { use } from 'react';
 import { PublicI18nContext, type PublicI18nReactContextValue } from '@tetap/i18n/public';
 
 export const usePublicI18n = (): PublicI18nReactContextValue => {
-  const context = useContext(PublicI18nContext);
+  const context = use(PublicI18nContext);
 
   if (!context) {
     throw new Error('usePublicI18n must be used within PublicI18nProvider.');

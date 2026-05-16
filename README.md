@@ -16,14 +16,14 @@
 
 ## Overview
 
-TETAP Agent Template is an open-source full-stack monorepo template for AI-assisted application development. It separates the VitePress site, public web, admin web, Fastify APIs, IAM, configuration, UI, i18n, schemas, Prisma, and automation tests into explicit workspaces so teams can move quickly without losing architectural control.
+TETAP Agent Template is an open-source full-stack monorepo template for AI-assisted application development. It separates the public web, admin web, Fastify APIs, IAM, configuration, UI, i18n, schemas, Prisma, and automation tests into explicit workspaces so teams can move quickly without losing architectural control.
 
 ## Highlights
 
 - **Enterprise IAM foundation**: JWT, RBAC, PBAC, field permissions, dynamic menus, persisted sessions, token blacklists, forced logout, and operation logs.
 - **Contract-first development**: request, response, and form contracts live in `@tetap/schema` and use Zod.
-- **Scoped i18n**: site, public web, admin web, public backend, and backend-admin use isolated i18n entrypoints.
-- **VitePress promotional site**: `apps/site` provides a polished technical landing page, continuous scroll story, GitHub Pages deployment, and site-scoped copy.
+- **Scoped i18n**: public web, admin web, public backend, and backend-admin use isolated i18n entrypoints.
+- **Public promotional web**: `apps/web` provides the simple promotional landing page and remains the public React runtime for future user-facing pages.
 - **Shared UI system**: apps compose shadcn/ui components and brand assets from `@tetap/ui`.
 - **Secure defaults**: Fastify security plugins, CORS allowlists, body limits, rate limits, consistent errors, and route architecture checks.
 - **Automated quality gates**: TypeScript, ESLint, Prettier, architecture checks, unit tests, Browser Mode tests, and smoke tests.
@@ -67,14 +67,13 @@ CI quality gates:
 
 | Workspace            | Type    | Responsibility                                                         | Design Doc                                                                           |
 | -------------------- | ------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `apps/site`          | App     | VitePress promotional/docs site runtime and static page composition.   | [apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                   |
-| `apps/web`           | App     | Public React + Vite runtime, routing, and page composition.            | [apps-web.md](docs/Logical%20Architecture%20Diagram/apps-web.md)                     |
+| `apps/web`           | App     | Public React + Vite runtime, promotional landing, routing, and pages.  | [apps-web.md](docs/Logical%20Architecture%20Diagram/apps-web.md)                     |
 | `apps/web-admin`     | App     | Admin React + Vite runtime and admin pages.                            | [apps-web-admin.md](docs/Logical%20Architecture%20Diagram/apps-web-admin.md)         |
 | `apps/backend`       | App     | Public Fastify runtime, plugins, route registration, services.         | [apps-backend.md](docs/Logical%20Architecture%20Diagram/apps-backend.md)             |
 | `apps/backend-admin` | App     | Admin Fastify runtime and admin APIs.                                  | [apps-backend-admin.md](docs/Logical%20Architecture%20Diagram/apps-backend-admin.md) |
 | `packages/config`    | Package | Env file location, typed env, Node/Vite config entrypoints.            | [packages-config.md](docs/Logical%20Architecture%20Diagram/packages-config.md)       |
 | `packages/hooks`     | Package | Shared React hooks and form helpers.                                   | [packages-hooks.md](docs/Logical%20Architecture%20Diagram/packages-hooks.md)         |
-| `packages/i18n`      | Package | Locale resources, translation core, site/React/Node helpers.           | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
+| `packages/i18n`      | Package | Locale resources, translation core, React/Node helpers.                | [packages-i18n.md](docs/Logical%20Architecture%20Diagram/packages-i18n.md)           |
 | `packages/iam`       | Package | IAM permissions, sessions, policies, fields, data, and operation logs. | [packages-iam.md](docs/Logical%20Architecture%20Diagram/packages-iam.md)             |
 | `packages/prisma`    | Package | Prisma schema splitting, validation, generation, and DB scripts.       | [packages-prisma.md](docs/Logical%20Architecture%20Diagram/packages-prisma.md)       |
 | `packages/schema`    | Package | Zod request/response/entity/form contracts.                            | [packages-schema.md](docs/Logical%20Architecture%20Diagram/packages-schema.md)       |
@@ -86,9 +85,7 @@ CI quality gates:
 ```mermaid
 flowchart LR
   User[User / Browser] --> Web[apps/web]
-  Visitor[Visitor / Browser] --> Site[apps/site]
   AdminUser[Admin / Browser] --> WebAdmin[apps/web-admin]
-  Site --> I18n[packages/i18n]
   Web --> UI[packages/ui]
   Web --> Hooks[packages/hooks]
   Web --> I18n[packages/i18n]
@@ -113,7 +110,6 @@ flowchart LR
   BackendAdmin --> Prisma
   Prisma --> DB[(Database)]
   Tests[test/automation] --> Web
-  Tests --> Site
   Tests --> WebAdmin
   Tests --> Backend
   Tests --> BackendAdmin
@@ -131,7 +127,6 @@ flowchart LR
 | [docs/Logical Architecture Diagram/00-system-overview.md](docs/Logical%20Architecture%20Diagram/00-system-overview.md)           | Runtime flow, design principles, and key scenarios.                                    |
 | [docs/Logical Architecture Diagram/01-workspace-boundaries.md](docs/Logical%20Architecture%20Diagram/01-workspace-boundaries.md) | Workspace boundaries, dependency direction, and forbidden edges.                       |
 | [docs/Logical Architecture Diagram/02-quality-gates.md](docs/Logical%20Architecture%20Diagram/02-quality-gates.md)               | Quality gates, test strategy, build, and delivery rules.                               |
-| [docs/Logical Architecture Diagram/apps-site.md](docs/Logical%20Architecture%20Diagram/apps-site.md)                             | VitePress promotional site architecture and boundaries.                                |
 | [docs/memory/plan-workflow.md](docs/memory/plan-workflow.md)                                                                     | Long-term memory for syncing multi-step plans to todolists.                            |
 | [docs/memory/frontend-react-doctor-workflow.md](docs/memory/frontend-react-doctor-workflow.md)                                   | Long-term memory for running React Doctor after frontend changes.                      |
 | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | Long-term memory for keeping README and architecture docs accurate after code changes. |
@@ -147,7 +142,6 @@ flowchart LR
 | `pnpm check`                                                  | Run version, hooks, i18n, backend architecture, type-check, and unit tests.                |
 | `pnpm build`                                                  | Run `pnpm check`, bump versions, then build all workspaces with Turbo.                     |
 | `pnpm type-check`                                             | Run TypeScript checks for every workspace.                                                 |
-| `pnpm --filter site dev`                                      | Start the VitePress promotional site.                                                      |
 | `pnpm lint` / `pnpm lint:fix`                                 | Run or fix ESLint, plus version/hooks/i18n/backend architecture checks.                    |
 | `pnpm format` / `pnpm format:fix`                             | Check or format repository files.                                                          |
 | `pnpm test`                                                   | Run unit, browser, and smoke tests.                                                        |
@@ -183,12 +177,11 @@ flowchart LR
 - Frontend apps must use shared shadcn/ui components and brand assets through `@tetap/ui`.
 - New or updated UI primitives belong in `packages/ui`.
 - Apps must not create app-local UI systems, `components/ui`, or feature-level CSS frameworks.
-- Only framework, VitePress theme runtime, or shadcn/ui generated base theme/runtime CSS is allowed.
+- Only framework or shadcn/ui generated base theme/runtime CSS is allowed.
 
 ### I18n Rules
 
-- All site, frontend, and backend user-visible copy must come from `@tetap/i18n`.
-- `apps/site` may only use `@tetap/i18n/site`.
+- All frontend and backend user-visible copy must come from `@tetap/i18n`.
 - `apps/web` may only use `@tetap/i18n/public`.
 - `apps/web-admin` may only use `@tetap/i18n/admin`.
 - `apps/backend` may only use `@tetap/i18n/backend` for response copy.

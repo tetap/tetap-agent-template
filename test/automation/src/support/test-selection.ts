@@ -45,17 +45,17 @@ export const testTargets: Record<TestType, readonly TestTarget[]> = {
       aliases: ['affected-tests', 'targeted-tests'],
       path: 'src/unit/test-selection.unit.test.ts',
     },
-    {
-      id: 'i18n-site',
-      aliases: ['site-i18n', 'vitepress-site-copy'],
-      path: 'src/unit/i18n-site.unit.test.ts',
-    },
   ],
   browser: [
     {
       id: 'ui-components',
       aliases: ['ui', 'components', 'shadcn'],
       path: 'src/browser/ui-components.browser.test.tsx',
+    },
+    {
+      id: 'web-home',
+      aliases: ['web', 'public-web', 'home', 'promotional-home'],
+      path: 'src/browser/web-home.browser.test.tsx',
     },
     {
       id: 'web-admin-dashboard',
@@ -128,27 +128,24 @@ export const impactRules: readonly ImpactRule[] = [
   },
   {
     prefixes: ['apps/web/'],
-    selections: [{ type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' }],
+    selections: [{ type: 'browser', path: 'src/browser/web-home.browser.test.tsx' }],
   },
   {
     prefixes: ['apps/web-admin/'],
     selections: [{ type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' }],
   },
   {
-    prefixes: ['apps/site/'],
-    selections: [{ type: 'unit', path: 'src/unit/i18n-site.unit.test.ts' }],
-  },
-  {
     prefixes: ['packages/hooks/', 'packages/ui/'],
     selections: [
       { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
+      { type: 'browser', path: 'src/browser/web-home.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' },
     ],
   },
   {
     prefixes: ['packages/i18n/'],
     selections: [
-      { type: 'unit', path: 'src/unit/i18n-site.unit.test.ts' },
+      { type: 'browser', path: 'src/browser/web-home.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' },
       { type: 'smoke', path: 'src/smoke/backend-health.smoke.test.ts' },

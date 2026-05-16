@@ -4,44 +4,7 @@ import type { zhCN } from './zh-CN.js';
 export const enUS = {
   app: {
     title: 'TETAP Agent Template',
-    eyebrow: 'Full-stack app template',
-    readyTitle: 'The web package now fits the TETAP workspace architecture',
-    startHint: 'Start building your frontend app from {{path}}.',
-    routerDescription:
-      'The current web app is wired into the pnpm workspace, Turbo, shared config, centralized hooks, and i18n rules.',
-    heroImageAlt: 'TETAP Agent Template application foundation illustration',
-    primaryAction: 'Review guardrails',
-    secondaryAction: 'Open reference links',
-    repositoryPathLabel: 'Entry file',
-    languageLabel: 'Language',
-    zhCN: '中文',
-    enUS: 'English',
     architectureTitle: 'Architecture guardrails',
-    architectureDescription:
-      'These capabilities come from shared workspace packages and should be reused by future pages, forms, and features.',
-    stackTitle: 'Integrated capabilities',
-    cards: {
-      config: {
-        title: 'Shared config',
-        description: 'Vite reads the unified env directory through @tetap/config/vite.',
-      },
-      i18n: {
-        title: 'Localized copy',
-        description: 'All interface copy comes from @tetap/i18n/react and centralized locale resources.',
-      },
-      hooks: {
-        title: 'Central hooks',
-        description: 'Pages read custom hooks from @tetap/hooks instead of scattering app-local implementations.',
-      },
-      quality: {
-        title: 'Quality gates',
-        description: 'The web package keeps lint, lint:fix, and type-check scripts in the Turbo pipeline.',
-      },
-    },
-    linksTitle: 'Reference links',
-    linksDescription: 'Common documentation links stay available for continued frontend expansion.',
-    viteDocs: 'Vite docs',
-    reactDocs: 'React docs',
     notFoundTitle: 'Page not found',
     notFound: 'The requested page could not be found.',
     unexpectedErrorTitle: 'Service temporarily unavailable',
@@ -49,165 +12,69 @@ export const enUS = {
   },
   web: {
     home: {
-      title: 'Hello World',
-      description: 'This is the web home page powered by React Router and shadcn/ui.',
-      content:
-        'Future pages should retrieve components from the shadcn/ui MCP or shadcn skill and reuse localized copy.',
-      action: 'Back home',
-    },
-  },
-  site: {
-    meta: {
-      title: 'TETAP Agent Template Site',
-      description: 'A VitePress technical documentation entry for an open-source enterprise app template.',
-    },
-    nav: {
-      ariaLabel: 'Promotional site navigation',
-      docs: 'Docs',
-      story: 'Scroll story',
-      architecture: 'Architecture',
-      quality: 'Quality gates',
-      cta: 'Get started',
-    },
-    a11y: {
-      heroActions: 'Hero actions',
-      metrics: 'Site metrics',
-      featureGallery: 'Feature capability list',
-    },
-    hero: {
-      eyebrow: 'Agent-first monorepo',
-      titleLine1: 'All-in-one',
-      titleLine2: 'application foundation',
+      eyebrow: 'Open-source enterprise full-stack template',
+      title: 'AI-assisted full-stack development template',
       description:
-        'React, Fastify, IAM, Prisma, i18n, schema, and automated tests are split into explicit workspaces so AI-assisted development keeps boundaries, types, and delivery gates intact.',
-      command: 'pnpm install && pnpm dev',
+        'TETAP puts React, Fastify, IAM, Prisma, Zod, i18n, and automated tests into one explicit monorepo so teams can use AI to move faster without losing boundaries, types, or quality gates.',
       primaryAction: 'Explore capabilities',
-      secondaryAction: 'Read architecture',
-      codeLabel: 'workspace.ts',
-      stageLabel: 'Architecture animation preview',
-      panels: {
-        compose: 'Compose runtime',
-        guard: 'Guard boundaries',
-        ship: 'Ship gates',
+      secondaryAction: 'Review workflow',
+      action: 'Back home',
+      metrics: {
+        workspaces: {
+          value: '12',
+          label: 'explicit workspaces',
+        },
+        gates: {
+          value: '8+',
+          label: 'quality gate scripts',
+        },
+        scopes: {
+          value: '4',
+          label: 'isolated i18n scopes',
+        },
       },
-    },
-    metrics: {
-      workspaces: {
-        value: '13',
-        label: 'explicit workspaces',
-      },
-      gates: {
-        value: '8+',
-        label: 'quality gate scripts',
-      },
-      scopes: {
-        value: '5',
-        label: 'isolated i18n scopes',
-      },
-    },
-    toolbox: {
-      eyebrow: 'Toolbox',
-      title: 'A complete enterprise app toolbox',
-      description:
-        'From page composition to identity controls, every layer has a clear owner so apps do not duplicate cross-cutting capability.',
-    },
-    scroll: {
-      eyebrow: 'Continuous story',
-      title: 'Boundaries, contracts, and gates in motion',
-      description:
-        'Read the engineering chain like an animation timeline: AI generation, workspace layering, permission contracts, and automated validation stay on a deliverable track.',
-      stageLabel: 'Continuous scrolling architecture story animation',
-      progressLabel: 'Scroll story progress',
-      loopLabel: 'workspace loop',
-      chapters: {
-        prompt: {
-          tag: '01 / Prompt',
-          title: 'Send ideas into engineering boundaries first',
+      capabilitiesTitle: 'Template capabilities',
+      capabilitiesDescription:
+        'Public web, admin, APIs, authorization, database, and testing capabilities are organized by workspace boundary.',
+      capabilities: {
+        frontend: {
+          title: 'React public entry',
           description:
-            'Agents can generate quickly, but every output still lands in the clear ownership of site, web, admin, backend, or packages.',
+            'The promotional landing page and future user-facing pages live in apps/web with @tetap/ui and @tetap/i18n/public.',
+        },
+        admin: {
+          title: 'Admin foundation',
+          description:
+            'Admin UI, dynamic menus, login sessions, and IAM management APIs are split across web-admin and backend-admin.',
+        },
+        contracts: {
+          title: 'Contract first',
+          description:
+            'Frontend and backend request, response, and form schemas are maintained with Zod in @tetap/schema.',
+        },
+        gates: {
+          title: 'Automated quality gates',
+          description:
+            'Lint, format, type-check, unit, Browser Mode, smoke, and affected tests cover the delivery path.',
+        },
+      },
+      workflowTitle: 'Fixed delivery rhythm',
+      workflowDescription:
+        'Every change starts with boundary context and closes with targeted validation, docs sync, and quality gates.',
+      workflow: {
+        inspect: {
+          title: 'Read context',
+          description: 'Start with AGENTS, README, architecture docs, and the target workspace README.',
         },
         compose: {
-          tag: '02 / Compose',
-          title: 'Shared capability flows one way',
-          description:
-            'UI, i18n, schema, IAM, Prisma, and config settle inside packages while apps only compose runtime and pages.',
+          title: 'Minimal composition',
+          description: 'Apps compose runtime, routes, and pages; cross-cutting capabilities live in packages.',
         },
         verify: {
-          tag: '03 / Verify',
-          title: 'Quality gates keep drift contained',
-          description:
-            'Lint, format, type-check, affected tests, Browser Mode, and smoke checks close the loop before changes reach main.',
-        },
-        publish: {
-          tag: '04 / Publish',
-          title: 'The site and docs publish from one source',
-          description:
-            'VitePress emits the static site and GitHub Pages deploys it so positioning, rules, and entry points are visible to users.',
+          title: 'Close with validation',
+          description: 'Run affected/target first, then lint, format, check, and required Browser/smoke gates.',
         },
       },
-    },
-    features: {
-      boundaries: {
-        title: 'Workspace boundaries',
-        description:
-          'Apps own runtime and page composition. Shared capabilities live in packages with one-way dependencies.',
-        link: 'View boundary rules',
-        code: 'apps/* -> packages/*',
-      },
-      i18n: {
-        title: 'Scoped i18n',
-        description:
-          'Public, admin, backend, and admin API surfaces use isolated entrypoints for all user-visible copy.',
-        link: 'View i18n rules',
-        code: '@tetap/i18n/site',
-      },
-      iam: {
-        title: 'IAM core',
-        description:
-          'RBAC, PBAC, field permissions, session invalidation, and operation-log primitives live in @tetap/iam.',
-        link: 'View permission model',
-        code: 'policyEngine.can()',
-      },
-      backend: {
-        title: 'Fastify layering',
-        description: 'Routes only register entrypoints. Validation, error decisions, and responses move into services.',
-        link: 'View backend layers',
-        code: 'route -> service',
-      },
-      schema: {
-        title: 'Contract first',
-        description: 'Frontend and backend request, response, and form schemas are defined with Zod in @tetap/schema.',
-        link: 'View schema rules',
-        code: 'z.object({...})',
-      },
-      testing: {
-        title: 'Automated gates',
-        description: 'Vitest unit, Browser Mode, smoke tests, and affected selection cover the delivery path.',
-        link: 'View test strategy',
-        code: 'pnpm test:affected',
-      },
-    },
-    workflow: {
-      eyebrow: 'Workflow',
-      title: 'A fixed rhythm from idea to handoff',
-      inspect: {
-        title: 'Read context',
-        description: 'Start with AGENTS, README, architecture docs, and the target workspace guide.',
-      },
-      implement: {
-        title: 'Minimal change',
-        description: 'Touch only the files the task needs, reusing shared packages and existing patterns.',
-      },
-      verify: {
-        title: 'Targeted validation',
-        description: 'Run affected or target tests first, then close with lint, format, and check.',
-      },
-    },
-    cta: {
-      eyebrow: 'Ready',
-      title: 'Keep the landing page, docs, and engineering rules in the same monorepo.',
-      description: 'This VitePress app can grow into a product site, architecture gateway, or open-source docs home.',
-      action: 'Open README',
     },
   },
   webAdmin: {

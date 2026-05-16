@@ -1,6 +1,6 @@
 # @tetap/i18n
 
-`@tetap/i18n` 是站点、前端和后端共享多语言包，负责 locale resources、translation core、React provider、site translator 和 Node request locale helper。
+`@tetap/i18n` 是前端和后端共享多语言包，负责 locale resources、translation core、React provider 和 Node request locale helper。
 
 ## Architecture Links
 
@@ -15,7 +15,6 @@
 | `@tetap/i18n/react`         | Legacy full-app React provider/context for non-scoped consumers. |
 | `@tetap/i18n/public`        | Public web translator, resources, types, React provider/context. |
 | `@tetap/i18n/admin`         | Admin web translator, resources, types, React provider/context.  |
-| `@tetap/i18n/site`          | VitePress site translator, resources, and key types.             |
 | `@tetap/i18n/backend`       | Public backend response translator, resources, and key types.    |
 | `@tetap/i18n/backend-admin` | Backend-admin response translator, resources, and key types.     |
 | `@tetap/i18n/node`          | Node request locale resolution and request translator helpers.   |
@@ -29,7 +28,6 @@
 | `createAppI18n`                                     | Create the full legacy app translator from all locale resources.    |
 | `createPublicI18n` / `PublicI18nProvider`           | Public web translator and React provider limited to public keys.    |
 | `createAdminI18n` / `AdminI18nProvider`             | Admin web translator and React provider limited to admin keys.      |
-| `createSiteI18n`                                    | Site translator limited to `site.*` keys.                           |
 | `createBackendI18n`                                 | Public backend translator limited to backend response keys.         |
 | `createBackendAdminI18n`                            | Backend-admin translator limited to admin API response keys.        |
 | `parseAcceptLanguage` / `resolveLocale`             | Parse request language headers and choose a supported locale.       |
@@ -46,15 +44,14 @@
 
 ## Scope Isolation
 
-| Consumer             | Allowed Entry               | Notes                               |
-| -------------------- | --------------------------- | ----------------------------------- |
-| `apps/site`          | `@tetap/i18n/site`          | VitePress marketing/docs copy only. |
-| `apps/web`           | `@tetap/i18n/public`        | Public browser UI copy only.        |
-| `apps/web-admin`     | `@tetap/i18n/admin`         | Admin browser UI copy only.         |
-| `apps/backend`       | `@tetap/i18n/backend`       | Public API response messages only.  |
-| `apps/backend-admin` | `@tetap/i18n/backend-admin` | Admin API response messages only.   |
+| Consumer             | Allowed Entry               | Notes                              |
+| -------------------- | --------------------------- | ---------------------------------- |
+| `apps/web`           | `@tetap/i18n/public`        | Public browser UI copy only.       |
+| `apps/web-admin`     | `@tetap/i18n/admin`         | Admin browser UI copy only.        |
+| `apps/backend`       | `@tetap/i18n/backend`       | Public API response messages only. |
+| `apps/backend-admin` | `@tetap/i18n/backend-admin` | Admin API response messages only.  |
 
-Do not import the root `@tetap/i18n` resource in apps. The scoped entrypoints prevent site, public, admin, backend, and backend-admin modules from reading each other's message keys.
+Do not import the root `@tetap/i18n` resource in apps. The scoped entrypoints prevent public, admin, backend, and backend-admin modules from reading each other's message keys.
 
 ## Scripts
 

@@ -1,7 +1,7 @@
 {
   "name": "@tetap/i18n",
   "version": "1.0.1",
-  "description": "Scoped internationalization utilities for site, public web, admin web, public backend, and backend-admin.",
+  "description": "Scoped internationalization utilities for public web, admin web, public backend, and backend-admin.",
   "private": true,
   "sideEffects": false,
   "type": "module",
@@ -26,10 +26,6 @@
     "./admin": {
       "types": "./dist/admin.d.ts",
       "import": "./dist/admin.js"
-    },
-    "./site": {
-      "types": "./dist/site.d.ts",
-      "import": "./dist/site.js"
     },
     "./backend": {
       "types": "./dist/backend.d.ts",

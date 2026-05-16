@@ -2,27 +2,25 @@
 
 ## 定位
 
-TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的全栈 starter。它通过清晰 workspace 边界把快速迭代中最容易失控的能力集中管理：配置、UI、文案、契约、hooks、数据库、VitePress 宣传站、公共 Web、后台管理 Web、公共 API、后台管理 API 和测试。
+TETAP Agent Template 是一个面向 AI-assisted / Vibe Coding 的全栈 starter。它通过清晰 workspace 边界把快速迭代中最容易失控的能力集中管理：配置、UI、文案、契约、hooks、数据库、公共 Web、后台管理 Web、公共 API、后台管理 API 和测试。
 
 ## 设计目标
 
-| 目标                    | 说明                                                                                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Thin Apps               | apps 只保留 runtime、路由、页面组合和业务入口，不沉淀跨切面能力。                                                                           |
-| Public/Admin/Site Split | 宣传/文档站属于 `apps/site`，公共页面/API 属于 `apps/web` + `apps/backend`，后台管理页面/API 属于 `apps/web-admin` + `apps/backend-admin`。 |
-| Shared Capabilities     | 配置、UI、i18n、schema、hooks、IAM、Prisma 由 packages 统一提供。                                                                           |
-| Schema-first            | 前后端交互和统一响应体先在 `@tetap/schema` 建模。                                                                                           |
-| Locale-first            | 用户可见文案先进入 `@tetap/i18n`，再被 UI/API 引用。                                                                                        |
-| Route-light Backend     | Fastify routes 只注册；所有逻辑进入 services。                                                                                              |
-| Test-aware Development  | 每次功能变更都考虑 unit、Browser Mode UI、smoke 和 affected test mapping。                                                                  |
+| 目标                   | 说明                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Thin Apps              | apps 只保留 runtime、路由、页面组合和业务入口，不沉淀跨切面能力。                                                      |
+| Public/Admin Split     | 宣传页与公共页面/API 属于 `apps/web` + `apps/backend`，后台管理页面/API 属于 `apps/web-admin` + `apps/backend-admin`。 |
+| Shared Capabilities    | 配置、UI、i18n、schema、hooks、IAM、Prisma 由 packages 统一提供。                                                      |
+| Schema-first           | 前后端交互和统一响应体先在 `@tetap/schema` 建模。                                                                      |
+| Locale-first           | 用户可见文案先进入 `@tetap/i18n`，再被 UI/API 引用。                                                                   |
+| Route-light Backend    | Fastify routes 只注册；所有逻辑进入 services。                                                                         |
+| Test-aware Development | 每次功能变更都考虑 unit、Browser Mode UI、smoke 和 affected test mapping。                                             |
 
 ## 运行时交互
 
 ```mermaid
 sequenceDiagram
   participant User as User / Browser
-  participant Visitor as Visitor / Browser
-  participant Site as apps/site
   participant AdminUser as Admin / Browser
   participant Web as apps/web
   participant WebAdmin as apps/web-admin
@@ -36,10 +34,8 @@ sequenceDiagram
   participant Config as packages/config
   participant Prisma as packages/prisma
 
-  Visitor->>Site: Open promotional/docs site
-  User->>Web: Open public application
+  User->>Web: Open public promotional/application page
   AdminUser->>WebAdmin: Open admin application
-  Site->>I18n: Resolve site localized copy
   Web->>Config: Use Vite env dir
   WebAdmin->>Config: Use Vite env dir
   Web->>I18n: Resolve public localized copy
@@ -68,8 +64,7 @@ sequenceDiagram
 
 ## 关键边界
 
-- `apps/site` 是 VitePress 宣传/文档站，只承载静态站点 runtime、theme 和页面组合，文案使用 `@tetap/i18n/site`。
-- `apps/web` 不拥有 UI 库、hooks、i18n 资源、schema 定义或 env 策略，也不承载后台管理页面。
+- `apps/web` 承载公共宣传页、公共页面 runtime 和路由组合；它不拥有 UI 库、hooks、i18n 资源、schema 定义或 env 策略，也不承载后台管理页面。
 - `apps/web-admin` 是后台管理页面唯一浏览器入口，不拥有 UI 库、hooks、i18n 资源、schema 定义或 env 策略。
 - `apps/backend` 不拥有 schema package、Prisma schema，也不允许在 routes 写业务逻辑。
 - `apps/backend-admin` 是后台管理接口唯一服务端入口，公共 backend 不承载 admin APIs。
@@ -79,18 +74,17 @@ sequenceDiagram
 
 ## 典型扩展路径
 
-| 场景           | 推荐路径                                                                                                        |
-| -------------- | --------------------------------------------------------------------------------------------------------------- |
-| 新宣传/文档页  | i18n 文案 → `apps/site` markdown/theme component → VitePress build → targeted unit/build 验证。                 |
-| 新页面         | i18n 文案 → `apps/web` route/page → `@tetap/ui` 组件组合 → Browser Mode 测试。                                  |
-| 新后台管理页面 | i18n 文案 → `apps/web-admin` route/page → `@tetap/ui` 组件组合 → `backend-admin` contract → Browser Mode 测试。 |
-| 新公共 API     | `@tetap/schema` contract → `apps/backend` service → thin route registration → smoke/unit tests。                |
-| 新后台管理 API | `@tetap/schema` contract → `apps/backend-admin` service → thin route registration → admin smoke tests。         |
-| 新权限能力     | `@tetap/iam` engine → `@tetap/schema` contract → `backend-admin` hook/service → unit/smoke/browser tests。      |
-| 新共享 UI      | shadcn/ui MCP/CLI/skill → `packages/ui` → export → docs/test mapping。                                          |
-| 新配置项       | `packages/config/env` 模板 → typed parser → Node/Vite helper 消费。                                             |
-| 新数据模型     | `packages/prisma/schema/<Model>.prisma` → root db scripts → service 层使用。                                    |
-| 新通用 hook    | `packages/hooks/src/store` → export → `pnpm hooks:check`。                                                      |
+| 场景            | 推荐路径                                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------------------- |
+| 新宣传/公共页面 | i18n 文案 → `apps/web` route/page → `@tetap/ui` 组件组合 → Browser Mode 测试。                                  |
+| 新后台管理页面  | i18n 文案 → `apps/web-admin` route/page → `@tetap/ui` 组件组合 → `backend-admin` contract → Browser Mode 测试。 |
+| 新公共 API      | `@tetap/schema` contract → `apps/backend` service → thin route registration → smoke/unit tests。                |
+| 新后台管理 API  | `@tetap/schema` contract → `apps/backend-admin` service → thin route registration → admin smoke tests。         |
+| 新权限能力      | `@tetap/iam` engine → `@tetap/schema` contract → `backend-admin` hook/service → unit/smoke/browser tests。      |
+| 新共享 UI       | shadcn/ui MCP/CLI/skill → `packages/ui` → export → docs/test mapping。                                          |
+| 新配置项        | `packages/config/env` 模板 → typed parser → Node/Vite helper 消费。                                             |
+| 新数据模型      | `packages/prisma/schema/<Model>.prisma` → root db scripts → service 层使用。                                    |
+| 新通用 hook     | `packages/hooks/src/store` → export → `pnpm hooks:check`。                                                      |
 
 ## 架构反模式
 

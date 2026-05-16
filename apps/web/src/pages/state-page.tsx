@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@tetap/ui';
 import { usePublicT } from '@tetap/hooks';
 
@@ -5,7 +6,7 @@ type WebStatePageProps = {
   status: '404' | '500';
 };
 
-export const WebStatePage = ({ status }: WebStatePageProps) => {
+export const WebStatePage = memo(function WebStatePage({ status }: WebStatePageProps) {
   const t = usePublicT();
   const isNotFound = status === '404';
 
@@ -27,4 +28,4 @@ export const WebStatePage = ({ status }: WebStatePageProps) => {
       </Card>
     </main>
   );
-};
+});

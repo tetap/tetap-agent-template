@@ -12,7 +12,6 @@ handoff. This check complements, but does not replace, lint, format, type-check,
 - Changing `apps/web`, `apps/web-admin`, or React-facing page/runtime code.
 - Changing shared frontend packages such as `packages/ui`, `packages/hooks`, frontend form helpers, or frontend i18n usage.
 - Changing frontend-facing styles, layout, interaction behavior, accessibility, or user-visible UI copy.
-- Changing `apps/site` VitePress UI/layout when the task is frontend-facing, even if the changed files are not React files.
 
 ## Required Workflow
 
@@ -42,6 +41,10 @@ handoff. This check complements, but does not replace, lint, format, type-check,
   import them into the entry component.
 - Prefer file names that describe the responsibility, such as `admin-router.tsx`, `lazy-pages.ts`, `route-guards.tsx`, or
   `route-fallback.tsx`.
+- Export React components through `memo(...)` by default unless there is a clear reason not to memoize.
+- Functions declared inside React components must use `useCallback` so event handlers, render helpers, and effect-invoked
+  callbacks have stable identities. If a function cannot be memoized cleanly, move it outside the component or document the
+  exception in the handoff.
 
 ## Completion Criteria
 

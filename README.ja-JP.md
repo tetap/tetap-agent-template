@@ -16,14 +16,14 @@
 
 ## 概要
 
-TETAP Agent Template は、AI 支援開発向けのオープンソース full-stack monorepo テンプレートです。VitePress site、public web、admin web、Fastify API、IAM、設定、UI、i18n、schema、Prisma、自動テストを明確な workspace に分割し、高速な開発と強いアーキテクチャ境界を両立します。
+TETAP Agent Template は、AI 支援開発向けのオープンソース full-stack monorepo テンプレートです。Public web、admin web、Fastify API、IAM、設定、UI、i18n、schema、Prisma、自動テストを明確な workspace に分割し、高速な開発と強いアーキテクチャ境界を両立します。
 
 ## 主な特徴
 
 - **エンタープライズ IAM 基盤**: JWT、RBAC、PBAC、フィールド権限、動的メニュー、永続化セッション、トークン blacklist、強制ログアウト、操作ログ。
 - **Contract-first 開発**: request、response、form schema を `@tetap/schema` に集約し、Zod で再利用します。
-- **Scoped i18n**: site、public web、admin web、backend、backend-admin が別々の i18n entrypoint を使用します。
-- **VitePress promotional site**: `apps/site` は site 専用 i18n scope と GitHub Pages deployment を持つ技術紹介サイトです。
+- **Scoped i18n**: public web、admin web、backend、backend-admin が別々の i18n entrypoint を使用します。
+- **Public promotional web**: `apps/web` がシンプルな promotional landing page と将来の user-facing pages の React runtime を担当します。
 - **共有 UI システム**: app は `@tetap/ui` の shadcn/ui components と brand assets を組み合わせます。
 - **安全なデフォルト**: Fastify security plugins、CORS allowlist、body limit、rate limit、統一エラー応答、route architecture checks。
 - **自動品質ゲート**: TypeScript、ESLint、Prettier、architecture checks、unit test、Browser Mode test、smoke test。
@@ -61,21 +61,20 @@ pnpm build
 
 ## Workspace
 
-| Workspace            | 役割                                                                 |
-| -------------------- | -------------------------------------------------------------------- |
-| `apps/site`          | VitePress promotional/docs site runtime と static page composition。 |
-| `apps/web`           | Public React + Vite runtime、routing、page composition。             |
-| `apps/web-admin`     | Admin React + Vite runtime と admin pages。                          |
-| `apps/backend`       | Public Fastify runtime、plugins、routes、services。                  |
-| `apps/backend-admin` | Admin Fastify runtime と admin APIs。                                |
-| `packages/config`    | typed env と Node/Vite config entrypoints。                          |
-| `packages/hooks`     | shared React hooks と form helpers。                                 |
-| `packages/i18n`      | locale resources、translation core、site/React/Node helpers。        |
-| `packages/iam`       | IAM permissions、sessions、policies、fields、data、operation logs。  |
-| `packages/prisma`    | Prisma schema、validation、generation、DB scripts。                  |
-| `packages/schema`    | Zod request/response/entity/form contracts。                         |
-| `packages/ui`        | shadcn/ui components、design-system styles、brand SVG。              |
-| `test/automation`    | Vitest unit、Browser Mode UI、smoke、targeted tests。                |
+| Workspace            | 役割                                                                |
+| -------------------- | ------------------------------------------------------------------- |
+| `apps/web`           | Public React + Vite runtime、promotional landing、routing、pages。  |
+| `apps/web-admin`     | Admin React + Vite runtime と admin pages。                         |
+| `apps/backend`       | Public Fastify runtime、plugins、routes、services。                 |
+| `apps/backend-admin` | Admin Fastify runtime と admin APIs。                               |
+| `packages/config`    | typed env と Node/Vite config entrypoints。                         |
+| `packages/hooks`     | shared React hooks と form helpers。                                |
+| `packages/i18n`      | locale resources、translation core、React/Node helpers。            |
+| `packages/iam`       | IAM permissions、sessions、policies、fields、data、operation logs。 |
+| `packages/prisma`    | Prisma schema、validation、generation、DB scripts。                 |
+| `packages/schema`    | Zod request/response/entity/form contracts。                        |
+| `packages/ui`        | shadcn/ui components、design-system styles、brand SVG。             |
+| `test/automation`    | Vitest unit、Browser Mode UI、smoke、targeted tests。               |
 
 ## コントリビューション
 

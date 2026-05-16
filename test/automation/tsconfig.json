@@ -18,7 +18,6 @@
       "@tetap/i18n/react": ["../../packages/i18n/src/react.ts"],
       "@tetap/i18n/public": ["../../packages/i18n/src/public.ts"],
       "@tetap/i18n/admin": ["../../packages/i18n/src/admin.ts"],
-      "@tetap/i18n/site": ["../../packages/i18n/src/site.ts"],
       "@tetap/i18n/backend": ["../../packages/i18n/src/backend.ts"],
       "@tetap/i18n/backend-admin": ["../../packages/i18n/src/backend-admin.ts"],
       "@tetap/iam": ["../../packages/iam/src/index.ts"],

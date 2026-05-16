@@ -1,42 +1,7 @@
 export const zhCN = {
   app: {
     title: 'TETAP Agent Template',
-    eyebrow: '全栈应用模板',
-    readyTitle: 'Web 包架构已接入 TETAP 工作区',
-    startHint: '从 {{path}} 开始构建你的前端应用。',
-    routerDescription: '当前 Web 应用已接入 pnpm workspace、Turbo、共享配置、集中 hooks 和多语言规则。',
-    heroImageAlt: 'TETAP Agent Template 应用基座插画',
-    primaryAction: '查看架构约束',
-    secondaryAction: '查看参考入口',
-    repositoryPathLabel: '入口文件',
-    languageLabel: '语言',
-    zhCN: '中文',
-    enUS: 'English',
     architectureTitle: '架构约束',
-    architectureDescription: '这些能力来自 workspace 共享包，后续页面、表单和业务模块应继续复用。',
-    stackTitle: '已接入能力',
-    cards: {
-      config: {
-        title: '共享配置',
-        description: 'Vite 通过 @tetap/config/vite 读取统一 env 目录。',
-      },
-      i18n: {
-        title: '多语言文案',
-        description: '所有界面文案通过 @tetap/i18n/react 和集中 locale 资源输出。',
-      },
-      hooks: {
-        title: '集中 hooks',
-        description: '页面只从 @tetap/hooks 读取自定义 hooks，避免 app 内分散实现。',
-      },
-      quality: {
-        title: '质量门禁',
-        description: 'Web 包保留 lint、lint:fix 和 type-check 脚本，接入 Turbo 流水线。',
-      },
-    },
-    linksTitle: '参考入口',
-    linksDescription: '保留常用文档入口，方便继续扩展前端能力。',
-    viteDocs: 'Vite 文档',
-    reactDocs: 'React 文档',
     notFoundTitle: '页面未找到',
     notFound: '请求的页面不存在。',
     unexpectedErrorTitle: '服务暂时不可用',
@@ -44,156 +9,63 @@ export const zhCN = {
   },
   web: {
     home: {
-      title: '你好，世界',
-      description: '这是基于 React Router 和 shadcn/ui 的 Web 首页。',
-      content: '后续页面请从 shadcn/ui MCP 或 shadcn skill 获取组件，并复用多语言文案。',
+      eyebrow: '开源企业级全栈模板',
+      title: 'AI-assisted 全栈开发项目模板',
+      description:
+        'TETAP 把 React、Fastify、IAM、Prisma、Zod、i18n 和自动化测试放进一个清晰的 monorepo，让团队用 AI 加速交付时仍然保留边界、类型和质量门禁。',
+      primaryAction: '查看核心能力',
+      secondaryAction: '查看交付流程',
       action: '回到首页',
-    },
-  },
-  site: {
-    meta: {
-      title: 'TETAP Agent Template 宣传站',
-      description: '面向开源企业应用模板的 VitePress 技术文档入口。',
-    },
-    nav: {
-      ariaLabel: '宣传站导航',
-      docs: '文档',
-      story: '滚动叙事',
-      architecture: '架构',
-      quality: '质量门禁',
-      cta: '开始使用',
-    },
-    a11y: {
-      heroActions: '首页操作',
-      metrics: '站点指标',
-      featureGallery: '功能能力列表',
-    },
-    hero: {
-      eyebrow: 'Agent-first monorepo',
-      titleLine1: 'All-in-one',
-      titleLine2: '应用工程基座',
-      description:
-        '把 React、Fastify、IAM、Prisma、i18n、schema 和自动化测试拆进清晰 workspace，让 AI-assisted 开发仍然保持边界、类型和交付门禁。',
-      command: 'pnpm install && pnpm dev',
-      primaryAction: '查看工作区能力',
-      secondaryAction: '阅读架构文档',
-      codeLabel: 'workspace.ts',
-      stageLabel: '架构动画预览',
-      panels: {
-        compose: '组合 runtime',
-        guard: '校验边界',
-        ship: '交付门禁',
+      metrics: {
+        workspaces: {
+          value: '12',
+          label: '显式 workspace',
+        },
+        gates: {
+          value: '8+',
+          label: '质量门禁脚本',
+        },
+        scopes: {
+          value: '4',
+          label: '隔离 i18n scope',
+        },
       },
-    },
-    metrics: {
-      workspaces: {
-        value: '13',
-        label: '显式 workspace',
+      capabilitiesTitle: '模板内置能力',
+      capabilitiesDescription: '公开前台、后台管理、API、权限、数据库和测试能力都按 workspace 边界组织。',
+      capabilities: {
+        frontend: {
+          title: 'React 前台入口',
+          description: '公开宣传页和后续用户页面统一落在 apps/web，复用 @tetap/ui 与 @tetap/i18n/public。',
+        },
+        admin: {
+          title: '后台管理基座',
+          description: '后台 UI、动态菜单、登录会话和 IAM 管理接口分别由 web-admin 与 backend-admin 承担。',
+        },
+        contracts: {
+          title: '契约优先',
+          description: '前后端 request、response 和表单 schema 由 @tetap/schema 用 Zod 维护。',
+        },
+        gates: {
+          title: '自动化质量门禁',
+          description: 'lint、format、type-check、unit、Browser Mode、smoke 和 affected tests 覆盖交付链路。',
+        },
       },
-      gates: {
-        value: '8+',
-        label: '质量门禁脚本',
-      },
-      scopes: {
-        value: '5',
-        label: '隔离 i18n scope',
-      },
-    },
-    toolbox: {
-      eyebrow: 'Toolbox',
-      title: '完整的企业应用工具箱',
-      description: '从页面组合到权限中台，每一层都有明确 owner，避免 app 内重复实现横切能力。',
-    },
-    scroll: {
-      eyebrow: 'Continuous story',
-      title: '边界、契约、门禁持续滚动',
-      description:
-        '像调试一段动画时间线一样浏览工程链路：从 AI 生成、workspace 分层、权限契约到自动验证，每一帧都被约束在可交付的轨道上。',
-      stageLabel: '持续滚动架构叙事动画',
-      progressLabel: '滚动叙事进度',
-      loopLabel: 'workspace loop',
-      chapters: {
-        prompt: {
-          tag: '01 / Prompt',
-          title: '先把想法送进工程边界',
-          description: 'Agent 可以快速生成代码，但落点必须进入 site、web、admin、backend 或 packages 的明确职责范围。',
+      workflowTitle: '固定交付节奏',
+      workflowDescription: '每次变更从边界阅读开始，以定向验证、文档同步和质量门禁收口。',
+      workflow: {
+        inspect: {
+          title: '读取上下文',
+          description: '先看 AGENTS、README、架构文档和目标 workspace README。',
         },
         compose: {
-          tag: '02 / Compose',
-          title: '共享能力沿单向依赖流动',
-          description: 'UI、i18n、schema、IAM、Prisma 和 config 都在 packages 内沉淀，apps 只组合 runtime 和页面。',
+          title: '最小组合',
+          description: 'apps 只组合 runtime、路由和页面；横切能力进入 packages。',
         },
         verify: {
-          tag: '03 / Verify',
-          title: '质量门禁持续拦截偏移',
-          description: 'lint、format、type-check、affected、Browser Mode 和 smoke 让修改在进入主干前完成闭环。',
-        },
-        publish: {
-          tag: '04 / Publish',
-          title: '宣传站和文档同源发布',
-          description: 'VitePress 输出静态站点，GitHub Pages 自动部署，把项目定位、规则和入口展示给使用者。',
+          title: '验证收口',
+          description: '先跑 affected/target，再跑 lint、format、check 和必要 Browser/smoke gates。',
         },
       },
-    },
-    features: {
-      boundaries: {
-        title: 'Workspace 边界',
-        description: 'apps 只负责 runtime 和页面组合，共享能力进入 packages，依赖方向保持单向。',
-        link: '查看边界规则',
-        code: 'apps/* -> packages/*',
-      },
-      i18n: {
-        title: 'Scoped i18n',
-        description: '公共站、后台、后端和后台 API 使用独立入口，用户可见文案集中维护。',
-        link: '查看 i18n 规则',
-        code: '@tetap/i18n/site',
-      },
-      iam: {
-        title: 'IAM 核心',
-        description: 'RBAC、PBAC、字段权限、会话失效和操作日志原语统一进入 @tetap/iam。',
-        link: '查看权限模型',
-        code: 'policyEngine.can()',
-      },
-      backend: {
-        title: 'Fastify 分层',
-        description: 'route 只注册入口，校验、错误决策和响应体构造全部下沉到 service。',
-        link: '查看后端分层',
-        code: 'route -> service',
-      },
-      schema: {
-        title: '契约优先',
-        description: '前后端 request、response 和 form schema 统一由 @tetap/schema 用 Zod 定义。',
-        link: '查看 schema 规则',
-        code: 'z.object({...})',
-      },
-      testing: {
-        title: '自动化门禁',
-        description: 'Vitest 单元、Browser Mode、smoke 和 affected 选择器共同覆盖交付链路。',
-        link: '查看测试策略',
-        code: 'pnpm test:affected',
-      },
-    },
-    workflow: {
-      eyebrow: 'Workflow',
-      title: '从想法到交付的固定节奏',
-      inspect: {
-        title: '读取上下文',
-        description: '先看 AGENTS、README、架构文档和目标 workspace 说明。',
-      },
-      implement: {
-        title: '最小变更',
-        description: '只改当前目标需要的文件，复用共享 package 和现有模式。',
-      },
-      verify: {
-        title: '定向验证',
-        description: '先跑 affected 或 target，再执行 lint、format、check 收口。',
-      },
-    },
-    cta: {
-      eyebrow: 'Ready',
-      title: '把宣传页、文档和工程规则放进同一个 monorepo。',
-      description: '这个 VitePress app 可以作为产品官网、架构入口或开源项目文档首页继续扩展。',
-      action: '打开 README',
     },
   },
   webAdmin: {
