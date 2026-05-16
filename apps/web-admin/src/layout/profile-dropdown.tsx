@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Link } from 'react-router';
 import { BadgeCheck, Bell, LogOut } from 'lucide-react';
 import {
@@ -16,13 +16,16 @@ import {
 import { useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import { SignOutDialog } from './sign-out-dialog.js';
 
-export const ProfileDropdown = () => {
+export const ProfileDropdown = memo(function ProfileDropdown() {
   const t = useAdminT();
   const user = useAdminSessionStore(state => state.auth.user);
   const [signOutOpen, setSignOutOpen] = useState(false);
   const displayName = user?.name ?? t('webAdmin.layout.user.name');
   const displayEmail = user?.email ?? t('webAdmin.layout.user.email');
   const fallback = displayName.slice(0, 2).toUpperCase();
+  const openSignOut = useCallback(() => {
+    setSignOutOpen(true);
+  }, []);
 
   return (
     <>
@@ -62,7 +65,7 @@ export const ProfileDropdown = () => {
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setSignOutOpen(true)}>
+          <DropdownMenuItem onClick={openSignOut}>
             <LogOut />
             {t('webAdmin.layout.user.signOut')}
           </DropdownMenuItem>
@@ -71,4 +74,4 @@ export const ProfileDropdown = () => {
       <SignOutDialog onOpenChange={setSignOutOpen} open={signOutOpen} />
     </>
   );
-};
+});

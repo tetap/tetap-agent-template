@@ -1,4 +1,5 @@
-import { Laptop, Moon, Sun } from 'lucide-react';
+import { memo, useCallback } from 'react';
+import { Laptop, Moon, Sun, type LucideIcon } from 'lucide-react';
 import {
   Button,
   DropdownMenu,
@@ -15,10 +16,36 @@ const themeOptions = [
   { icon: Laptop, key: 'system', labelKey: 'webAdmin.settings.theme.system' },
 ] as const;
 
-export const ThemeSwitch = () => {
+type ThemeOptionItemProps = {
+  icon: LucideIcon;
+  label: string;
+  onSelect: (theme: AdminTheme) => void;
+  theme: AdminTheme;
+};
+
+const ThemeOptionItem = memo(function ThemeOptionItem({ icon: Icon, label, onSelect, theme }: ThemeOptionItemProps) {
+  const handleSelect = useCallback(() => {
+    onSelect(theme);
+  }, [onSelect, theme]);
+
+  return (
+    <DropdownMenuItem onClick={handleSelect}>
+      <Icon />
+      {label}
+    </DropdownMenuItem>
+  );
+});
+
+export const ThemeSwitch = memo(function ThemeSwitch() {
   const t = useAdminT();
   const setTheme = useAdminThemeStore(state => state.setTheme);
   const theme = useAdminThemeStore(state => state.theme);
+  const selectTheme = useCallback(
+    (nextTheme: AdminTheme) => {
+      setTheme(nextTheme);
+    },
+    [setTheme],
+  );
 
   return (
     <DropdownMenu>
@@ -34,17 +61,18 @@ export const ThemeSwitch = () => {
       <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           {themeOptions.map(option => {
-            const Icon = option.icon;
-
             return (
-              <DropdownMenuItem key={option.key} onClick={() => setTheme(option.key as AdminTheme)}>
-                <Icon />
-                {t(option.labelKey)}
-              </DropdownMenuItem>
+              <ThemeOptionItem
+                icon={option.icon}
+                key={option.key}
+                label={t(option.labelKey)}
+                onSelect={selectTheme}
+                theme={option.key}
+              />
             );
           })}
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+});

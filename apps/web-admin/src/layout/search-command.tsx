@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { ArrowRight, Search } from 'lucide-react';
 import {
@@ -17,29 +17,71 @@ import { adminMenuTitleKeyMap } from './menu-labels.js';
 const flattenMenus = (menus: readonly AdminSessionMenuNode[]): AdminSessionMenuNode[] =>
   menus.flatMap(menu => [menu, ...flattenMenus(menu.children)]);
 
-export const SearchCommand = () => {
+type SearchCommandMenuItemProps = {
+  label: string;
+  onRun: (path: string) => void;
+  path: string;
+  value: string;
+};
+
+const SearchCommandMenuItem = memo(function SearchCommandMenuItem({
+  label,
+  onRun,
+  path,
+  value,
+}: SearchCommandMenuItemProps) {
+  const handleSelect = useCallback(() => {
+    onRun(path);
+  }, [onRun, path]);
+
+  return (
+    <CommandItem onSelect={handleSelect} value={value}>
+      <ArrowRight />
+      {label}
+    </CommandItem>
+  );
+});
+
+export const SearchCommand = memo(function SearchCommand() {
   const t = useAdminT();
   const navigate = useNavigate();
   const menus = useAdminSessionStore(state => state.auth.menus);
   const [open, setOpen] = useState(false);
-  const searchableMenus = flattenMenus(menus);
-  const getMenuLabel = (menu: AdminSessionMenuNode) => {
-    const titleKey = adminMenuTitleKeyMap[menu.id];
+  const handleKeyDownRef = useRef<(event: KeyboardEvent) => void>(() => undefined);
+  const searchableMenus = useMemo(() => flattenMenus(menus), [menus]);
+  const getMenuLabel = useCallback(
+    (menu: AdminSessionMenuNode) => {
+      const titleKey = adminMenuTitleKeyMap[menu.id];
 
-    return titleKey ? t(titleKey) : menu.name;
-  };
+      return titleKey ? t(titleKey) : menu.name;
+    },
+    [t],
+  );
 
-  const runCommand = (path: string) => {
-    setOpen(false);
-    void navigate(path);
-  };
+  const openSearch = useCallback(() => {
+    setOpen(true);
+  }, []);
+  const runCommand = useCallback(
+    (path: string) => {
+      setOpen(false);
+      void navigate(path);
+    },
+    [navigate],
+  );
+  const handleKeyDown = useCallback((event: KeyboardEvent) => {
+    if (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      setOpen(open => !open);
+    }
+  }, []);
+
+  useEffect(() => {
+    handleKeyDownRef.current = handleKeyDown;
+  }, [handleKeyDown]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        setOpen(open => !open);
-      }
+      handleKeyDownRef.current(event);
     };
 
     window.addEventListener('keydown', onKeyDown);
@@ -51,7 +93,7 @@ export const SearchCommand = () => {
     <>
       <Button
         className="relative h-9 w-40 justify-start text-sm text-muted-foreground sm:pe-12 md:w-64"
-        onClick={() => setOpen(true)}
+        onClick={openSearch}
         type="button"
         variant="outline">
         <Search />
@@ -69,10 +111,13 @@ export const SearchCommand = () => {
               const label = getMenuLabel(menu);
 
               return (
-                <CommandItem key={`${menu.id}-${menu.path}`} onSelect={() => runCommand(menu.path)} value={label}>
-                  <ArrowRight />
-                  {label}
-                </CommandItem>
+                <SearchCommandMenuItem
+                  key={`${menu.id}-${menu.path}`}
+                  label={label}
+                  onRun={runCommand}
+                  path={menu.path}
+                  value={label}
+                />
               );
             })}
           </CommandGroup>
@@ -81,4 +126,4 @@ export const SearchCommand = () => {
       </CommandDialog>
     </>
   );
-};
+});

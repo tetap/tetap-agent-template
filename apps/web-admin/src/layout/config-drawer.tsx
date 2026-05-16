@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Settings } from 'lucide-react';
 import {
   Button,
@@ -16,14 +17,15 @@ import {
 import { useAdminT, useAdminThemeStore } from '@tetap/hooks';
 import { ThemeSwitch } from './theme-switch.js';
 
-export const ConfigDrawer = () => {
+const themeLabelKey = {
+  dark: 'webAdmin.settings.theme.dark',
+  light: 'webAdmin.settings.theme.light',
+  system: 'webAdmin.settings.theme.system',
+} as const;
+
+export const ConfigDrawer = memo(function ConfigDrawer() {
   const t = useAdminT();
   const theme = useAdminThemeStore(state => state.theme);
-  const themeLabelKey = {
-    dark: 'webAdmin.settings.theme.dark',
-    light: 'webAdmin.settings.theme.light',
-    system: 'webAdmin.settings.theme.system',
-  } as const;
 
   return (
     <Sheet>
@@ -56,4 +58,4 @@ export const ConfigDrawer = () => {
       </SheetContent>
     </Sheet>
   );
-};
+});

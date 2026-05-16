@@ -1,3 +1,4 @@
+import { memo, useCallback, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { adminOtpInputSchema, type AdminOtpInput } from '@tetap/schema';
 import {
@@ -18,7 +19,7 @@ import { useAdminT, useZodForm } from '@tetap/hooks';
 import { AuthLayout } from './auth-layout.js';
 import { getAdminAuthFieldErrorKey } from './form-errors.js';
 
-export const OtpPage = () => {
+export const OtpPage = memo(function OtpPage() {
   const t = useAdminT();
   const navigate = useNavigate();
   const form = useZodForm<AdminOtpInput>(adminOtpInputSchema, {
@@ -28,9 +29,10 @@ export const OtpPage = () => {
   });
   const otpErrorKey = getAdminAuthFieldErrorKey(form.formState.errors.otp, 'webAdmin.auth.validation.otp');
 
-  const onSubmit = form.handleSubmit(() => {
+  const submitOtp = useCallback(() => {
     void navigate('/sign-in');
-  });
+  }, [navigate]);
+  const onSubmit = useMemo(() => form.handleSubmit(submitOtp), [form, submitOtp]);
 
   return (
     <AuthLayout>
@@ -67,4 +69,4 @@ export const OtpPage = () => {
       </Card>
     </AuthLayout>
   );
-};
+});

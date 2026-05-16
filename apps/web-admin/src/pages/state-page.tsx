@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Card, CardDescription, CardHeader, CardTitle } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 import type { AdminMessageKey } from '@tetap/i18n/admin';
@@ -6,13 +7,13 @@ import { AdminMain } from '../layout/main.js';
 import { SearchCommand } from '../layout/search-command.js';
 import { ThemeSwitch } from '../layout/theme-switch.js';
 
-export const AdminStatePage = ({
+export const AdminStatePage = memo(function AdminStatePage({
   descriptionKey,
   titleKey,
 }: {
   descriptionKey: AdminMessageKey;
   titleKey: AdminMessageKey;
-}) => {
+}) {
   const t = useAdminT();
 
   return (
@@ -24,7 +25,7 @@ export const AdminStatePage = ({
       </AdminHeader>
       <AdminMain>
         <div className="mb-2">
-          <h1 className="text-2xl font-bold tracking-tight">{t(titleKey)}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t(titleKey)}</h1>
           <p className="text-muted-foreground">{t(descriptionKey)}</p>
         </div>
         <Card>
@@ -36,4 +37,4 @@ export const AdminStatePage = ({
       </AdminMain>
     </>
   );
-};
+});

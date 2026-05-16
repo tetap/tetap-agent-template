@@ -1,5 +1,5 @@
 import { useNavigate, useSearchParams } from 'react-router';
-import { useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import { LoaderCircle, LogIn } from 'lucide-react';
 import { adminSignInInputSchema, type AdminSignInInput } from '@tetap/schema';
 import {
@@ -24,7 +24,7 @@ import { AuthLayout } from './auth-layout.js';
 import { createAdminAuthResult } from './auth-session.js';
 import { getAdminAuthFieldErrorKey } from './form-errors.js';
 
-export const SignInPage = () => {
+export const SignInPage = memo(function SignInPage() {
   const t = useAdminT();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -41,17 +41,21 @@ export const SignInPage = () => {
   const emailErrorKey = getAdminAuthFieldErrorKey(errors.email, 'webAdmin.auth.validation.email');
   const passwordErrorKey = getAdminAuthFieldErrorKey(errors.password, 'webAdmin.auth.validation.password');
 
-  const onSubmit = form.handleSubmit(async values => {
-    setAuthError(null);
+  const submitCredentials = useCallback(
+    async (values: AdminSignInInput) => {
+      setAuthError(null);
 
-    try {
-      const authResult = await createAdminAuthResult(values.email, values.password, values.rememberMe);
-      setContext(authResult);
-      void navigate(searchParams.get('redirect') || '/', { replace: true });
-    } catch {
-      setAuthError(t('webAdmin.auth.signIn.loginFailed'));
-    }
-  });
+      try {
+        const authResult = await createAdminAuthResult(values.email, values.password, values.rememberMe);
+        setContext(authResult);
+        void navigate(searchParams.get('redirect') || '/', { replace: true });
+      } catch {
+        setAuthError(t('webAdmin.auth.signIn.loginFailed'));
+      }
+    },
+    [navigate, searchParams, setContext, t],
+  );
+  const onSubmit = useMemo(() => form.handleSubmit(submitCredentials), [form, submitCredentials]);
 
   return (
     <AuthLayout>
@@ -108,4 +112,4 @@ export const SignInPage = () => {
       </Card>
     </AuthLayout>
   );
-};
+});

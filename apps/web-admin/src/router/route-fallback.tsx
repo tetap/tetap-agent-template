@@ -1,7 +1,7 @@
-import { Suspense, type ReactNode } from 'react';
+import { memo, Suspense, type ReactNode } from 'react';
 import { useAdminI18n } from '@tetap/hooks';
 
-export const AdminRouteFallback = () => {
+export const AdminRouteFallback = memo(function AdminRouteFallback() {
   const { t } = useAdminI18n();
 
   return (
@@ -14,7 +14,7 @@ export const AdminRouteFallback = () => {
       <span aria-hidden="true" className="size-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
     </div>
   );
-};
+});
 
 export const withRouteFallback = (children: ReactNode) => (
   <Suspense fallback={<AdminRouteFallback />}>{children}</Suspense>

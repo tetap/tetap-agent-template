@@ -1,8 +1,8 @@
-import type { ReactNode } from 'react';
+import { memo, type ReactNode } from 'react';
 import { TetapLogo } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 
-export const AuthLayout = ({ children }: { children: ReactNode }) => {
+export const AuthLayout = memo(function AuthLayout({ children }: { children: ReactNode }) {
   const t = useAdminT();
 
   return (
@@ -16,4 +16,4 @@ export const AuthLayout = ({ children }: { children: ReactNode }) => {
       </section>
     </main>
   );
-};
+});

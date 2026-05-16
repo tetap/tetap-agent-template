@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { Activity, KeyRound, RefreshCw, ShieldCheck, Users } from 'lucide-react';
 import { formatUserDateTime, getUserTimeZone, useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
@@ -22,7 +22,7 @@ import { AdminMain } from '../layout/main.js';
 import { SearchCommand } from '../layout/search-command.js';
 import { ThemeSwitch } from '../layout/theme-switch.js';
 
-export const AdminDashboardPage = () => {
+export const AdminDashboardPage = memo(function AdminDashboardPage() {
   const t = useAdminT();
   const accessToken = useAdminSessionStore(state => state.auth.accessToken);
   const capabilities = useAdminSessionStore(state => state.auth.capabilities);
@@ -34,7 +34,7 @@ export const AdminDashboardPage = () => {
   const canReadOperationLogs = capabilities.includes('operation-log:read');
   const timeZone = getUserTimeZone();
 
-  const loadOverview = async () => {
+  const loadOverview = useCallback(async () => {
     if (!accessToken || !canReadIam) {
       setIsLoading(false);
       return;
@@ -58,51 +58,62 @@ export const AdminDashboardPage = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [accessToken, canReadIam, canReadOperationLogs, t]);
+
+  const handleRefresh = useCallback(() => {
+    void loadOverview();
+  }, [loadOverview]);
 
   useEffect(() => {
     void loadOverview();
-  }, [accessToken, canReadIam, canReadOperationLogs]);
+  }, [loadOverview]);
 
-  const metrics = [
-    {
-      icon: Users,
-      label: t('webAdmin.dashboard.metrics.activeUsers.label'),
-      value: overview?.metrics.users ?? 0,
-      trend: t('webAdmin.dashboard.metrics.activeUsers.trend'),
-    },
-    {
-      icon: KeyRound,
-      label: t('webAdmin.dashboard.metrics.adminTasks.label'),
-      value: overview?.metrics.roles ?? 0,
-      trend: t('webAdmin.dashboard.metrics.adminTasks.trend'),
-    },
-    {
-      icon: ShieldCheck,
-      label: t('webAdmin.dashboard.metrics.securityEvents.label'),
-      value: overview?.metrics.operationLogs ?? 0,
-      trend: t('webAdmin.dashboard.metrics.securityEvents.trend'),
-    },
-    {
-      icon: Activity,
-      label: t('webAdmin.dashboard.metrics.backendStatus.label'),
-      value: overview?.metrics.sessions ?? 0,
-      trend: t('webAdmin.dashboard.metrics.backendStatus.trend'),
-    },
-  ];
-  const chartItems = overview
-    ? [
-        { key: 'users', value: overview.metrics.users },
-        { key: 'roles', value: overview.metrics.roles },
-        { key: 'permissions', value: overview.metrics.permissions },
-        { key: 'menus', value: overview.metrics.menus },
-        { key: 'field-permissions', value: overview.metrics.fieldPermissions },
-        { key: 'policies', value: overview.metrics.policies },
-        { key: 'sessions', value: overview.metrics.sessions },
-        { key: 'operation-logs', value: overview.metrics.operationLogs },
-      ]
-    : [];
-  const chartMax = Math.max(...chartItems.map(item => item.value), 1);
+  const metrics = useMemo(
+    () => [
+      {
+        icon: Users,
+        label: t('webAdmin.dashboard.metrics.activeUsers.label'),
+        value: overview?.metrics.users ?? 0,
+        trend: t('webAdmin.dashboard.metrics.activeUsers.trend'),
+      },
+      {
+        icon: KeyRound,
+        label: t('webAdmin.dashboard.metrics.adminTasks.label'),
+        value: overview?.metrics.roles ?? 0,
+        trend: t('webAdmin.dashboard.metrics.adminTasks.trend'),
+      },
+      {
+        icon: ShieldCheck,
+        label: t('webAdmin.dashboard.metrics.securityEvents.label'),
+        value: overview?.metrics.operationLogs ?? 0,
+        trend: t('webAdmin.dashboard.metrics.securityEvents.trend'),
+      },
+      {
+        icon: Activity,
+        label: t('webAdmin.dashboard.metrics.backendStatus.label'),
+        value: overview?.metrics.sessions ?? 0,
+        trend: t('webAdmin.dashboard.metrics.backendStatus.trend'),
+      },
+    ],
+    [overview?.metrics.operationLogs, overview?.metrics.roles, overview?.metrics.sessions, overview?.metrics.users, t],
+  );
+  const chartItems = useMemo(
+    () =>
+      overview
+        ? [
+            { key: 'users', value: overview.metrics.users },
+            { key: 'roles', value: overview.metrics.roles },
+            { key: 'permissions', value: overview.metrics.permissions },
+            { key: 'menus', value: overview.metrics.menus },
+            { key: 'field-permissions', value: overview.metrics.fieldPermissions },
+            { key: 'policies', value: overview.metrics.policies },
+            { key: 'sessions', value: overview.metrics.sessions },
+            { key: 'operation-logs', value: overview.metrics.operationLogs },
+          ]
+        : [],
+    [overview],
+  );
+  const chartMax = useMemo(() => Math.max(...chartItems.map(item => item.value), 1), [chartItems]);
 
   return (
     <>
@@ -114,7 +125,7 @@ export const AdminDashboardPage = () => {
       <AdminMain className="flex flex-col gap-4">
         <div className="flex min-w-0 flex-col gap-3 md:flex-row md:items-center md:justify-between">
           <h1 className="min-w-0 truncate text-2xl font-semibold tracking-tight">{t('webAdmin.dashboard.title')}</h1>
-          <Button disabled={isLoading} onClick={() => void loadOverview()} variant="outline">
+          <Button disabled={isLoading} onClick={handleRefresh} variant="outline">
             <RefreshCw className={isLoading ? 'animate-spin' : undefined} data-icon="inline-start" />
             {t('webAdmin.dashboard.actions.refresh')}
           </Button>
@@ -211,4 +222,4 @@ export const AdminDashboardPage = () => {
       </AdminMain>
     </>
   );
-};
+});

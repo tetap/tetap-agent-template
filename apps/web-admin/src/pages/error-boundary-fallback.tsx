@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { Button, Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 
-export const AdminErrorBoundaryFallback = () => {
+export const AdminErrorBoundaryFallback = memo(function AdminErrorBoundaryFallback() {
   const t = useAdminT();
 
   return (
@@ -19,4 +20,4 @@ export const AdminErrorBoundaryFallback = () => {
       </Card>
     </main>
   );
-};
+});

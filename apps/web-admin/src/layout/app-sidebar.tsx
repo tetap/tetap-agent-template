@@ -1,3 +1,4 @@
+import { memo, useMemo } from 'react';
 import {
   KeyRound,
   LayoutDashboard,
@@ -22,7 +23,7 @@ import { useAdminSessionStore, useAdminT, type AdminSessionMenuNode } from '@tet
 import { adminMenuTitleKeyMap } from './menu-labels.js';
 import { NavGroup } from './nav-group.js';
 import { NavUser } from './nav-user.js';
-import type { AdminNavItem } from './types.js';
+import type { AdminNavGroup, AdminNavItem } from './types.js';
 
 const menuIconMap = {
   KeyRound,
@@ -47,10 +48,10 @@ const toNavItem = (menu: AdminSessionMenuNode): AdminNavItem => {
   };
 };
 
-export const AppSidebar = () => {
+export const AppSidebar = memo(function AppSidebar() {
   const t = useAdminT();
   const menus = useAdminSessionStore(state => state.auth.menus);
-  const navGroups = menus.length ? [{ items: menus.map(toNavItem) }] : [];
+  const navGroups = useMemo<AdminNavGroup[]>(() => (menus.length ? [{ items: menus.map(toNavItem) }] : []), [menus]);
 
   return (
     <Sidebar
@@ -76,8 +77,8 @@ export const AppSidebar = () => {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {navGroups.map((group, index) => (
-          <NavGroup {...group} key={index} />
+        {navGroups.map(group => (
+          <NavGroup {...group} key={group.titleKey ?? group.title ?? 'default'} />
         ))}
       </SidebarContent>
       <SidebarFooter>
@@ -85,4 +86,4 @@ export const AppSidebar = () => {
       </SidebarFooter>
     </Sidebar>
   );
-};
+});

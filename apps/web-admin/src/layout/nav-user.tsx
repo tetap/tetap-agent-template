@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { ChevronsUpDown, LogOut } from 'lucide-react';
 import {
   Avatar,
@@ -15,7 +15,7 @@ import {
 import { useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import { SignOutDialog } from './sign-out-dialog.js';
 
-export const NavUser = () => {
+export const NavUser = memo(function NavUser() {
   const t = useAdminT();
   const { isMobile } = useSidebar();
   const user = useAdminSessionStore(state => state.auth.user);
@@ -23,6 +23,9 @@ export const NavUser = () => {
   const displayName = user?.name ?? t('webAdmin.layout.user.name');
   const displayEmail = user?.email ?? t('webAdmin.layout.user.email');
   const fallback = displayName.slice(0, 2).toUpperCase();
+  const openSignOut = useCallback(() => {
+    setSignOutOpen(true);
+  }, []);
 
   return (
     <>
@@ -46,7 +49,7 @@ export const NavUser = () => {
               className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
               side={isMobile ? 'bottom' : 'right'}
               sideOffset={4}>
-              <DropdownMenuItem onClick={() => setSignOutOpen(true)}>
+              <DropdownMenuItem onClick={openSignOut}>
                 <LogOut />
                 {t('webAdmin.layout.user.signOut')}
               </DropdownMenuItem>
@@ -57,4 +60,4 @@ export const NavUser = () => {
       <SignOutDialog onOpenChange={setSignOutOpen} open={signOutOpen} />
     </>
   );
-};
+});

@@ -1,3 +1,4 @@
+import { memo, useCallback } from 'react';
 import { Bell, Monitor, Palette, UserRound } from 'lucide-react';
 import {
   Badge,
@@ -31,13 +32,19 @@ const sectionMeta = {
   notifications: { icon: Bell, titleKey: 'webAdmin.settings.notifications.title' },
 } as const;
 
-export const AdminSettingsPage = ({ section }: { section: SettingsSection }) => {
+export const AdminSettingsPage = memo(function AdminSettingsPage({ section }: { section: SettingsSection }) {
   const t = useAdminT();
   const user = useAdminSessionStore(state => state.auth.user);
   const theme = useAdminThemeStore(state => state.theme);
   const setTheme = useAdminThemeStore(state => state.setTheme);
   const meta = sectionMeta[section];
   const Icon = meta.icon;
+  const handleThemeChange = useCallback(
+    (value: string) => {
+      setTheme(value as AdminTheme);
+    },
+    [setTheme],
+  );
 
   return (
     <>
@@ -75,7 +82,7 @@ export const AdminSettingsPage = ({ section }: { section: SettingsSection }) => 
               <div className="max-w-sm">
                 <label className="flex flex-col gap-2 text-sm font-medium">
                   {t('webAdmin.settings.theme.title')}
-                  <Select onValueChange={value => setTheme(value as AdminTheme)} value={theme}>
+                  <Select onValueChange={handleThemeChange} value={theme}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -109,11 +116,13 @@ export const AdminSettingsPage = ({ section }: { section: SettingsSection }) => 
       </AdminMain>
     </>
   );
-};
+});
 
-const InfoItem = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-md border p-3">
-    <p className="text-muted-foreground text-xs">{label}</p>
-    <p className="font-medium">{value}</p>
-  </div>
-);
+const InfoItem = memo(function InfoItem({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md border p-3">
+      <p className="text-muted-foreground text-xs">{label}</p>
+      <p className="font-medium">{value}</p>
+    </div>
+  );
+});

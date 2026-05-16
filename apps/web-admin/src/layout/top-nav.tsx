@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Menu } from 'lucide-react';
 import { Button, cn, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@tetap/ui';
@@ -10,7 +11,7 @@ export type TopNavItem = {
   disabled?: boolean;
 };
 
-export const TopNav = ({ className, links }: { className?: string; links: readonly TopNavItem[] }) => {
+export const TopNav = memo(function TopNav({ className, links }: { className?: string; links: readonly TopNavItem[] }) {
   const t = useAdminT();
   const location = useLocation();
   const pathname = location.pathname;
@@ -67,4 +68,4 @@ export const TopNav = ({ className, links }: { className?: string; links: readon
       </nav>
     </>
   );
-};
+});

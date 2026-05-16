@@ -1,4 +1,4 @@
-import { useEffect, useState, type HTMLAttributes } from 'react';
+import { memo, useCallback, useEffect, useRef, useState, type HTMLAttributes } from 'react';
 import { cn, SidebarTrigger } from '@tetap/ui';
 import { useAdminT } from '@tetap/hooks';
 
@@ -6,13 +6,22 @@ type AdminHeaderProps = HTMLAttributes<HTMLElement> & {
   fixed?: boolean;
 };
 
-export const AdminHeader = ({ children, className, fixed, ...props }: AdminHeaderProps) => {
+export const AdminHeader = memo(function AdminHeader({ children, className, fixed, ...props }: AdminHeaderProps) {
   const t = useAdminT();
   const [offset, setOffset] = useState(0);
+  const handleScrollRef = useRef<() => void>(() => undefined);
+
+  const handleScroll = useCallback(() => {
+    setOffset(document.body.scrollTop || document.documentElement.scrollTop);
+  }, []);
+
+  useEffect(() => {
+    handleScrollRef.current = handleScroll;
+  }, [handleScroll]);
 
   useEffect(() => {
     const onScroll = () => {
-      setOffset(document.body.scrollTop || document.documentElement.scrollTop);
+      handleScrollRef.current();
     };
 
     document.addEventListener('scroll', onScroll, { passive: true });
@@ -41,4 +50,4 @@ export const AdminHeader = ({ children, className, fixed, ...props }: AdminHeade
       </div>
     </header>
   );
-};
+});
