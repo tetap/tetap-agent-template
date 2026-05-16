@@ -33,6 +33,16 @@ handoff. This check complements, but does not replace, lint, format, type-check,
 7. After optimization, rerun only the validation needed for the touched frontend area, then continue with the standard final
    gates required by `docs/memory/testing-workflow.md` and `docs/Logical Architecture Diagram/02-quality-gates.md`.
 
+## Component Composition Memory
+
+- Keep app entry components such as `App.tsx` focused on provider/bootstrap composition.
+- Do not collect many page, guard, fallback, or helper components inside one component file just because they are local to
+  routing.
+- Split route definitions, lazy-loaded page declarations, route guards, and loading fallbacks into focused modules, then
+  import them into the entry component.
+- Prefer file names that describe the responsibility, such as `admin-router.tsx`, `lazy-pages.ts`, `route-guards.tsx`, or
+  `route-fallback.tsx`.
+
 ## Completion Criteria
 
 A frontend handoff should state:

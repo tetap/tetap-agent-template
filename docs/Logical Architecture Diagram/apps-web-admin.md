@@ -31,7 +31,8 @@
 | Path                     | Responsibility                                                                                                              |
 | ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `src/main.tsx`           | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                                              |
-| `src/App.tsx`            | React Router、auth routes、protected admin routes 和 app shell 级组合。                                                     |
+| `src/App.tsx`            | App providers、document metadata side effects 和 `RouterProvider` 挂载。                                                    |
+| `src/router/*`           | React Router 定义、route guards、route fallback UI 和 route-level lazy page declarations。                                  |
 | `src/layout/*`           | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。                                    |
 | `src/pages/auth`         | 后台登录和 OTP 页面；后台账号只能由已授权管理员在用户管理中创建，schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。 |
 | `src/pages/iam.tsx`      | 用户、角色、权限码、菜单、字段权限、策略、前台在线用户和操作日志页面；所有数据来自 backend-admin。                          |
@@ -46,6 +47,7 @@
 sequenceDiagram
   participant Main as main.tsx
   participant App as App.tsx
+  participant Router as src/router
   participant Page as admin pages
   participant Layout as admin layout
   participant UI as @tetap/ui
@@ -54,9 +56,10 @@ sequenceDiagram
   participant AdminApi as apps/backend-admin
 
   Main->>I18n: Provide locale context
-  Main->>App: Render admin router
-  App->>Layout: Guard authenticated routes
-  Layout->>Page: Render matched admin route
+  Main->>App: Mount providers and RouterProvider
+  App->>Router: Load admin router config
+  Router->>Layout: Guard authenticated routes
+  Layout->>Page: Render matched lazy route
   Page->>Hooks: Read shared hooks
   Page->>I18n: Read localized admin copy
   Page->>UI: Compose shadcn/ui primitives
@@ -66,6 +69,8 @@ sequenceDiagram
 ## 允许
 
 - 新增 admin 页面文件和 route 配置。
+- 在 `src/router` 对页面级 route 继续使用 `React.lazy`/`Suspense`，避免 IAM 等管理页面重新进入入口 bundle。
+- 保持 `App.tsx` 聚焦 provider/bootstrap，不把大量 route pages、guards 或 fallback components 堆在入口组件文件中。
 - 从 `@tetap/ui` 组合已有 shadcn/ui 组件。
 - 使用 `@tetap/hooks` 暴露的 hooks。
 - 使用 `@tetap/schema` 做后台管理表单或 API contract 校验。

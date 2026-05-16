@@ -31,7 +31,8 @@
 | Path                  | Responsibility                                                                                                                |
 | --------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | `src/main.tsx`        | React mount, providers, shared UI stylesheet import.                                                                          |
-| `src/App.tsx`         | Admin protected router, auth routes, and app-level composition.                                                               |
+| `src/App.tsx`         | App-level providers, document metadata side effects, and `RouterProvider` mount.                                              |
+| `src/router`          | Admin router definitions, route guards, route fallback UI, and route-level lazy page declarations.                            |
 | `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                                                 |
 | `src/pages/auth`      | Sign-in and OTP pages backed by real backend-admin auth APIs and zustand session state.                                       |
 | `src/pages/iam.tsx`   | IAM management pages wired to backend-admin users, roles, permissions, menus, sessions, policies, fields, and operation logs. |
@@ -47,6 +48,7 @@ This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-a
 
 - Login uses real `backend-admin` APIs. Admin accounts are created by authorized administrators, not public registration.
 - Sidebar menus come from backend IAM dynamic menus. Dashboard is the top-level home route.
+- Route pages are lazy-loaded through `src/router` so the authenticated shell, IAM pages, dashboard, auth pages, and state pages ship as separate production chunks.
 - The dashboard calls `/iam/overview` for metrics only; feature pages and activity panels fetch their own scoped APIs.
 - IAM create flows open dialogs from action buttons; oversized dialogs and pickers are scrollable.
 - Delete and force-offline actions require a confirmation dialog before writing to backend-admin.
