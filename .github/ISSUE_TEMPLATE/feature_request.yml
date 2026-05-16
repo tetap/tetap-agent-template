@@ -1,0 +1,59 @@
+name: Feature Request
+description: Propose an enterprise template capability or improvement.
+title: 'feat: '
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for product, architecture, developer-experience, testing, or documentation improvements.
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What capability should the template gain, and who benefits?
+      placeholder: Add a deployment workflow for...
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Primary Area
+      options:
+        - Frontend app
+        - Admin app
+        - Backend API
+        - IAM/security
+        - Schema/contracts
+        - Prisma/database
+        - UI system
+        - i18n
+        - Testing/CI
+        - Documentation
+        - Release/deployment
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed Design
+      description: Describe the desired behavior, ownership boundary, and affected workspace(s).
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: List concrete checks that would prove the feature is complete.
+      placeholder: |
+        - `pnpm check` passes
+        - Browser Mode coverage exists for...
+        - README and architecture docs updated
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks Or Constraints
+      description: Note compatibility, migration, security, data, or performance concerns.

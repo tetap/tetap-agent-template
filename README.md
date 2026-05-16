@@ -137,6 +137,7 @@ flowchart LR
 | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | Long-term memory for keeping README and architecture docs accurate after code changes. |
 | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | Unit, Browser, smoke, and targeted testing memory.                                     |
 | [docs/todolists](docs/todolists)                                                                                                 | Checkbox execution records for planned tasks.                                          |
+| [SECURITY.md](SECURITY.md)                                                                                                       | Private vulnerability reporting and public issue safety policy.                        |
 
 ## Scripts
 
@@ -170,6 +171,9 @@ flowchart LR
 - Use issues for bugs, improvements, security risks, and documentation problems.
 - Keep pull requests focused and include validation commands in the PR description.
 - Do not post secrets, tokens, database connection strings, or exploit details in public issues.
+- Use the GitHub issue forms for bug reports and feature requests.
+- Use the pull request template checklist to document boundaries, validation, docs, and security/data review.
+- Follow [SECURITY.md](SECURITY.md) for private vulnerability disclosure.
 - Read [AGENTS.md](AGENTS.md) and the [architecture docs](docs/Logical%20Architecture%20Diagram/README.md) before large changes.
 
 ## Rules

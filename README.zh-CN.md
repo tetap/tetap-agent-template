@@ -96,6 +96,15 @@ CI 质量门禁：
 | [docs/memory/readme-sync-workflow.md](docs/memory/readme-sync-workflow.md)                                                       | 代码变更后同步 README 和架构文档的长期记忆。    |
 | [docs/memory/testing-workflow.md](docs/memory/testing-workflow.md)                                                               | 功能实现后的单元、Browser、冒烟和定向测试记忆。 |
 | [docs/todolists](docs/todolists)                                                                                                 | 每个计划任务的 checkbox 执行记录。              |
+| [SECURITY.md](SECURITY.md)                                                                                                       | 私有漏洞披露和公开 issue 安全规则。             |
+
+## 贡献
+
+- 使用 GitHub issue forms 提交 bug 和功能请求。
+- Pull request 保持聚焦，并通过 PR 模板记录边界、验证、文档和安全/数据检查。
+- 不要在公开 issue、PR 或日志中粘贴 secrets、token、数据库连接串、cookie、session ID 或漏洞利用细节。
+- 安全漏洞按 [SECURITY.md](SECURITY.md) 私下披露。
+- 大变更前先阅读 [AGENTS.md](AGENTS.md) 和 [架构文档](docs/Logical%20Architecture%20Diagram/README.md)。
 
 ## 规则
 
