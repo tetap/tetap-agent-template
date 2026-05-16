@@ -43,20 +43,7 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-  Field,
-  FieldDescription,
   FieldGroup,
-  FieldLabel,
-  Input,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Skeleton,
   Table,
   TableBody,
@@ -112,6 +99,15 @@ import type {
   IamSession,
   IamUser,
 } from '@tetap/schema/iam';
+import {
+  EnumSelectField,
+  MultiSearchSelectField,
+  SearchableSelectField,
+  TextField,
+  optionPageSize,
+  type PickerOption,
+} from './iam/form-fields.js';
+import { OperationLogsTable, type OperationLogQueryState } from './iam/operation-logs-table.js';
 
 type IamSection = 'users' | 'roles' | 'permissions' | 'menus' | 'sessions' | 'fields' | 'policies' | 'operationLogs';
 type PermissionTypeInput = 'MENU' | 'API' | 'BUTTON' | 'FIELD' | 'DATA';
@@ -130,12 +126,6 @@ type IamPageData = {
   sessions: IamSession[];
   users: IamUser[];
 };
-type OperationLogQueryState = {
-  page: number;
-  pageSize: number;
-  search: string;
-  sort: 'asc' | 'desc';
-};
 type RoleEditorState = {
   name: string;
   code: string;
@@ -146,10 +136,11 @@ type RoleEditorState = {
 };
 
 const parseCsv = (value: string) =>
-  value
-    .split(',')
-    .map(item => item.trim())
-    .filter(Boolean);
+  value.split(',').flatMap(item => {
+    const trimmed = item.trim();
+
+    return trimmed ? [trimmed] : [];
+  });
 
 const uniqueStrings = (values: string[]) => Array.from(new Set(values.filter(Boolean)));
 
@@ -1180,11 +1171,13 @@ const CreateIamDialogs = ({
       label: t('webAdmin.iam.selection.rootMenu'),
       value: '',
     },
-    ...data.menus.flatMap(flattenIamMenus).map(menu => ({
-      description: menu.path,
-      label: menu.name,
-      value: menu.id,
-    })),
+    ...data.menus.flatMap(menu =>
+      flattenIamMenus(menu).map(menuItem => ({
+        description: menuItem.path,
+        label: menuItem.name,
+        value: menuItem.id,
+      })),
+    ),
   ];
   const close = (open: boolean) => onDialogChange(open ? dialog : null);
 
@@ -1570,7 +1563,7 @@ const RoleManagementPanel = ({
 
   const openAssignedUsers = (role: RoleItem) => {
     setAssignRole(role);
-    setAssignedUserIds(users.filter(user => user.roleCodes.includes(role.code)).map(user => user.id));
+    setAssignedUserIds(users.flatMap(user => (user.roleCodes.includes(role.code) ? [user.id] : [])));
   };
 
   const toggleAssignedUser = (userId: string, checked: boolean | 'indeterminate') => {
@@ -2500,413 +2493,5 @@ const PoliciesTable = ({
         </div>
       </CardContent>
     </Card>
-  );
-};
-
-const OperationLogsTable = ({
-  isLoading,
-  onQueryChange,
-  operationLogs,
-  query,
-  timeZone,
-}: {
-  isLoading: boolean;
-  onQueryChange: (query: OperationLogQueryState) => void;
-  operationLogs: IamOperationLogsData | null;
-  query: OperationLogQueryState;
-  timeZone: string;
-}) => {
-  const t = useAdminT();
-  const [searchDraft, setSearchDraft] = useState(query.search);
-  const logs = operationLogs?.items ?? [];
-  const total = operationLogs?.total ?? 0;
-  const totalPages = operationLogs?.totalPages ?? 1;
-  const submitSearch = () => onQueryChange({ ...query, page: 1, search: searchDraft });
-
-  useEffect(() => {
-    setSearchDraft(query.search);
-  }, [query.search]);
-
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t('webAdmin.iam.tabs.operationLogs')}</CardTitle>
-        <CardDescription>{t('webAdmin.iam.policy.operationLogDescription')}</CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <form
-            className="min-w-0 flex-1"
-            onSubmit={event => {
-              event.preventDefault();
-              submitSearch();
-            }}>
-            <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
-              <InputGroup className="min-w-0 flex-1">
-                <InputGroupInput
-                  aria-label={t('webAdmin.iam.operationLogs.search')}
-                  onChange={event => setSearchDraft(event.target.value)}
-                  placeholder={t('webAdmin.iam.operationLogs.search')}
-                  value={searchDraft}
-                />
-                <InputGroupAddon align="inline-start">
-                  <Search aria-hidden="true" />
-                </InputGroupAddon>
-              </InputGroup>
-              <Button className="shrink-0" disabled={isLoading} type="submit">
-                {isLoading ? (
-                  <LoaderCircle className="animate-spin" data-icon="inline-start" />
-                ) : (
-                  <Search data-icon="inline-start" />
-                )}
-                {t('webAdmin.iam.operationLogs.search')}
-              </Button>
-            </div>
-          </form>
-          <Select
-            onValueChange={value => onQueryChange({ ...query, page: 1, sort: value === 'asc' ? 'asc' : 'desc' })}
-            value={query.sort}>
-            <SelectTrigger className="w-full md:w-44">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectItem value="desc">{t('webAdmin.iam.operationLogs.sortDesc')}</SelectItem>
-                <SelectItem value="asc">{t('webAdmin.iam.operationLogs.sortAsc')}</SelectItem>
-              </SelectGroup>
-            </SelectContent>
-          </Select>
-        </div>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('webAdmin.iam.operationLogs.operator')}</TableHead>
-              <TableHead>{t('webAdmin.iam.operationLogs.item')}</TableHead>
-              <TableHead>{t('webAdmin.iam.operationLogs.detail')}</TableHead>
-              <TableHead>{t('webAdmin.iam.operationLogs.time')}</TableHead>
-              <TableHead>{t('webAdmin.iam.operationLogs.ip')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {logs.map(log => (
-              <TableRow key={log.id}>
-                <TableCell>{log.operator}</TableCell>
-                <TableCell>{log.operationItem}</TableCell>
-                <TableCell className="max-w-sm truncate">{JSON.stringify(log.operationDetail)}</TableCell>
-                <TableCell>{formatUserDateTime(log.operationTime, timeZone)}</TableCell>
-                <TableCell>{log.operationIp ?? '-'}</TableCell>
-              </TableRow>
-            ))}
-            {!logs.length ? (
-              <TableRow>
-                <TableCell colSpan={5}>{t('webAdmin.iam.operationLogs.empty')}</TableCell>
-              </TableRow>
-            ) : null}
-          </TableBody>
-        </Table>
-        <div className="flex flex-col gap-3 text-sm text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <span>{t('webAdmin.iam.operationLogs.total', { total })}</span>
-          <div className="flex items-center gap-2">
-            <Button
-              disabled={isLoading || query.page <= 1}
-              onClick={() => onQueryChange({ ...query, page: Math.max(1, query.page - 1) })}
-              size="sm"
-              variant="outline">
-              {isLoading ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-              {t('webAdmin.iam.selection.prev')}
-            </Button>
-            <span>{t('webAdmin.iam.operationLogs.pageInfo', { page: query.page, totalPages })}</span>
-            <Button
-              disabled={isLoading || query.page >= totalPages}
-              onClick={() => onQueryChange({ ...query, page: Math.min(totalPages, query.page + 1) })}
-              size="sm"
-              variant="outline">
-              {isLoading ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-              {t('webAdmin.iam.selection.next')}
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const TextField = ({
-  description,
-  label,
-  onChange,
-  type = 'text',
-  value,
-}: {
-  description?: string;
-  label: string;
-  onChange: (value: string) => void;
-  type?: string;
-  value: string;
-}) => <TextFieldInner description={description} label={label} onChange={onChange} type={type} value={value} />;
-
-const TextFieldInner = ({
-  description,
-  label,
-  onChange,
-  type,
-  value,
-}: {
-  description?: string;
-  label: string;
-  onChange: (value: string) => void;
-  type: string;
-  value: string;
-}) => {
-  const t = useAdminT();
-
-  return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
-      <Input onChange={event => onChange(event.target.value)} type={type} value={value} />
-      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.generic', { label })}</FieldDescription>
-    </Field>
-  );
-};
-
-type PickerOption = {
-  description?: string;
-  label: string;
-  value: string;
-};
-
-const optionPageSize = 8;
-
-const EnumSelectField = <TValue extends string>({
-  description,
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  description?: string;
-  label: string;
-  onChange: (value: TValue) => void;
-  options: { label: string; value: TValue }[];
-  value: TValue;
-}) => {
-  const t = useAdminT();
-
-  return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
-      <Select onValueChange={value => onChange(value as TValue)} value={value}>
-        <SelectTrigger>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectGroup>
-            {options.map(option => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectGroup>
-        </SelectContent>
-      </Select>
-      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.select', { label })}</FieldDescription>
-    </Field>
-  );
-};
-
-const SearchableSelectField = ({
-  description,
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  description?: string;
-  label: string;
-  onChange: (value: string) => void;
-  options: PickerOption[];
-  value: string;
-}) => {
-  const t = useAdminT();
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(0);
-  const selected = options.find(option => option.value === value);
-  const filteredOptions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return normalizedQuery
-      ? options.filter(
-          option =>
-            option.label.toLowerCase().includes(normalizedQuery) ||
-            option.value.toLowerCase().includes(normalizedQuery) ||
-            option.description?.toLowerCase().includes(normalizedQuery),
-        )
-      : options;
-  }, [options, query]);
-  const pageCount = Math.max(1, Math.ceil(filteredOptions.length / optionPageSize));
-  const pageItems = filteredOptions.slice(page * optionPageSize, (page + 1) * optionPageSize);
-
-  useEffect(() => {
-    setPage(0);
-  }, [query, options]);
-
-  return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
-      <Button className="w-full min-w-0 justify-between" onClick={() => setOpen(true)} type="button" variant="outline">
-        <span className="truncate">{selected?.label ?? t('webAdmin.iam.selection.placeholder')}</span>
-        <Search />
-      </Button>
-      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.searchableSelect', { label })}</FieldDescription>
-      <Dialog onOpenChange={setOpen} open={open}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{label}</DialogTitle>
-            <DialogDescription>{t('webAdmin.iam.selection.description')}</DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-            <TextField label={t('webAdmin.iam.selection.search')} onChange={setQuery} value={query} />
-            <div className="max-h-72 overflow-y-auto rounded-md border">
-              {pageItems.length ? (
-                pageItems.map(option => (
-                  <button
-                    className="hover:bg-accent flex w-full flex-col gap-1 px-3 py-2 text-left text-sm"
-                    key={option.value}
-                    onClick={() => {
-                      onChange(option.value);
-                      setOpen(false);
-                    }}
-                    type="button">
-                    <span className="font-medium">{option.label}</span>
-                    {option.description ? (
-                      <span className="text-muted-foreground text-xs">{option.description}</span>
-                    ) : null}
-                  </button>
-                ))
-              ) : (
-                <p className="text-muted-foreground p-3 text-sm">{t('webAdmin.iam.selection.empty')}</p>
-              )}
-            </div>
-          </FieldGroup>
-          <DialogFooter>
-            <Button
-              disabled={page === 0}
-              onClick={() => setPage(current => Math.max(0, current - 1))}
-              variant="outline">
-              {t('webAdmin.iam.selection.prev')}
-            </Button>
-            <Button
-              disabled={page + 1 >= pageCount}
-              onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))}
-              variant="outline">
-              {t('webAdmin.iam.selection.next')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Field>
-  );
-};
-
-const MultiSearchSelectField = ({
-  description,
-  label,
-  onChange,
-  options,
-  values,
-}: {
-  description?: string;
-  label: string;
-  onChange: (values: string[]) => void;
-  options: PickerOption[];
-  values: string[];
-}) => {
-  const t = useAdminT();
-  const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(0);
-  const selected = new Set(values);
-  const selectedLabels = options.filter(option => selected.has(option.value)).map(option => option.label);
-  const filteredOptions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return normalizedQuery
-      ? options.filter(
-          option =>
-            option.label.toLowerCase().includes(normalizedQuery) ||
-            option.value.toLowerCase().includes(normalizedQuery) ||
-            option.description?.toLowerCase().includes(normalizedQuery),
-        )
-      : options;
-  }, [options, query]);
-  const pageCount = Math.max(1, Math.ceil(filteredOptions.length / optionPageSize));
-  const pageItems = filteredOptions.slice(page * optionPageSize, (page + 1) * optionPageSize);
-
-  useEffect(() => {
-    setPage(0);
-  }, [query, options]);
-
-  const toggle = (value: string, checked: boolean | 'indeterminate') => {
-    onChange(checked === true ? uniqueStrings([...values, value]) : values.filter(item => item !== value));
-  };
-
-  return (
-    <Field>
-      <FieldLabel>{label}</FieldLabel>
-      <Button className="w-full min-w-0 justify-between" onClick={() => setOpen(true)} type="button" variant="outline">
-        <span className="truncate">
-          {selectedLabels.length ? selectedLabels.join(', ') : t('webAdmin.iam.selection.placeholder')}
-        </span>
-        <Search />
-      </Button>
-      <FieldDescription>{description ?? t('webAdmin.iam.fieldHints.multiSelect', { label })}</FieldDescription>
-      <Dialog onOpenChange={setOpen} open={open}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{label}</DialogTitle>
-            <DialogDescription>{t('webAdmin.iam.selection.description')}</DialogDescription>
-          </DialogHeader>
-          <FieldGroup>
-            <TextField label={t('webAdmin.iam.selection.search')} onChange={setQuery} value={query} />
-            <div className="max-h-72 overflow-y-auto rounded-md border">
-              {pageItems.length ? (
-                pageItems.map(option => (
-                  <label className="hover:bg-accent flex items-start gap-3 px-3 py-2 text-sm" key={option.value}>
-                    <Checkbox
-                      checked={selected.has(option.value)}
-                      onCheckedChange={checked => toggle(option.value, checked)}
-                    />
-                    <span className="flex flex-col gap-1">
-                      <span className="font-medium">{option.label}</span>
-                      {option.description ? (
-                        <span className="text-muted-foreground text-xs">{option.description}</span>
-                      ) : null}
-                    </span>
-                  </label>
-                ))
-              ) : (
-                <p className="text-muted-foreground p-3 text-sm">{t('webAdmin.iam.selection.empty')}</p>
-              )}
-            </div>
-          </FieldGroup>
-          <DialogFooter>
-            <Button
-              disabled={page === 0}
-              onClick={() => setPage(current => Math.max(0, current - 1))}
-              variant="outline">
-              {t('webAdmin.iam.selection.prev')}
-            </Button>
-            <Button
-              disabled={page + 1 >= pageCount}
-              onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))}
-              variant="outline">
-              {t('webAdmin.iam.selection.next')}
-            </Button>
-            <Button onClick={() => setOpen(false)}>{t('common.confirm')}</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Field>
   );
 };
