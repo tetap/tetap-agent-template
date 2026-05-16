@@ -59,6 +59,10 @@ pnpm build
 
 `pnpm build` runs `pnpm check`, bumps versions, and then builds every workspace with Turbo. Commit feature code before production builds so release version bumps stay in a separate commit.
 
+CI quality gates:
+
+`.github/workflows/quality-gates.yml` runs on pull requests, pushes to `master`, and manual dispatch. It installs dependencies, installs Chromium for Vitest Browser Mode, then runs `pnpm lint`, `pnpm format`, `pnpm check`, `pnpm test:browser`, `pnpm test:smoke`, and `pnpm --filter @tetap/test-automation build`.
+
 ## Workspaces
 
 | Workspace            | Type    | Responsibility                                                         | Design Doc                                                                           |

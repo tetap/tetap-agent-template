@@ -19,6 +19,17 @@
 | `pnpm build`                                    | 先 `pnpm check`，再 version bump，最后 `turbo build`，其中 test package build 会跑 smoke。 |
 | `npx -y react-doctor@latest . --verbose --diff` | 前端相关修改后运行一次，获取评分/问题报告并修复可执行建议。                                |
 
+## CI 质量门禁
+
+`.github/workflows/quality-gates.yml` 会在 pull request、推送到 `master` 和手动触发时运行仓库级门禁：
+
+1. 安装依赖。
+2. 安装 Chromium 及 Browser Mode 运行依赖。
+3. 运行 `pnpm lint` 和 `pnpm format`。
+4. 运行 `pnpm check`，覆盖版本、hooks、i18n、后端架构、type-check 和 unit tests。
+5. 运行 `pnpm test:browser` 和 `pnpm test:smoke`。
+6. 运行 `pnpm --filter @tetap/test-automation build`，确认 test package build 仍包含 smoke gate。
+
 ## 推荐开发验证顺序
 
 ```mermaid

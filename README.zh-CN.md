@@ -59,6 +59,10 @@ pnpm build
 
 `pnpm build` 会先运行 `pnpm check`，再执行版本 bump，最后通过 Turbo 构建所有 workspace。生产构建前应先提交功能代码，避免把版本 bump 混入功能提交。
 
+CI 质量门禁：
+
+`.github/workflows/quality-gates.yml` 会在 pull request、推送到 `master` 和手动触发时运行。它会安装依赖、安装 Vitest Browser Mode 所需的 Chromium，然后运行 `pnpm lint`、`pnpm format`、`pnpm check`、`pnpm test:browser`、`pnpm test:smoke` 和 `pnpm --filter @tetap/test-automation build`。
+
 ## Workspace 总览
 
 | Workspace            | 类型    | 职责                                                          | 设计文档                                                                             |

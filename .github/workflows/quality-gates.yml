@@ -1,0 +1,61 @@
+name: Quality Gates
+
+on:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-gates-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, Types, And Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CI: true
+      TURBO_TELEMETRY_DISABLED: 1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Browser Dependencies
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Lint Gate
+        run: pnpm lint
+
+      - name: Check Formatting
+        run: pnpm format
+
+      - name: Run Type And Unit Gates
+        run: pnpm check
+
+      - name: Run Browser Mode Tests
+        run: pnpm test:browser
+
+      - name: Run Smoke Tests
+        run: pnpm test:smoke
+
+      - name: Verify Test Package Build Gate
+        run: pnpm --filter @tetap/test-automation build
