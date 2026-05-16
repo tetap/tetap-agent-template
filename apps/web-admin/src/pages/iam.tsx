@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ComponentProps, type ReactNode } from 'react';
+import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
 import {
   Database,
   Edit,
@@ -104,10 +104,10 @@ import {
   MultiSearchSelectField,
   SearchableSelectField,
   TextField,
-  optionPageSize,
   type PickerOption,
 } from './iam/form-fields.js';
 import { OperationLogsTable, type OperationLogQueryState } from './iam/operation-logs-table.js';
+import { AssignedUsersDialog, PermissionChecklist } from './iam/role-pickers.js';
 
 type IamSection = 'users' | 'roles' | 'permissions' | 'menus' | 'sessions' | 'fields' | 'policies' | 'operationLogs';
 type PermissionTypeInput = 'MENU' | 'API' | 'BUTTON' | 'FIELD' | 'DATA';
@@ -2075,192 +2075,6 @@ const DataScopeDialog = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
-
-const AssignedUsersDialog = ({
-  assignedUserIds,
-  isMutating,
-  onOpenChange,
-  onSubmit,
-  onToggle,
-  open,
-  role,
-  users,
-}: {
-  assignedUserIds: string[];
-  isMutating: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: () => void;
-  onToggle: (userId: string, checked: boolean | 'indeterminate') => void;
-  open: boolean;
-  role: RoleItem | null;
-  users: UserItem[];
-}) => {
-  const t = useAdminT();
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(0);
-  const filteredUsers = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return normalizedQuery
-      ? users.filter(
-          user =>
-            user.username.toLowerCase().includes(normalizedQuery) || user.email.toLowerCase().includes(normalizedQuery),
-        )
-      : users;
-  }, [users, query]);
-  const pageCount = Math.max(1, Math.ceil(filteredUsers.length / optionPageSize));
-  const pageItems = filteredUsers.slice(page * optionPageSize, (page + 1) * optionPageSize);
-
-  useEffect(() => {
-    setPage(0);
-  }, [query, users]);
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{t('webAdmin.iam.roleManager.dialogs.assignUsersTitle')}</DialogTitle>
-          <DialogDescription>
-            {role
-              ? t('webAdmin.iam.roleManager.dialogs.assignUsersDescription', { role: role.name })
-              : t('webAdmin.iam.roleManager.dialogs.assignUsersFallback')}
-          </DialogDescription>
-        </DialogHeader>
-        <TextField label={t('webAdmin.iam.selection.search')} onChange={setQuery} value={query} />
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>{t('webAdmin.iam.roleManager.selection.selectRole')}</TableHead>
-              <TableHead>{t('webAdmin.iam.fields.username')}</TableHead>
-              <TableHead>{t('webAdmin.iam.fields.email')}</TableHead>
-              <TableHead>{t('webAdmin.iam.fields.status')}</TableHead>
-              <TableHead>{t('webAdmin.iam.fields.roleCodes')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {pageItems.map(user => (
-              <TableRow key={user.id}>
-                <TableCell>
-                  <Checkbox
-                    aria-label={t('webAdmin.iam.roleManager.selection.selectUser')}
-                    checked={assignedUserIds.includes(user.id)}
-                    onCheckedChange={checked => onToggle(user.id, checked)}
-                  />
-                </TableCell>
-                <TableCell>{user.username}</TableCell>
-                <TableCell>{user.email}</TableCell>
-                <TableCell>
-                  <Badge variant={user.status === 'ACTIVE' ? 'default' : 'secondary'}>{user.status}</Badge>
-                </TableCell>
-                <TableCell>{user.roleCodes.join(', ')}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <DialogFooter>
-          <Button disabled={page === 0} onClick={() => setPage(current => Math.max(0, current - 1))} variant="outline">
-            {t('webAdmin.iam.selection.prev')}
-          </Button>
-          <Button
-            disabled={page + 1 >= pageCount}
-            onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))}
-            variant="outline">
-            {t('webAdmin.iam.selection.next')}
-          </Button>
-          <Button disabled={isMutating || !role} onClick={onSubmit}>
-            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-            {t('common.confirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const PermissionChecklist = ({
-  onToggle,
-  permissions,
-  selectedPermissionCodes,
-}: {
-  onToggle: (permissionCode: string, checked: boolean | 'indeterminate') => void;
-  permissions: PermissionItem[];
-  selectedPermissionCodes: string[];
-}) => {
-  const t = useAdminT();
-  const [query, setQuery] = useState('');
-  const [page, setPage] = useState(0);
-  const filteredPermissions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-
-    return normalizedQuery
-      ? permissions.filter(
-          permission =>
-            permission.code.toLowerCase().includes(normalizedQuery) ||
-            permission.name.toLowerCase().includes(normalizedQuery) ||
-            permission.resource.toLowerCase().includes(normalizedQuery),
-        )
-      : permissions;
-  }, [permissions, query]);
-  const pageCount = Math.max(1, Math.ceil(filteredPermissions.length / optionPageSize));
-  const pageItems = filteredPermissions.slice(page * optionPageSize, (page + 1) * optionPageSize);
-
-  useEffect(() => {
-    setPage(0);
-  }, [query, permissions]);
-
-  return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-sm font-medium">{t('webAdmin.iam.roleManager.permissionMatrix.title')}</h2>
-        <p className="text-muted-foreground text-sm">{t('webAdmin.iam.roleManager.permissionMatrix.description')}</p>
-      </div>
-      <TextField label={t('webAdmin.iam.selection.search')} onChange={setQuery} value={query} />
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>{t('webAdmin.iam.roleManager.selection.selectPermission')}</TableHead>
-            <TableHead>{t('webAdmin.iam.fields.code')}</TableHead>
-            <TableHead>{t('webAdmin.iam.fields.name')}</TableHead>
-            <TableHead>{t('webAdmin.iam.fields.type')}</TableHead>
-            <TableHead>{t('webAdmin.iam.fields.resource')}</TableHead>
-            <TableHead>{t('webAdmin.iam.fields.action')}</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {pageItems.map(permission => (
-            <TableRow key={permission.id}>
-              <TableCell>
-                <Checkbox
-                  aria-label={t('webAdmin.iam.roleManager.selection.selectPermission')}
-                  checked={selectedPermissionCodes.includes(permission.code)}
-                  onCheckedChange={checked => onToggle(permission.code, checked)}
-                />
-              </TableCell>
-              <TableCell>{permission.code}</TableCell>
-              <TableCell>{permission.name}</TableCell>
-              <TableCell>
-                <Badge variant="outline">{permission.type}</Badge>
-              </TableCell>
-              <TableCell>{permission.resource}</TableCell>
-              <TableCell>{permission.action}</TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      <div className="flex justify-end gap-2">
-        <Button disabled={page === 0} onClick={() => setPage(current => Math.max(0, current - 1))} variant="outline">
-          {t('webAdmin.iam.selection.prev')}
-        </Button>
-        <Button
-          disabled={page + 1 >= pageCount}
-          onClick={() => setPage(current => Math.min(pageCount - 1, current + 1))}
-          variant="outline">
-          {t('webAdmin.iam.selection.next')}
-        </Button>
-      </div>
-    </div>
   );
 };
 

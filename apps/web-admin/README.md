@@ -28,18 +28,18 @@
 
 ## Internal Structure
 
-| Path                  | Responsibility                                                                                                                             |
-| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/main.tsx`        | React mount, providers, shared UI stylesheet import.                                                                                       |
-| `src/App.tsx`         | App-level providers, document metadata side effects, and `RouterProvider` mount.                                                           |
-| `src/router`          | Admin router definitions, route guards, route fallback UI, and route-level lazy page declarations.                                         |
-| `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                                                              |
-| `src/pages/auth`      | Sign-in and OTP pages backed by real backend-admin auth APIs and zustand session state.                                                    |
-| `src/pages/iam.tsx`   | IAM management page orchestration wired to backend-admin users, roles, permissions, menus, sessions, policies, fields, and operation logs. |
-| `src/pages/iam/*`     | Focused IAM page modules, including shared form field controls, pickers, and operation-log table controls split out of the page shell.     |
-| `src/pages/dashboard` | Control-console dashboard using lightweight backend-admin metrics plus paged operation activity.                                           |
-| `vite.config.ts`      | Vite plugin setup and `@tetap/config/vite` env dir.                                                                                        |
-| `tsconfig*.json`      | Admin web TypeScript configs without deprecated `baseUrl`.                                                                                 |
+| Path                  | Responsibility                                                                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`        | React mount, providers, shared UI stylesheet import.                                                                                        |
+| `src/App.tsx`         | App-level providers, document metadata side effects, and `RouterProvider` mount.                                                            |
+| `src/router`          | Admin router definitions, route guards, route fallback UI, and route-level lazy page declarations.                                          |
+| `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                                                               |
+| `src/pages/auth`      | Sign-in and OTP pages backed by real backend-admin auth APIs and zustand session state.                                                     |
+| `src/pages/iam.tsx`   | IAM management page orchestration wired to backend-admin users, roles, permissions, menus, sessions, policies, fields, and operation logs.  |
+| `src/pages/iam/*`     | Focused IAM page modules, including shared form field controls, role pickers, and operation-log table controls split out of the page shell. |
+| `src/pages/dashboard` | Control-console dashboard using lightweight backend-admin metrics plus paged operation activity.                                            |
+| `vite.config.ts`      | Vite plugin setup and `@tetap/config/vite` env dir.                                                                                         |
+| `tsconfig*.json`      | Admin web TypeScript configs without deprecated `baseUrl`.                                                                                  |
 
 ## Reference Adaptation
 
