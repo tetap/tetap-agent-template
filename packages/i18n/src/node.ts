@@ -41,19 +41,25 @@ export const parseAcceptLanguage = (acceptLanguage: string | undefined) => {
     return [];
   }
 
-  return acceptLanguage
-    .split(',')
-    .map(item => {
-      const [locale = '', qValue] = item.trim().split(';q=');
+  const candidates: Array<{ locale: string; quality: number }> = [];
 
-      return {
-        locale: locale.trim(),
-        quality: qValue ? Number(qValue) : 1,
-      };
-    })
-    .filter(item => item.locale)
-    .sort((left, right) => right.quality - left.quality)
-    .map(item => item.locale);
+  for (const item of acceptLanguage.split(',')) {
+    const [locale = '', qValue] = item.trim().split(';q=');
+    const trimmedLocale = locale.trim();
+
+    if (!trimmedLocale) {
+      continue;
+    }
+
+    const quality = qValue ? Number(qValue) : 1;
+
+    candidates.push({
+      locale: trimmedLocale,
+      quality: Number.isFinite(quality) ? quality : 1,
+    });
+  }
+
+  return candidates.sort((left, right) => right.quality - left.quality).map(item => item.locale);
 };
 
 export const getAcceptLanguage = (request: RequestLike): string | undefined =>

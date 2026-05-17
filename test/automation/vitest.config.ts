@@ -8,6 +8,8 @@ const workspaceRoot = resolve(packageRoot, '../..');
 const workspaceAliases = [
   { find: /^@tetap\/config$/, replacement: resolve(workspaceRoot, 'packages/config/src/index.ts') },
   { find: /^@tetap\/config\/node$/, replacement: resolve(workspaceRoot, 'packages/config/src/node.ts') },
+  { find: /^@tetap\/hooks$/, replacement: resolve(workspaceRoot, 'packages/hooks/src/index.ts') },
+  { find: /^@tetap\/hooks\/store$/, replacement: resolve(workspaceRoot, 'packages/hooks/src/store/index.ts') },
   { find: /^@tetap\/i18n$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/index.ts') },
   { find: /^@tetap\/i18n\/react$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/react.ts') },
   { find: /^@tetap\/i18n\/public$/, replacement: resolve(workspaceRoot, 'packages/i18n/src/public.ts') },

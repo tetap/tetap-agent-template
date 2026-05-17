@@ -36,6 +36,16 @@ export const testTargets: Record<TestType, readonly TestTarget[]> = {
       path: 'src/unit/iam-engine.unit.test.ts',
     },
     {
+      id: 'hooks-time-zone',
+      aliases: ['hooks', 'time-zone', 'datetime'],
+      path: 'src/unit/hooks-time-zone.unit.test.ts',
+    },
+    {
+      id: 'i18n-node',
+      aliases: ['i18n', 'locale', 'accept-language'],
+      path: 'src/unit/i18n-node.unit.test.ts',
+    },
+    {
       id: 'backend-security',
       aliases: ['security', 'ssrf', 'upload'],
       path: 'src/unit/backend-security.unit.test.ts',
@@ -135,7 +145,16 @@ export const impactRules: readonly ImpactRule[] = [
     selections: [{ type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' }],
   },
   {
-    prefixes: ['packages/hooks/', 'packages/ui/'],
+    prefixes: ['packages/hooks/'],
+    selections: [
+      { type: 'unit', path: 'src/unit/hooks-time-zone.unit.test.ts' },
+      { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
+      { type: 'browser', path: 'src/browser/web-home.browser.test.tsx' },
+      { type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' },
+    ],
+  },
+  {
+    prefixes: ['packages/ui/'],
     selections: [
       { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/web-home.browser.test.tsx' },
@@ -145,6 +164,7 @@ export const impactRules: readonly ImpactRule[] = [
   {
     prefixes: ['packages/i18n/'],
     selections: [
+      { type: 'unit', path: 'src/unit/i18n-node.unit.test.ts' },
       { type: 'browser', path: 'src/browser/web-home.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/ui-components.browser.test.tsx' },
       { type: 'browser', path: 'src/browser/web-admin-dashboard.browser.test.tsx' },

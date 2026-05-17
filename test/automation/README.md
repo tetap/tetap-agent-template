@@ -25,6 +25,8 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 | `config-env`           | Unit    | Shared env parsing and config defaults.                                    |
 | `schema-response`      | Unit    | Unified responses, admin auth schemas, IAM response schemas.               |
 | `iam-engine`           | Unit    | IAM auth, RBAC, menu, field, data-scope, policy, sessions, operation logs. |
+| `hooks-time-zone`      | Unit    | Shared hooks package date/time locale helpers.                             |
+| `i18n-node`            | Unit    | Node locale header parsing and request locale resolution.                  |
 | `backend-security`     | Unit    | SSRF/upload helpers, canonical paths, HMAC/body hash helpers.              |
 | `test-selection`       | Unit    | Target and affected-test selection logic.                                  |
 | `ui-components`        | Browser | Shared UI primitives.                                                      |
@@ -42,6 +44,8 @@ Use targeted commands during development so each change runs only the module tes
 pnpm test:target -- unit schema-response
 pnpm test:target -- unit schema-response --name healthResponseSchema
 pnpm test:unit:target -- config-env
+pnpm test:unit:target -- hooks-time-zone
+pnpm test:unit:target -- i18n-node
 pnpm test:browser:target -- ui-components
 pnpm test:browser:target -- web-home
 pnpm test:browser:target -- web-admin-dashboard
@@ -59,6 +63,8 @@ ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filte
 - `audit:admin-responsive` signs in to a running `apps/web-admin` instance and checks dashboard, system management pages, and 404/500 pages at desktop, tablet, and mobile viewport sizes.
 - `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend-session separation from admin sessions.
 - `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.
+- `unit:hooks-time-zone` covers shared browser locale/date formatting helpers from `@tetap/hooks`.
+- `unit:i18n-node` covers `Accept-Language` parsing, case-insensitive header lookup, and supported-locale resolution.
 - `unit:backend-security` covers shared backend SSRF/upload/HMAC utility behavior.
 - `browser:web-home` covers the public web promotional landing content.
 - `unit:schema-response` also covers admin auth form schemas from `@tetap/schema/admin-auth`.
@@ -67,19 +73,20 @@ ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filte
 
 The affected runner resolves the Git repository root before reading unstaged, staged, and untracked files, then uses `src/support/test-selection.ts` as the single source of truth.
 
-| Changed Area                          | Tests Selected                                                                               |
-| ------------------------------------- | -------------------------------------------------------------------------------------------- |
-| `packages/config/**`                  | `unit:config-env`                                                                            |
-| `packages/schema/**`                  | `unit:schema-response`, `unit:iam-engine`, `smoke:backend-health`, `smoke:backend-admin-iam` |
-| `packages/iam/**`                     | `unit:iam-engine`, `smoke:backend-admin-iam`                                                 |
-| `apps/backend/**`                     | `unit:backend-security`, `smoke:backend-health`                                              |
-| `apps/backend-admin/**`               | `unit:backend-security`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`             |
-| `packages/prisma/**`                  | `smoke:backend-health`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`              |
-| `apps/web/**`                         | `browser:web-home`                                                                           |
-| `apps/web-admin/**`                   | `browser:web-admin-dashboard`                                                                |
-| `packages/hooks/**`, `packages/ui/**` | `browser:ui-components`, `browser:web-home`, `browser:web-admin-dashboard`                   |
-| `packages/i18n/**`                    | `browser:web-home`, browser targets, backend smoke targets                                   |
-| `test/automation/src/**` test files   | The changed test file only.                                                                  |
+| Changed Area                        | Tests Selected                                                                               |
+| ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `packages/config/**`                | `unit:config-env`                                                                            |
+| `packages/schema/**`                | `unit:schema-response`, `unit:iam-engine`, `smoke:backend-health`, `smoke:backend-admin-iam` |
+| `packages/iam/**`                   | `unit:iam-engine`, `smoke:backend-admin-iam`                                                 |
+| `apps/backend/**`                   | `unit:backend-security`, `smoke:backend-health`                                              |
+| `apps/backend-admin/**`             | `unit:backend-security`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`             |
+| `packages/prisma/**`                | `smoke:backend-health`, `smoke:backend-admin-health`, `smoke:backend-admin-iam`              |
+| `apps/web/**`                       | `browser:web-home`                                                                           |
+| `apps/web-admin/**`                 | `browser:web-admin-dashboard`                                                                |
+| `packages/hooks/**`                 | `unit:hooks-time-zone`, browser targets                                                      |
+| `packages/ui/**`                    | `browser:ui-components`, `browser:web-home`, `browser:web-admin-dashboard`                   |
+| `packages/i18n/**`                  | `unit:i18n-node`, browser targets, backend smoke targets                                     |
+| `test/automation/src/**` test files | The changed test file only.                                                                  |
 
 ## Rules
 

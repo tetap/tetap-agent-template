@@ -32,6 +32,14 @@ describe('targeted test selection', () => {
       selected: [{ type: 'browser', path: 'src/browser/web-home.browser.test.tsx' }],
       unknown: [],
     });
+
+    expect(selectTargets('unit', ['accept-language', 'time-zone'])).toMatchObject({
+      selected: [
+        { type: 'unit', path: 'src/unit/i18n-node.unit.test.ts' },
+        { type: 'unit', path: 'src/unit/hooks-time-zone.unit.test.ts' },
+      ],
+      unknown: [],
+    });
   });
 
   it('maps changed source files to affected test modules', () => {
@@ -56,6 +64,20 @@ describe('targeted test selection', () => {
         'src/smoke/backend-admin-iam.smoke.test.ts',
       ],
       unit: ['src/unit/config-env.unit.test.ts', 'src/unit/backend-security.unit.test.ts'],
+    });
+  });
+
+  it('maps shared hooks and i18n packages to their focused unit coverage', () => {
+    const selections = selectAffectedTests(['packages/hooks/src/store/time-zone.ts', 'packages/i18n/src/node.ts']);
+
+    expect(groupSelectionsByType(selections)).toEqual({
+      browser: [
+        'src/browser/ui-components.browser.test.tsx',
+        'src/browser/web-home.browser.test.tsx',
+        'src/browser/web-admin-dashboard.browser.test.tsx',
+      ],
+      smoke: ['src/smoke/backend-health.smoke.test.ts', 'src/smoke/backend-admin-health.smoke.test.ts'],
+      unit: ['src/unit/hooks-time-zone.unit.test.ts', 'src/unit/i18n-node.unit.test.ts'],
     });
   });
 

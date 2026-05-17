@@ -35,6 +35,8 @@ pnpm test:affected
 pnpm test:target -- unit schema-response
 pnpm test:target -- unit schema-response --name healthResponseSchema
 pnpm test:unit:target -- iam-engine
+pnpm test:unit:target -- hooks-time-zone
+pnpm test:unit:target -- i18n-node
 pnpm test:unit:target -- backend-security
 pnpm test:browser:target -- ui-components
 pnpm test:browser:target -- web-home
@@ -65,6 +67,8 @@ flowchart LR
 - `apps/backend-admin/**` selects backend security unit tests plus admin health and IAM smoke.
 - `apps/web/**` selects the public web home Browser Mode coverage.
 - `apps/web-admin/**` selects the admin Browser Mode dashboard/IAM coverage.
+- `packages/hooks/**` selects focused hooks date/time unit coverage plus shared browser targets.
+- `packages/i18n/**` selects focused Node locale unit coverage plus browser and backend smoke targets.
 
 ## 规则
 

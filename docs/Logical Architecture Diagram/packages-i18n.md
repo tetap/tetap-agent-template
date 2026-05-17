@@ -25,7 +25,7 @@
 | `createPublicI18n` / `PublicI18nProvider`                     | Public web scoped translator and React provider.        |
 | `createAdminI18n` / `AdminI18nProvider`                       | Admin web scoped translator and React provider.         |
 | `createBackendI18n` / `createBackendAdminI18n`                | Backend response translators scoped by service.         |
-| `parseAcceptLanguage` / `resolveLocale` / `createRequestI18n` | Node request locale resolving helpers.                  |
+| `parseAcceptLanguage` / `resolveLocale` / `createRequestI18n` | Quality-aware Node request locale resolving helpers.    |
 
 ## 内部结构
 
@@ -59,5 +59,6 @@
 
 - 文案影响 UI 时运行 Browser Mode 测试。
 - 文案影响 API response 时运行 smoke 测试。
-- 当前 affected map 将 `packages/i18n/**` 映射到公共 web Browser Mode、共享 UI Browser Mode、后台 Browser Mode 和 backend smoke。
+- 修改 Node locale helper 时运行 `pnpm test:unit:target -- i18n-node`。
+- 当前 affected map 将 `packages/i18n/**` 映射到 `unit:i18n-node`、公共 web Browser Mode、共享 UI Browser Mode、后台 Browser Mode 和 backend smoke。
 - 修改 scope 后运行 `pnpm i18n:boundaries:check`。

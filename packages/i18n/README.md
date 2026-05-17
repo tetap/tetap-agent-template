@@ -22,17 +22,17 @@
 
 ## Current Helpers
 
-| Helper / Type                                       | Purpose                                                             |
-| --------------------------------------------------- | ------------------------------------------------------------------- |
-| `createI18n`                                        | Create a typed translator from a locale resource map.               |
-| `createAppI18n`                                     | Create the full legacy app translator from all locale resources.    |
-| `createPublicI18n` / `PublicI18nProvider`           | Public web translator and React provider limited to public keys.    |
-| `createAdminI18n` / `AdminI18nProvider`             | Admin web translator and React provider limited to admin keys.      |
-| `createBackendI18n`                                 | Public backend translator limited to backend response keys.         |
-| `createBackendAdminI18n`                            | Backend-admin translator limited to admin API response keys.        |
-| `parseAcceptLanguage` / `resolveLocale`             | Parse request language headers and choose a supported locale.       |
-| `createNodeI18n` / `createRequestI18n`              | Build request-aware Node translators.                               |
-| `normalizeLocale`, `getMessageByKey`, `interpolate` | Core locale normalization, key lookup, and interpolation utilities. |
+| Helper / Type                                       | Purpose                                                                  |
+| --------------------------------------------------- | ------------------------------------------------------------------------ |
+| `createI18n`                                        | Create a typed translator from a locale resource map.                    |
+| `createAppI18n`                                     | Create the full legacy app translator from all locale resources.         |
+| `createPublicI18n` / `PublicI18nProvider`           | Public web translator and React provider limited to public keys.         |
+| `createAdminI18n` / `AdminI18nProvider`             | Admin web translator and React provider limited to admin keys.           |
+| `createBackendI18n`                                 | Public backend translator limited to backend response keys.              |
+| `createBackendAdminI18n`                            | Backend-admin translator limited to admin API response keys.             |
+| `parseAcceptLanguage` / `resolveLocale`             | Parse request language headers by quality and choose a supported locale. |
+| `createNodeI18n` / `createRequestI18n`              | Build request-aware Node translators.                                    |
+| `normalizeLocale`, `getMessageByKey`, `interpolate` | Core locale normalization, key lookup, and interpolation utilities.      |
 
 ## Rules
 
