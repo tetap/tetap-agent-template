@@ -1,55 +1,16 @@
-import { useCallback, useEffect, useState, type ReactNode } from 'react';
-import {
-  Database,
-  Edit,
-  KeyRound,
-  LoaderCircle,
-  MoreHorizontal,
-  Plus,
-  RefreshCw,
-  RotateCcw,
-  Search,
-  Trash2,
-  UserPlus,
-} from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { LoaderCircle, RefreshCw } from 'lucide-react';
 import { getUserTimeZone, useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  Badge,
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-  Checkbox,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
   FieldGroup,
   Skeleton,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
   Tabs,
   TabsContent,
   toast,
@@ -63,14 +24,12 @@ import {
   createIamMenu,
   createIamPermission,
   createIamPolicy,
-  createIamRole,
   createIamUser,
   BackendAdminRequestError,
   deleteIamFieldPermission,
   deleteIamMenu,
   deleteIamPermission,
   deleteIamPolicy,
-  deleteIamRole,
   deleteIamUser,
   fetchIamFieldPermissions,
   fetchIamMenus,
@@ -81,76 +40,44 @@ import {
   fetchIamSessions,
   fetchIamUsers,
   revokeIamSession,
-  updateIamRole,
   updateIamUser,
   updateIamFieldPermission,
   updateIamPolicy,
 } from '../api/backend-admin.js';
-import type {
-  FieldPermission,
-  IamCreatePolicyRequest,
-  IamCreateRoleRequest,
-  IamMenuNode,
-  IamOperationLogsData,
-  IamPermission,
-  IamPolicy,
-  IamRole,
-  IamSession,
-  IamUser,
-} from '@tetap/schema/iam';
-import {
-  EnumSelectField,
-  MultiSearchSelectField,
-  SearchableSelectField,
-  TextField,
-  type PickerOption,
-} from './iam/form-fields.js';
-import { ConfirmActionButton } from './iam/confirm-action-button.js';
+import type { FieldPermission, IamMenuNode, IamOperationLogsData, IamPolicy, IamSession } from '@tetap/schema/iam';
+import { EnumSelectField, MultiSearchSelectField, SearchableSelectField, TextField } from './iam/form-fields.js';
+import { FieldPermissionsSection } from './iam/field-permissions-section.js';
 import { MenusSection } from './iam/menus-section.js';
 import { OperationLogsTable, type OperationLogQueryState } from './iam/operation-logs-table.js';
+import { PoliciesSection } from './iam/policies-section.js';
 import { PermissionsSection } from './iam/permissions-section.js';
-import { AssignedUsersDialog, PermissionChecklist } from './iam/role-pickers.js';
+import { RolesSection } from './iam/roles-section.js';
 import { SessionsSection } from './iam/sessions-section.js';
+import type {
+  CreateDialogKind,
+  FieldFormState,
+  IamPageData,
+  IamSection,
+  MenuFormState,
+  PermissionFormState,
+  PermissionItem,
+  PolicyFormState,
+  UserFormState,
+  UserItem,
+} from './iam/types.js';
+import {
+  fieldPermissionTypeOptions,
+  flattenIamMenus,
+  parseCsv,
+  parsePolicyConditions,
+  permissionTypeOptions,
+  policyEffectOptions,
+  toFieldPermissionType,
+  toPermissionType,
+  toPolicyEffect,
+  uniqueStrings,
+} from './iam/utils.js';
 import { UsersSection } from './iam/users-section.js';
-
-type IamSection = 'users' | 'roles' | 'permissions' | 'menus' | 'sessions' | 'fields' | 'policies' | 'operationLogs';
-type PermissionTypeInput = 'MENU' | 'API' | 'BUTTON' | 'FIELD' | 'DATA';
-type PolicyEffectInput = 'ALLOW' | 'DENY';
-type FieldPermissionTypeInput = 'HIDE' | 'MASK' | 'READONLY' | 'READWRITE';
-type DataScopeTypeInput = 'ALL' | 'DEPT' | 'DEPT_AND_CHILD' | 'SELF' | 'CUSTOM';
-type RoleItem = IamRole;
-type UserItem = IamUser;
-type PermissionItem = IamPermission;
-type IamPageData = {
-  fieldPermissions: FieldPermission[];
-  menus: IamMenuNode[];
-  permissions: IamPermission[];
-  policies: IamPolicy[];
-  roles: IamRole[];
-  sessions: IamSession[];
-  users: IamUser[];
-};
-type RoleEditorState = {
-  name: string;
-  code: string;
-  description: string;
-  permissionCodes: string;
-  dataScopeType: DataScopeTypeInput;
-  deptIds: string;
-};
-
-const parseCsv = (value: string) =>
-  value.split(',').flatMap(item => {
-    const trimmed = item.trim();
-
-    return trimmed ? [trimmed] : [];
-  });
-
-const uniqueStrings = (values: string[]) => Array.from(new Set(values.filter(Boolean)));
-
-const flattenIamMenus = (menu: IamMenuNode): IamMenuNode[] => [menu, ...menu.children.flatMap(flattenIamMenus)];
-
-const parsePolicyConditions = (value: string) => JSON.parse(value) as IamCreatePolicyRequest['conditions'];
 
 const emptyIamPageData = (): IamPageData => ({
   fieldPermissions: [],
@@ -191,8 +118,6 @@ const hasSectionData = (section: IamSection, data: IamPageData, operationLogs: I
 
 const isSectionLoaded = (section: IamSection, loadedSections: Set<IamSection>) =>
   loadedSections.has(section) || hasSectionData(section, cachedIamPageData, cachedOperationLogData);
-
-const stringifyPolicyConditions = (conditions: IamPolicy['conditions']) => JSON.stringify(conditions);
 
 const hasIssueMessages = (error: unknown): error is { issues: Array<{ message?: unknown }> } =>
   Boolean(error && typeof error === 'object' && Array.isArray((error as { issues?: unknown }).issues));
@@ -237,86 +162,6 @@ const resolveBackendErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-const toPermissionType = (value: string): PermissionTypeInput =>
-  ['MENU', 'API', 'BUTTON', 'FIELD', 'DATA'].includes(value) ? (value as PermissionTypeInput) : 'API';
-
-const toPolicyEffect = (value: string): PolicyEffectInput => (value === 'DENY' ? 'DENY' : 'ALLOW');
-
-const toFieldPermissionType = (value: string): FieldPermissionTypeInput =>
-  ['HIDE', 'MASK', 'READONLY', 'READWRITE'].includes(value) ? (value as FieldPermissionTypeInput) : 'MASK';
-
-const toDataScopeType = (value: string): DataScopeTypeInput =>
-  ['ALL', 'DEPT', 'DEPT_AND_CHILD', 'SELF', 'CUSTOM'].includes(value) ? (value as DataScopeTypeInput) : 'SELF';
-
-const emptyRoleEditorState = (): RoleEditorState => ({
-  code: '',
-  dataScopeType: 'DEPT_AND_CHILD',
-  deptIds: '',
-  description: '',
-  name: '',
-  permissionCodes: '',
-});
-
-const roleToEditorState = (role: RoleItem): RoleEditorState => ({
-  code: role.code,
-  dataScopeType: role.dataScope.type,
-  deptIds: role.dataScope.deptIds?.join(', ') ?? '',
-  description: role.description ?? '',
-  name: role.name,
-  permissionCodes: role.permissionCodes.join(', '),
-});
-
-const roleEditorToPayload = (form: RoleEditorState): IamCreateRoleRequest => {
-  const deptIds = parseCsv(form.deptIds);
-
-  return {
-    code: form.code,
-    dataScope: {
-      type: toDataScopeType(form.dataScopeType),
-      ...(deptIds.length ? { deptField: 'deptId', deptIds } : {}),
-    },
-    description: form.description || undefined,
-    name: form.name,
-    permissionCodes: parseCsv(form.permissionCodes),
-  };
-};
-
-const dataScopeLabels = {
-  ALL: 'webAdmin.iam.dataScopes.all',
-  CUSTOM: 'webAdmin.iam.dataScopes.custom',
-  DEPT: 'webAdmin.iam.dataScopes.dept',
-  DEPT_AND_CHILD: 'webAdmin.iam.dataScopes.deptAndChild',
-  SELF: 'webAdmin.iam.dataScopes.self',
-} as const;
-
-const permissionTypeOptions: { label: PermissionTypeInput; value: PermissionTypeInput }[] = [
-  { label: 'API', value: 'API' },
-  { label: 'MENU', value: 'MENU' },
-  { label: 'BUTTON', value: 'BUTTON' },
-  { label: 'FIELD', value: 'FIELD' },
-  { label: 'DATA', value: 'DATA' },
-];
-
-const fieldPermissionTypeOptions: { label: FieldPermissionTypeInput; value: FieldPermissionTypeInput }[] = [
-  { label: 'HIDE', value: 'HIDE' },
-  { label: 'MASK', value: 'MASK' },
-  { label: 'READONLY', value: 'READONLY' },
-  { label: 'READWRITE', value: 'READWRITE' },
-];
-
-const policyEffectOptions: { label: PolicyEffectInput; value: PolicyEffectInput }[] = [
-  { label: 'ALLOW', value: 'ALLOW' },
-  { label: 'DENY', value: 'DENY' },
-];
-
-const dataScopeOptions: { label: string; value: DataScopeTypeInput }[] = [
-  { label: dataScopeLabels.ALL, value: 'ALL' },
-  { label: dataScopeLabels.CUSTOM, value: 'CUSTOM' },
-  { label: dataScopeLabels.DEPT, value: 'DEPT' },
-  { label: dataScopeLabels.DEPT_AND_CHILD, value: 'DEPT_AND_CHILD' },
-  { label: dataScopeLabels.SELF, value: 'SELF' },
-];
-
 const iamSectionCopy = {
   users: {
     titleKey: 'webAdmin.iam.pages.users.title',
@@ -352,7 +197,7 @@ const iamSectionCopy = {
   },
 } as const;
 
-export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) => {
+export const AdminIamPage = memo(function AdminIamPage({ section = 'users' }: { section?: IamSection }) {
   const t = useAdminT();
   const accessToken = useAdminSessionStore(state => state.auth.accessToken);
   const can = useAdminSessionStore(state => state.auth.can);
@@ -415,14 +260,14 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
   const canRevokeSessions = can('session:revoke');
   const timeZone = getUserTimeZone();
 
-  const changeCreateDialog = (dialog: CreateDialogKind | null) => {
+  const changeCreateDialog = useCallback((dialog: CreateDialogKind | null) => {
     setCreateDialog(dialog);
 
     if (!dialog) {
       setEditingFieldPermissionId(null);
       setEditingPolicyId(null);
     }
-  };
+  }, []);
 
   const loadSectionData = useCallback(async () => {
     if (!accessToken) {
@@ -540,82 +385,97 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
     [accessToken, loadSectionData, t],
   );
 
-  const submitUser = () =>
-    runMutation(token =>
-      createIamUser(token, {
-        username: userForm.username,
-        email: userForm.email,
-        password: userForm.password,
-        deptId: userForm.deptId || undefined,
-        roleCodes: parseCsv(userForm.roleCodes),
-      }),
-    );
+  const submitUser = useCallback(
+    () =>
+      runMutation(token =>
+        createIamUser(token, {
+          username: userForm.username,
+          email: userForm.email,
+          password: userForm.password,
+          deptId: userForm.deptId || undefined,
+          roleCodes: parseCsv(userForm.roleCodes),
+        }),
+      ),
+    [runMutation, userForm],
+  );
 
-  const submitPermission = () =>
-    runMutation(token =>
-      createIamPermission(token, {
-        code: permissionForm.code,
-        name: permissionForm.name,
-        type: toPermissionType(permissionForm.type),
-        resource: permissionForm.resource,
-        action: permissionForm.action,
-      }),
-    );
+  const submitPermission = useCallback(
+    () =>
+      runMutation(token =>
+        createIamPermission(token, {
+          code: permissionForm.code,
+          name: permissionForm.name,
+          type: toPermissionType(permissionForm.type),
+          resource: permissionForm.resource,
+          action: permissionForm.action,
+        }),
+      ),
+    [permissionForm, runMutation],
+  );
 
-  const submitMenu = () =>
-    runMutation(token =>
-      createIamMenu(token, {
-        name: menuForm.name,
-        path: menuForm.path,
-        component: menuForm.component,
-        icon: menuForm.icon,
-        parentId: menuForm.parentId || undefined,
-        permissionCodes: parseCsv(menuForm.permissionCodes),
-        order: Number.parseInt(menuForm.order, 10) || 0,
-      }),
-    );
+  const submitMenu = useCallback(
+    () =>
+      runMutation(token =>
+        createIamMenu(token, {
+          name: menuForm.name,
+          path: menuForm.path,
+          component: menuForm.component,
+          icon: menuForm.icon,
+          parentId: menuForm.parentId || undefined,
+          permissionCodes: parseCsv(menuForm.permissionCodes),
+          order: Number.parseInt(menuForm.order, 10) || 0,
+        }),
+      ),
+    [menuForm, runMutation],
+  );
 
-  const submitFieldPermission = () =>
-    runMutation(token =>
-      editingFieldPermissionId
-        ? updateIamFieldPermission(token, editingFieldPermissionId, {
-            roleCode: fieldForm.roleCode,
-            resource: fieldForm.resource,
-            fieldName: fieldForm.fieldName,
-            permissionType: toFieldPermissionType(fieldForm.permissionType),
-          })
-        : createIamFieldPermission(token, {
-            roleCode: fieldForm.roleCode,
-            resource: fieldForm.resource,
-            fieldName: fieldForm.fieldName,
-            permissionType: toFieldPermissionType(fieldForm.permissionType),
-          }),
-    );
+  const submitFieldPermission = useCallback(
+    () =>
+      runMutation(token =>
+        editingFieldPermissionId
+          ? updateIamFieldPermission(token, editingFieldPermissionId, {
+              roleCode: fieldForm.roleCode,
+              resource: fieldForm.resource,
+              fieldName: fieldForm.fieldName,
+              permissionType: toFieldPermissionType(fieldForm.permissionType),
+            })
+          : createIamFieldPermission(token, {
+              roleCode: fieldForm.roleCode,
+              resource: fieldForm.resource,
+              fieldName: fieldForm.fieldName,
+              permissionType: toFieldPermissionType(fieldForm.permissionType),
+            }),
+      ),
+    [editingFieldPermissionId, fieldForm, runMutation],
+  );
 
-  const submitPolicy = () =>
-    runMutation(token =>
-      editingPolicyId
-        ? updateIamPolicy(token, editingPolicyId, {
-            resource: policyForm.resource,
-            action: policyForm.action,
-            effect: toPolicyEffect(policyForm.effect),
-            conditions: parsePolicyConditions(policyForm.conditions),
-          })
-        : createIamPolicy(token, {
-            resource: policyForm.resource,
-            action: policyForm.action,
-            effect: toPolicyEffect(policyForm.effect),
-            conditions: parsePolicyConditions(policyForm.conditions),
-          }),
-    );
+  const submitPolicy = useCallback(
+    () =>
+      runMutation(token =>
+        editingPolicyId
+          ? updateIamPolicy(token, editingPolicyId, {
+              resource: policyForm.resource,
+              action: policyForm.action,
+              effect: toPolicyEffect(policyForm.effect),
+              conditions: parsePolicyConditions(policyForm.conditions),
+            })
+          : createIamPolicy(token, {
+              resource: policyForm.resource,
+              action: policyForm.action,
+              effect: toPolicyEffect(policyForm.effect),
+              conditions: parsePolicyConditions(policyForm.conditions),
+            }),
+      ),
+    [editingPolicyId, policyForm, runMutation],
+  );
 
-  const openCreateFieldPermission = () => {
+  const openCreateFieldPermission = useCallback(() => {
     setEditingFieldPermissionId(null);
     setFieldForm({ fieldName: '', permissionType: 'MASK', resource: '', roleCode: '' });
     setCreateDialog('fields');
-  };
+  }, []);
 
-  const openEditFieldPermission = (fieldPermission: FieldPermission) => {
+  const openEditFieldPermission = useCallback((fieldPermission: FieldPermission) => {
     setEditingFieldPermissionId(fieldPermission.id);
     setFieldForm({
       fieldName: fieldPermission.fieldName,
@@ -624,15 +484,15 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       roleCode: fieldPermission.roleCode,
     });
     setCreateDialog('fields');
-  };
+  }, []);
 
-  const openCreatePolicy = () => {
+  const openCreatePolicy = useCallback(() => {
     setEditingPolicyId(null);
     setPolicyForm({ action: '', conditions: '{"all":[]}', effect: 'ALLOW', resource: '' });
     setCreateDialog('policies');
-  };
+  }, []);
 
-  const openEditPolicy = (policy: IamPolicy) => {
+  const openEditPolicy = useCallback((policy: IamPolicy) => {
     setEditingPolicyId(policy.id);
     setPolicyForm({
       action: policy.action,
@@ -641,7 +501,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       resource: policy.resource,
     });
     setCreateDialog('policies');
-  };
+  }, []);
 
   const openCreateUser = useCallback(() => {
     setCreateDialog('users');
@@ -694,6 +554,44 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
     [revokeSession],
   );
 
+  const refreshSectionData = useCallback(() => {
+    void loadSectionData();
+  }, [loadSectionData]);
+
+  const submitUserAndClose = useCallback(() => {
+    void submitUser().then(ok => ok && changeCreateDialog(null));
+  }, [changeCreateDialog, submitUser]);
+
+  const submitPermissionAndClose = useCallback(() => {
+    void submitPermission().then(ok => ok && changeCreateDialog(null));
+  }, [changeCreateDialog, submitPermission]);
+
+  const submitMenuAndClose = useCallback(() => {
+    void submitMenu().then(ok => ok && changeCreateDialog(null));
+  }, [changeCreateDialog, submitMenu]);
+
+  const submitFieldPermissionAndClose = useCallback(() => {
+    void submitFieldPermission().then(ok => ok && changeCreateDialog(null));
+  }, [changeCreateDialog, submitFieldPermission]);
+
+  const submitPolicyAndClose = useCallback(() => {
+    void submitPolicy().then(ok => ok && changeCreateDialog(null));
+  }, [changeCreateDialog, submitPolicy]);
+
+  const deleteFieldPermission = useCallback(
+    (fieldPermission: FieldPermission) => {
+      void runMutation(token => deleteIamFieldPermission(token, fieldPermission.id));
+    },
+    [runMutation],
+  );
+
+  const deletePolicy = useCallback(
+    (policy: IamPolicy) => {
+      void runMutation(token => deleteIamPolicy(token, policy.id));
+    },
+    [runMutation],
+  );
+
   useEffect(() => {
     void loadSectionData();
   }, [loadSectionData]);
@@ -717,7 +615,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
             </h1>
             <p className="text-muted-foreground">{t(iamSectionCopy[section].descriptionKey)}</p>
           </div>
-          <Button disabled={isRefreshing} onClick={() => void loadSectionData()} variant="outline">
+          <Button disabled={isRefreshing} onClick={refreshSectionData} variant="outline">
             <RefreshCw className={isRefreshing ? 'animate-spin' : undefined} data-icon="inline-start" />
             {t('webAdmin.iam.actions.refresh')}
           </Button>
@@ -736,11 +634,11 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
             onMenuFormChange={setMenuForm}
             onPermissionFormChange={setPermissionForm}
             onPolicyFormChange={setPolicyForm}
-            onSubmitFieldPermission={() => void submitFieldPermission().then(ok => ok && changeCreateDialog(null))}
-            onSubmitMenu={() => void submitMenu().then(ok => ok && changeCreateDialog(null))}
-            onSubmitPermission={() => void submitPermission().then(ok => ok && changeCreateDialog(null))}
-            onSubmitPolicy={() => void submitPolicy().then(ok => ok && changeCreateDialog(null))}
-            onSubmitUser={() => void submitUser().then(ok => ok && changeCreateDialog(null))}
+            onSubmitFieldPermission={submitFieldPermissionAndClose}
+            onSubmitMenu={submitMenuAndClose}
+            onSubmitPermission={submitPermissionAndClose}
+            onSubmitPolicy={submitPolicyAndClose}
+            onSubmitUser={submitUserAndClose}
             onUserFormChange={setUserForm}
             data={data}
             permissionForm={permissionForm}
@@ -761,7 +659,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               />
             </TabsContent>
             <TabsContent value="roles">
-              <RoleManagementPanel
+              <RolesSection
                 canManageRoles={canManageRoles}
                 isMutating={isMutating}
                 onMutate={runMutation}
@@ -798,30 +696,24 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               />
             </TabsContent>
             <TabsContent value="fields">
-              <section className="grid min-w-0 gap-4">
-                <FieldPermissionsTable
-                  canManageIam={canManageIam}
-                  fieldPermissions={data.fieldPermissions}
-                  isMutating={isMutating}
-                  onCreate={openCreateFieldPermission}
-                  onDelete={fieldPermissionId =>
-                    void runMutation(token => deleteIamFieldPermission(token, fieldPermissionId))
-                  }
-                  onEdit={openEditFieldPermission}
-                />
-              </section>
+              <FieldPermissionsSection
+                canManageIam={canManageIam}
+                fieldPermissions={data.fieldPermissions}
+                isMutating={isMutating}
+                onCreate={openCreateFieldPermission}
+                onDelete={deleteFieldPermission}
+                onEdit={openEditFieldPermission}
+              />
             </TabsContent>
             <TabsContent value="policies">
-              <section className="grid min-w-0 gap-4">
-                <PoliciesTable
-                  canUpdatePolicy={canUpdatePolicy}
-                  isMutating={isMutating}
-                  onCreate={openCreatePolicy}
-                  onDelete={policyId => void runMutation(token => deleteIamPolicy(token, policyId))}
-                  onEdit={openEditPolicy}
-                  policies={data.policies}
-                />
-              </section>
+              <PoliciesSection
+                canUpdatePolicy={canUpdatePolicy}
+                isMutating={isMutating}
+                onCreate={openCreatePolicy}
+                onDelete={deletePolicy}
+                onEdit={openEditPolicy}
+                policies={data.policies}
+              />
             </TabsContent>
             <TabsContent value="operationLogs">
               <section className="grid min-w-0 gap-4">
@@ -839,80 +731,56 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       ) : null}
     </IamPageFrame>
   );
-};
+});
 
-export const AdminUsersPage = () => <AdminIamPage section="users" />;
+export const AdminUsersPage = memo(function AdminUsersPage() {
+  return <AdminIamPage section="users" />;
+});
 
-export const AdminRolesPage = () => <AdminIamPage section="roles" />;
+export const AdminRolesPage = memo(function AdminRolesPage() {
+  return <AdminIamPage section="roles" />;
+});
 
-export const AdminPermissionsPage = () => <AdminIamPage section="permissions" />;
+export const AdminPermissionsPage = memo(function AdminPermissionsPage() {
+  return <AdminIamPage section="permissions" />;
+});
 
-export const AdminMenusPage = () => <AdminIamPage section="menus" />;
+export const AdminMenusPage = memo(function AdminMenusPage() {
+  return <AdminIamPage section="menus" />;
+});
 
-export const AdminFieldPermissionsPage = () => <AdminIamPage section="fields" />;
+export const AdminFieldPermissionsPage = memo(function AdminFieldPermissionsPage() {
+  return <AdminIamPage section="fields" />;
+});
 
-export const AdminPoliciesPage = () => <AdminIamPage section="policies" />;
+export const AdminPoliciesPage = memo(function AdminPoliciesPage() {
+  return <AdminIamPage section="policies" />;
+});
 
-export const AdminSessionsPage = () => <AdminIamPage section="sessions" />;
+export const AdminSessionsPage = memo(function AdminSessionsPage() {
+  return <AdminIamPage section="sessions" />;
+});
 
-export const AdminOperationLogsPage = () => <AdminIamPage section="operationLogs" />;
+export const AdminOperationLogsPage = memo(function AdminOperationLogsPage() {
+  return <AdminIamPage section="operationLogs" />;
+});
 
-const IamPageFrame = ({ children }: { children: ReactNode }) => (
-  <>
-    <AdminHeader>
-      <div className="me-auto" />
-      <SearchCommand />
-      <ThemeSwitch />
-    </AdminHeader>
-    <AdminMain aria-labelledby="admin-iam-title" className="flex flex-col gap-4">
-      {children}
-    </AdminMain>
-  </>
-);
+const IamPageFrame = memo(function IamPageFrame({ children }: { children: ReactNode }) {
+  return (
+    <>
+      <AdminHeader>
+        <div className="me-auto" />
+        <SearchCommand />
+        <ThemeSwitch />
+      </AdminHeader>
+      <AdminMain aria-labelledby="admin-iam-title" className="flex flex-col gap-4">
+        {children}
+      </AdminMain>
+    </>
+  );
+});
 
-type CreateDialogKind = Exclude<IamSection, 'roles' | 'sessions' | 'operationLogs'>;
-
-type UserFormState = {
-  deptId: string;
-  email: string;
-  password: string;
-  roleCodes: string;
-  username: string;
-};
-
-type PermissionFormState = {
-  action: string;
-  code: string;
-  name: string;
-  resource: string;
-  type: string;
-};
-
-type MenuFormState = {
-  component: string;
-  icon: string;
-  name: string;
-  order: string;
-  parentId: string;
-  path: string;
-  permissionCodes: string;
-};
-
-type FieldFormState = {
-  fieldName: string;
-  permissionType: string;
-  resource: string;
-  roleCode: string;
-};
-
-type PolicyFormState = {
-  action: string;
-  conditions: string;
-  effect: string;
-  resource: string;
-};
-
-const CreateIamDialogs = ({
+const CreateIamDialogs = memo(function CreateIamDialogs({
   dialog,
   fieldForm,
   isMutating,
@@ -956,49 +824,63 @@ const CreateIamDialogs = ({
   policyMode: 'create' | 'edit';
   policyForm: PolicyFormState;
   userForm: UserFormState;
-}) => {
+}) {
   const t = useAdminT();
-  const roleOptions = data.roles.map(role => ({
-    description: role.description,
-    label: `${role.name} (${role.code})`,
-    value: role.code,
-  }));
-  const departmentOptions = [
-    {
-      description: t('webAdmin.iam.selection.defaultDeptDescription'),
-      label: t('webAdmin.iam.selection.defaultDept'),
-      value: '',
-    },
-    ...uniqueStrings([
-      ...data.users.map(user => user.deptId),
-      ...data.roles.flatMap(role => role.dataScope.deptIds ?? []),
-    ])
-      .sort()
-      .map(deptId => ({
-        label: t('webAdmin.iam.selection.department', { deptId }),
-        value: deptId,
+  const roleOptions = useMemo(
+    () =>
+      data.roles.map(role => ({
+        description: role.description,
+        label: `${role.name} (${role.code})`,
+        value: role.code,
       })),
-  ];
-  const permissionOptions = data.permissions.map(permission => ({
-    description: `${permission.type} / ${permission.resource}:${permission.action}`,
-    label: permission.code,
-    value: permission.code,
-  }));
-  const menuOptions = [
-    {
-      description: t('webAdmin.iam.selection.rootDescription'),
-      label: t('webAdmin.iam.selection.rootMenu'),
-      value: '',
-    },
-    ...data.menus.flatMap(menu =>
-      flattenIamMenus(menu).map(menuItem => ({
-        description: menuItem.path,
-        label: menuItem.name,
-        value: menuItem.id,
+    [data.roles],
+  );
+  const departmentOptions = useMemo(
+    () => [
+      {
+        description: t('webAdmin.iam.selection.defaultDeptDescription'),
+        label: t('webAdmin.iam.selection.defaultDept'),
+        value: '',
+      },
+      ...uniqueStrings([
+        ...data.users.map(user => user.deptId),
+        ...data.roles.flatMap(role => role.dataScope.deptIds ?? []),
+      ])
+        .sort()
+        .map(deptId => ({
+          label: t('webAdmin.iam.selection.department', { deptId }),
+          value: deptId,
+        })),
+    ],
+    [data.roles, data.users, t],
+  );
+  const permissionOptions = useMemo(
+    () =>
+      data.permissions.map(permission => ({
+        description: `${permission.type} / ${permission.resource}:${permission.action}`,
+        label: permission.code,
+        value: permission.code,
       })),
-    ),
-  ];
-  const close = (open: boolean) => onDialogChange(open ? dialog : null);
+    [data.permissions],
+  );
+  const menuOptions = useMemo(
+    () => [
+      {
+        description: t('webAdmin.iam.selection.rootDescription'),
+        label: t('webAdmin.iam.selection.rootMenu'),
+        value: '',
+      },
+      ...data.menus.flatMap(menu =>
+        flattenIamMenus(menu).map(menuItem => ({
+          description: menuItem.path,
+          label: menuItem.name,
+          value: menuItem.id,
+        })),
+      ),
+    ],
+    [data.menus, t],
+  );
+  const close = useCallback((open: boolean) => onDialogChange(open ? dialog : null), [dialog, onDialogChange]);
 
   return (
     <>
@@ -1222,867 +1104,4 @@ const CreateIamDialogs = ({
       </Dialog>
     </>
   );
-};
-
-const RoleManagementPanel = ({
-  canManageRoles,
-  isMutating,
-  onMutate,
-  permissions,
-  roles,
-  users,
-}: {
-  canManageRoles: boolean;
-  isMutating: boolean;
-  onMutate: (operation: (token: string) => Promise<unknown>) => Promise<boolean>;
-  permissions: PermissionItem[];
-  roles: RoleItem[];
-  users: UserItem[];
-}) => {
-  const t = useAdminT();
-  const [query, setQuery] = useState({ code: '', dataScope: '', name: '' });
-  const [appliedQuery, setAppliedQuery] = useState({ code: '', dataScope: '', name: '' });
-  const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
-  const [editorOpen, setEditorOpen] = useState(false);
-  const [editingRoleId, setEditingRoleId] = useState<string | null>(null);
-  const [editorForm, setEditorForm] = useState<RoleEditorState>(emptyRoleEditorState);
-  const [permissionRole, setPermissionRole] = useState<RoleItem | null>(null);
-  const [permissionDraft, setPermissionDraft] = useState<string[]>([]);
-  const [dataScopeRole, setDataScopeRole] = useState<RoleItem | null>(null);
-  const [dataScopeForm, setDataScopeForm] = useState({ dataScopeType: 'DEPT_AND_CHILD', deptIds: '' });
-  const [assignRole, setAssignRole] = useState<RoleItem | null>(null);
-  const [assignedUserIds, setAssignedUserIds] = useState<string[]>([]);
-  const [roleDeleteTarget, setRoleDeleteTarget] = useState<RoleItem | null>(null);
-  const departmentOptions = uniqueStrings([
-    ...users.map(user => user.deptId),
-    ...roles.flatMap(role => role.dataScope.deptIds ?? []),
-  ])
-    .sort()
-    .map(deptId => ({
-      label: t('webAdmin.iam.selection.department', { deptId }),
-      value: deptId,
-    }));
-
-  const normalizedName = appliedQuery.name.trim().toLowerCase();
-  const normalizedCode = appliedQuery.code.trim().toLowerCase();
-  const normalizedDataScope = appliedQuery.dataScope.trim().toLowerCase();
-  const filteredRoles = roles.filter(role => {
-    const nameMatches = !normalizedName || role.name.toLowerCase().includes(normalizedName);
-    const codeMatches = !normalizedCode || role.code.toLowerCase().includes(normalizedCode);
-    const scopeMatches = !normalizedDataScope || role.dataScope.type.toLowerCase().includes(normalizedDataScope);
-
-    return nameMatches && codeMatches && scopeMatches;
-  });
-  const selectedRoles = roles.filter(role => selectedRoleIds.includes(role.id));
-  const canEditSelected = selectedRoleIds.length === 1 && canManageRoles;
-  const canDeleteSelected =
-    selectedRoleIds.length > 0 && canManageRoles && selectedRoles.every(role => role.code !== 'super-admin');
-  const areAllFilteredRolesSelected =
-    filteredRoles.length > 0 && filteredRoles.every(role => selectedRoleIds.includes(role.id));
-
-  const toggleRoleSelection = (roleId: string, checked: boolean | 'indeterminate') => {
-    setSelectedRoleIds(current =>
-      checked === true ? uniqueStrings([...current, roleId]) : current.filter(item => item !== roleId),
-    );
-  };
-
-  const toggleAllFilteredRoles = (checked: boolean | 'indeterminate') => {
-    setSelectedRoleIds(current => {
-      const filteredIds = filteredRoles.map(role => role.id);
-
-      if (checked === true) {
-        return uniqueStrings([...current, ...filteredIds]);
-      }
-
-      return current.filter(roleId => !filteredIds.includes(roleId));
-    });
-  };
-
-  const openCreateRole = () => {
-    setEditingRoleId(null);
-    setEditorForm(emptyRoleEditorState());
-    setEditorOpen(true);
-  };
-
-  const openEditRole = (role: RoleItem) => {
-    setEditingRoleId(role.id);
-    setEditorForm(roleToEditorState(role));
-    setEditorOpen(true);
-  };
-
-  const submitRoleEditor = async () => {
-    const payload = roleEditorToPayload(editorForm);
-    const roleId = editingRoleId;
-    const ok = await onMutate(token =>
-      roleId ? updateIamRole(token, roleId, payload) : createIamRole(token, payload),
-    );
-
-    if (ok) {
-      setEditorOpen(false);
-    }
-  };
-
-  const deleteRoleSelection = async () => {
-    const targets = selectedRoles.filter(role => role.code !== 'super-admin');
-    const ok = await onMutate(async token => Promise.all(targets.map(role => deleteIamRole(token, role.id))));
-
-    if (ok) {
-      setSelectedRoleIds([]);
-    }
-  };
-
-  const openPermissionGrant = (role: RoleItem) => {
-    setPermissionRole(role);
-    setPermissionDraft(role.permissionCodes);
-  };
-
-  const togglePermission = (permissionCode: string, checked: boolean | 'indeterminate') => {
-    setPermissionDraft(current =>
-      checked === true ? uniqueStrings([...current, permissionCode]) : current.filter(item => item !== permissionCode),
-    );
-  };
-
-  const submitPermissionGrant = async () => {
-    if (!permissionRole) {
-      return;
-    }
-
-    const ok = await onMutate(token => updateIamRole(token, permissionRole.id, { permissionCodes: permissionDraft }));
-
-    if (ok) {
-      setPermissionRole(null);
-    }
-  };
-
-  const openDataScopeEditor = (role: RoleItem) => {
-    setDataScopeRole(role);
-    setDataScopeForm({
-      dataScopeType: role.dataScope.type,
-      deptIds: role.dataScope.deptIds?.join(', ') ?? '',
-    });
-  };
-
-  const submitDataScope = async () => {
-    if (!dataScopeRole) {
-      return;
-    }
-
-    const payload = roleEditorToPayload({
-      ...roleToEditorState(dataScopeRole),
-      dataScopeType: toDataScopeType(dataScopeForm.dataScopeType),
-      deptIds: dataScopeForm.deptIds,
-    });
-
-    const ok = await onMutate(token => updateIamRole(token, dataScopeRole.id, { dataScope: payload.dataScope }));
-
-    if (ok) {
-      setDataScopeRole(null);
-    }
-  };
-
-  const openAssignedUsers = (role: RoleItem) => {
-    setAssignRole(role);
-    setAssignedUserIds(users.flatMap(user => (user.roleCodes.includes(role.code) ? [user.id] : [])));
-  };
-
-  const toggleAssignedUser = (userId: string, checked: boolean | 'indeterminate') => {
-    setAssignedUserIds(current =>
-      checked === true ? uniqueStrings([...current, userId]) : current.filter(item => item !== userId),
-    );
-  };
-
-  const submitAssignedUsers = async () => {
-    if (!assignRole) {
-      return;
-    }
-
-    const ok = await onMutate(async token => {
-      const updates = users.flatMap(user => {
-        const shouldHaveRole = assignedUserIds.includes(user.id);
-        const hasRole = user.roleCodes.includes(assignRole.code);
-
-        if (shouldHaveRole === hasRole) {
-          return [];
-        }
-
-        return [
-          updateIamUser(token, user.id, {
-            roleCodes: shouldHaveRole
-              ? uniqueStrings([...user.roleCodes, assignRole.code])
-              : user.roleCodes.filter(roleCode => roleCode !== assignRole.code),
-          }),
-        ];
-      });
-
-      return Promise.all(updates);
-    });
-
-    if (ok) {
-      setAssignRole(null);
-    }
-  };
-
-  const resetQuery = () => {
-    const nextQuery = { code: '', dataScope: '', name: '' };
-
-    setQuery(nextQuery);
-    setAppliedQuery(nextQuery);
-  };
-
-  return (
-    <section className="flex min-w-0 flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('webAdmin.iam.roleManager.filters.title')}</CardTitle>
-          <CardDescription>{t('webAdmin.iam.roleManager.filters.description')}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FieldGroup className="grid gap-4 md:grid-cols-3">
-            <TextField
-              label={t('webAdmin.iam.roleManager.filters.roleName')}
-              onChange={value => setQuery(current => ({ ...current, name: value }))}
-              value={query.name}
-            />
-            <TextField
-              label={t('webAdmin.iam.roleManager.filters.roleCode')}
-              onChange={value => setQuery(current => ({ ...current, code: value }))}
-              value={query.code}
-            />
-            <TextField
-              label={t('webAdmin.iam.roleManager.filters.dataScope')}
-              onChange={value => setQuery(current => ({ ...current, dataScope: value }))}
-              value={query.dataScope}
-            />
-          </FieldGroup>
-        </CardContent>
-        <CardFooter className="flex flex-wrap gap-2">
-          <Button onClick={() => setAppliedQuery(query)}>
-            <Search data-icon="inline-start" />
-            {t('webAdmin.iam.roleManager.actions.search')}
-          </Button>
-          <Button onClick={resetQuery} variant="outline">
-            <RotateCcw data-icon="inline-start" />
-            {t('webAdmin.iam.roleManager.actions.reset')}
-          </Button>
-        </CardFooter>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-            <div className="flex flex-col gap-1">
-              <CardTitle>{t('webAdmin.iam.tables.rolesTitle')}</CardTitle>
-              <CardDescription>{t('webAdmin.iam.tables.rolesDescription')}</CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button disabled={isMutating || !canManageRoles} onClick={openCreateRole} size="sm">
-                <Plus data-icon="inline-start" />
-                {t('webAdmin.iam.roleManager.actions.add')}
-              </Button>
-              <Button
-                disabled={isMutating || !canEditSelected}
-                onClick={() => {
-                  const [role] = selectedRoles;
-
-                  if (role) {
-                    openEditRole(role);
-                  }
-                }}
-                size="sm"
-                variant="outline">
-                <Edit data-icon="inline-start" />
-                {t('webAdmin.iam.roleManager.actions.edit')}
-              </Button>
-              <ConfirmActionButton
-                description={t('webAdmin.iam.confirm.deleteDescription', {
-                  item: selectedRoles.map(role => role.name).join(', '),
-                })}
-                disabled={isMutating || !canDeleteSelected}
-                onConfirm={() => void deleteRoleSelection()}
-                pending={isMutating}
-                size="sm"
-                title={t('webAdmin.iam.confirm.deleteTitle')}
-                variant="outline">
-                <Trash2 data-icon="inline-start" />
-                {t('webAdmin.iam.roleManager.actions.delete')}
-              </ConfirmActionButton>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <Checkbox
-                    aria-label={t('webAdmin.iam.roleManager.selection.selectAll')}
-                    checked={areAllFilteredRolesSelected}
-                    onCheckedChange={toggleAllFilteredRoles}
-                  />
-                </TableHead>
-                <TableHead>{t('webAdmin.iam.roleManager.columns.index')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.name')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.code')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.dataScope')}</TableHead>
-                <TableHead>{t('webAdmin.iam.roleManager.columns.users')}</TableHead>
-                <TableHead>{t('webAdmin.iam.roleManager.columns.permissions')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredRoles.length ? (
-                filteredRoles.map((role, index) => (
-                  <TableRow key={role.id}>
-                    <TableCell>
-                      <Checkbox
-                        aria-label={t('webAdmin.iam.roleManager.selection.selectRole')}
-                        checked={selectedRoleIds.includes(role.id)}
-                        onCheckedChange={checked => toggleRoleSelection(role.id, checked)}
-                      />
-                    </TableCell>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <span className="font-medium">{role.name}</span>
-                        {role.description ? (
-                          <span className="text-muted-foreground text-xs">{role.description}</span>
-                        ) : null}
-                      </div>
-                    </TableCell>
-                    <TableCell>{role.code}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{t(dataScopeLabels[role.dataScope.type])}</Badge>
-                    </TableCell>
-                    <TableCell>{users.filter(user => user.roleCodes.includes(role.code)).length}</TableCell>
-                    <TableCell>
-                      <Badge variant="secondary">{role.permissionCodes.length}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          disabled={isMutating || !canManageRoles}
-                          onClick={() => openEditRole(role)}
-                          size="sm"
-                          variant="ghost">
-                          <Edit data-icon="inline-start" />
-                          {t('webAdmin.iam.roleManager.actions.edit')}
-                        </Button>
-                        <Button
-                          disabled={isMutating || !canManageRoles}
-                          onClick={() => openPermissionGrant(role)}
-                          size="sm"
-                          variant="ghost">
-                          <KeyRound data-icon="inline-start" />
-                          {t('webAdmin.iam.roleManager.actions.permissions')}
-                        </Button>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button size="sm" variant="ghost">
-                              <MoreHorizontal data-icon="inline-start" />
-                              {t('webAdmin.iam.roleManager.actions.more')}
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuGroup>
-                              <DropdownMenuItem
-                                disabled={isMutating || !canManageRoles}
-                                onClick={() => openDataScopeEditor(role)}>
-                                <Database />
-                                {t('webAdmin.iam.roleManager.actions.dataScope')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={isMutating || !canManageRoles}
-                                onClick={() => openAssignedUsers(role)}>
-                                <UserPlus />
-                                {t('webAdmin.iam.roleManager.actions.assignUsers')}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                disabled={isMutating || role.code === 'super-admin' || !canManageRoles}
-                                onClick={() => setRoleDeleteTarget(role)}>
-                                <Trash2 />
-                                {t('webAdmin.iam.roleManager.actions.delete')}
-                              </DropdownMenuItem>
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={8}>{t('webAdmin.iam.roleManager.empty')}</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
-
-      <RoleEditorDialog
-        departmentOptions={departmentOptions}
-        form={editorForm}
-        isMutating={isMutating}
-        mode={editingRoleId ? 'edit' : 'create'}
-        onChange={setEditorForm}
-        onOpenChange={setEditorOpen}
-        onSubmit={() => void submitRoleEditor()}
-        open={editorOpen}
-        permissions={permissions}
-      />
-      <PermissionGrantDialog
-        draft={permissionDraft}
-        isMutating={isMutating}
-        onOpenChange={open => setPermissionRole(open ? permissionRole : null)}
-        onSubmit={() => void submitPermissionGrant()}
-        onToggle={togglePermission}
-        open={Boolean(permissionRole)}
-        permissions={permissions}
-        role={permissionRole}
-      />
-      <DataScopeDialog
-        departmentOptions={departmentOptions}
-        form={dataScopeForm}
-        isMutating={isMutating}
-        onChange={setDataScopeForm}
-        onOpenChange={open => setDataScopeRole(open ? dataScopeRole : null)}
-        onSubmit={() => void submitDataScope()}
-        open={Boolean(dataScopeRole)}
-        role={dataScopeRole}
-      />
-      <AssignedUsersDialog
-        assignedUserIds={assignedUserIds}
-        isMutating={isMutating}
-        onOpenChange={open => setAssignRole(open ? assignRole : null)}
-        onSubmit={() => void submitAssignedUsers()}
-        onToggle={toggleAssignedUser}
-        open={Boolean(assignRole)}
-        role={assignRole}
-        users={users}
-      />
-      <AlertDialog
-        onOpenChange={open => setRoleDeleteTarget(open ? roleDeleteTarget : null)}
-        open={Boolean(roleDeleteTarget)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('webAdmin.iam.confirm.deleteTitle')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('webAdmin.iam.confirm.deleteDescription', { item: roleDeleteTarget?.name ?? '' })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                const role = roleDeleteTarget;
-
-                if (role) {
-                  void onMutate(token => deleteIamRole(token, role.id));
-                }
-
-                setRoleDeleteTarget(null);
-              }}>
-              {t('common.confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </section>
-  );
-};
-
-const RoleEditorDialog = ({
-  departmentOptions,
-  form,
-  isMutating,
-  mode,
-  onChange,
-  onOpenChange,
-  onSubmit,
-  open,
-  permissions,
-}: {
-  departmentOptions: PickerOption[];
-  form: RoleEditorState;
-  isMutating: boolean;
-  mode: 'create' | 'edit';
-  onChange: (form: RoleEditorState) => void;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: () => void;
-  open: boolean;
-  permissions: PermissionItem[];
-}) => {
-  const t = useAdminT();
-  const selectedPermissionCodes = parseCsv(form.permissionCodes);
-  const permissionOptions = permissions.map(permission => ({
-    description: `${permission.type} / ${permission.resource}:${permission.action}`,
-    label: permission.code,
-    value: permission.code,
-  }));
-  const togglePermission = (permissionCode: string, checked: boolean | 'indeterminate') => {
-    const nextCodes =
-      checked === true
-        ? uniqueStrings([...selectedPermissionCodes, permissionCode])
-        : selectedPermissionCodes.filter(code => code !== permissionCode);
-
-    onChange({ ...form, permissionCodes: nextCodes.join(', ') });
-  };
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>
-            {mode === 'create'
-              ? t('webAdmin.iam.roleManager.dialogs.createTitle')
-              : t('webAdmin.iam.roleManager.dialogs.editTitle')}
-          </DialogTitle>
-          <DialogDescription>{t('webAdmin.iam.roleManager.dialogs.editorDescription')}</DialogDescription>
-        </DialogHeader>
-        <FieldGroup className="grid gap-4 md:grid-cols-2">
-          <TextField
-            label={t('webAdmin.iam.fields.name')}
-            onChange={value => onChange({ ...form, name: value })}
-            value={form.name}
-          />
-          <TextField
-            label={t('webAdmin.iam.fields.code')}
-            onChange={value => onChange({ ...form, code: value })}
-            value={form.code}
-          />
-          <EnumSelectField
-            label={t('webAdmin.iam.fields.dataScope')}
-            onChange={value => onChange({ ...form, dataScopeType: toDataScopeType(value) })}
-            options={dataScopeOptions.map(option => ({
-              label: t(option.label as Parameters<typeof t>[0]),
-              value: option.value,
-            }))}
-            value={toDataScopeType(form.dataScopeType)}
-          />
-          <MultiSearchSelectField
-            label={t('webAdmin.iam.roleManager.fields.deptIds')}
-            onChange={values => onChange({ ...form, deptIds: values.join(', ') })}
-            options={departmentOptions}
-            values={parseCsv(form.deptIds)}
-          />
-          <MultiSearchSelectField
-            label={t('webAdmin.iam.fields.permissionCodes')}
-            onChange={values => onChange({ ...form, permissionCodes: values.join(', ') })}
-            options={permissionOptions}
-            values={selectedPermissionCodes}
-          />
-          <TextField
-            label={t('webAdmin.iam.roleManager.fields.description')}
-            onChange={value => onChange({ ...form, description: value })}
-            value={form.description}
-          />
-        </FieldGroup>
-        <PermissionChecklist
-          onToggle={togglePermission}
-          permissions={permissions}
-          selectedPermissionCodes={selectedPermissionCodes}
-        />
-        <DialogFooter>
-          <Button disabled={isMutating} onClick={onSubmit}>
-            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-            {t('common.confirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const PermissionGrantDialog = ({
-  draft,
-  isMutating,
-  onOpenChange,
-  onSubmit,
-  onToggle,
-  open,
-  permissions,
-  role,
-}: {
-  draft: string[];
-  isMutating: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: () => void;
-  onToggle: (permissionCode: string, checked: boolean | 'indeterminate') => void;
-  open: boolean;
-  permissions: PermissionItem[];
-  role: RoleItem | null;
-}) => {
-  const t = useAdminT();
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="sm:max-w-4xl">
-        <DialogHeader>
-          <DialogTitle>{t('webAdmin.iam.roleManager.dialogs.permissionsTitle')}</DialogTitle>
-          <DialogDescription>
-            {role
-              ? t('webAdmin.iam.roleManager.dialogs.permissionsDescription', { role: role.name })
-              : t('webAdmin.iam.roleManager.dialogs.permissionsFallback')}
-          </DialogDescription>
-        </DialogHeader>
-        <PermissionChecklist onToggle={onToggle} permissions={permissions} selectedPermissionCodes={draft} />
-        <DialogFooter>
-          <Button disabled={isMutating || !role} onClick={onSubmit}>
-            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-            {t('common.confirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const DataScopeDialog = ({
-  departmentOptions,
-  form,
-  isMutating,
-  onChange,
-  onOpenChange,
-  onSubmit,
-  open,
-  role,
-}: {
-  departmentOptions: PickerOption[];
-  form: { dataScopeType: string; deptIds: string };
-  isMutating: boolean;
-  onChange: (form: { dataScopeType: string; deptIds: string }) => void;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: () => void;
-  open: boolean;
-  role: RoleItem | null;
-}) => {
-  const t = useAdminT();
-
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{t('webAdmin.iam.roleManager.dialogs.dataScopeTitle')}</DialogTitle>
-          <DialogDescription>
-            {role
-              ? t('webAdmin.iam.roleManager.dialogs.dataScopeDescription', { role: role.name })
-              : t('webAdmin.iam.roleManager.dialogs.dataScopeFallback')}
-          </DialogDescription>
-        </DialogHeader>
-        <FieldGroup>
-          <EnumSelectField
-            label={t('webAdmin.iam.fields.dataScope')}
-            onChange={value => onChange({ ...form, dataScopeType: value })}
-            options={dataScopeOptions.map(option => ({
-              label: t(option.label as Parameters<typeof t>[0]),
-              value: option.value,
-            }))}
-            value={toDataScopeType(form.dataScopeType)}
-          />
-          <MultiSearchSelectField
-            label={t('webAdmin.iam.roleManager.fields.deptIds')}
-            onChange={values => onChange({ ...form, deptIds: values.join(', ') })}
-            options={departmentOptions}
-            values={parseCsv(form.deptIds)}
-          />
-        </FieldGroup>
-        <DialogFooter>
-          <Button disabled={isMutating || !role} onClick={onSubmit}>
-            {isMutating ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-            {t('common.confirm')}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-};
-
-const FieldPermissionsTable = ({
-  canManageIam,
-  fieldPermissions,
-  isMutating,
-  onCreate,
-  onDelete,
-  onEdit,
-}: {
-  canManageIam: boolean;
-  fieldPermissions: FieldPermission[];
-  isMutating: boolean;
-  onCreate: () => void;
-  onDelete: (id: string) => void;
-  onEdit: (fieldPermission: FieldPermission) => void;
-}) => {
-  const t = useAdminT();
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col gap-1">
-            <CardTitle>{t('webAdmin.iam.tables.fieldPermissionsTitle')}</CardTitle>
-            <CardDescription>{t('webAdmin.iam.policy.fieldDescription')}</CardDescription>
-          </div>
-          <Button disabled={isMutating || !canManageIam} onClick={onCreate}>
-            <Plus data-icon="inline-start" />
-            {t('webAdmin.iam.actions.createFieldPermission')}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('webAdmin.iam.fields.roleCode')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.resource')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.fieldName')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.permissionType')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {fieldPermissions.map(fieldPermission => (
-                <TableRow key={fieldPermission.id}>
-                  <TableCell>{fieldPermission.roleCode}</TableCell>
-                  <TableCell>{fieldPermission.resource}</TableCell>
-                  <TableCell>{fieldPermission.fieldName}</TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{fieldPermission.permissionType}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-2">
-                      <Button
-                        disabled={isMutating || !canManageIam}
-                        onClick={() => onEdit(fieldPermission)}
-                        size="sm"
-                        variant="outline">
-                        <Edit data-icon="inline-start" />
-                        {t('webAdmin.iam.actions.edit')}
-                      </Button>
-                      <ConfirmActionButton
-                        description={t('webAdmin.iam.confirm.deleteDescription', {
-                          item: `${fieldPermission.roleCode}:${fieldPermission.resource}.${fieldPermission.fieldName}`,
-                        })}
-                        disabled={isMutating || !canManageIam}
-                        onConfirm={() => onDelete(fieldPermission.id)}
-                        pending={isMutating}
-                        size="sm"
-                        title={t('webAdmin.iam.confirm.deleteTitle')}
-                        variant="outline">
-                        <Trash2 data-icon="inline-start" />
-                        {t('webAdmin.iam.actions.delete')}
-                      </ConfirmActionButton>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {!fieldPermissions.length ? (
-                <TableRow>
-                  <TableCell colSpan={5}>{t('webAdmin.iam.tables.emptyFieldPermissions')}</TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const PoliciesTable = ({
-  canUpdatePolicy,
-  isMutating,
-  onCreate,
-  onDelete,
-  onEdit,
-  policies,
-}: {
-  canUpdatePolicy: boolean;
-  isMutating: boolean;
-  onCreate: () => void;
-  onDelete: (id: string) => void;
-  onEdit: (policy: IamPolicy) => void;
-  policies: IamPolicy[];
-}) => {
-  const t = useAdminT();
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-          <div className="flex flex-col gap-1">
-            <CardTitle>{t('webAdmin.iam.tables.policiesTitle')}</CardTitle>
-            <CardDescription>{t('webAdmin.iam.policy.policyDescription')}</CardDescription>
-          </div>
-          <Button disabled={isMutating || !canUpdatePolicy} onClick={onCreate}>
-            <Plus data-icon="inline-start" />
-            {t('webAdmin.iam.actions.createPolicy')}
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="w-full overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>{t('webAdmin.iam.fields.effect')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.resource')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.action')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.conditions')}</TableHead>
-                <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {policies.map(policy => {
-                const conditions = stringifyPolicyConditions(policy.conditions);
-
-                return (
-                  <TableRow key={policy.id}>
-                    <TableCell>
-                      <Badge variant={policy.effect === 'ALLOW' ? 'default' : 'secondary'}>{policy.effect}</Badge>
-                    </TableCell>
-                    <TableCell>{policy.resource}</TableCell>
-                    <TableCell>{policy.action}</TableCell>
-                    <TableCell className="max-w-md truncate" title={conditions}>
-                      {conditions}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-wrap gap-2">
-                        <Button
-                          disabled={isMutating || !canUpdatePolicy}
-                          onClick={() => onEdit(policy)}
-                          size="sm"
-                          variant="outline">
-                          <Edit data-icon="inline-start" />
-                          {t('webAdmin.iam.actions.edit')}
-                        </Button>
-                        <ConfirmActionButton
-                          description={t('webAdmin.iam.confirm.deleteDescription', {
-                            item: `${policy.effect}:${policy.resource}:${policy.action}`,
-                          })}
-                          disabled={isMutating || !canUpdatePolicy}
-                          onConfirm={() => onDelete(policy.id)}
-                          pending={isMutating}
-                          size="sm"
-                          title={t('webAdmin.iam.confirm.deleteTitle')}
-                          variant="outline">
-                          <Trash2 data-icon="inline-start" />
-                          {t('webAdmin.iam.actions.delete')}
-                        </ConfirmActionButton>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-              {!policies.length ? (
-                <TableRow>
-                  <TableCell colSpan={5}>{t('webAdmin.iam.tables.emptyPolicies')}</TableCell>
-                </TableRow>
-              ) : null}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+});

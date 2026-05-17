@@ -28,19 +28,19 @@
 
 ## 内部结构
 
-| Path                     | Responsibility                                                                                                              |
-| ------------------------ | --------------------------------------------------------------------------------------------------------------------------- |
-| `src/main.tsx`           | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                                              |
-| `src/App.tsx`            | App providers、document metadata side effects 和 `RouterProvider` 挂载。                                                    |
-| `src/router/*`           | React Router 定义、route guards、route fallback UI 和 route-level lazy page declarations。                                  |
-| `src/layout/*`           | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。                                    |
-| `src/pages/auth`         | 后台登录和 OTP 页面；后台账号只能由已授权管理员在用户管理中创建，schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。 |
-| `src/pages/iam.tsx`      | 用户、角色、权限码、菜单、字段权限、策略、前台在线用户和操作日志页面编排；所有数据来自 backend-admin。                      |
-| `src/pages/iam/*`        | IAM 页面子模块，当前包含表单控件、角色选择控件、资源 tab section、确认操作按钮和操作日志表格控件，避免继续扩大单文件页面。  |
-| `src/pages/settings.tsx` | 账号、外观、显示和通知设置页面，主题状态来自 `@tetap/hooks`。                                                               |
-| `src/pages/*`            | Admin 页面组合；只拼装共享能力，不定义共享 primitives。                                                                     |
-| `vite.config.ts`         | Vite 插件和 `@tetap/config/vite` env 目录配置。                                                                             |
-| `tsconfig*.json`         | Admin web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                                                                 |
+| Path                     | Responsibility                                                                                                                               |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/main.tsx`           | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                                                                               |
+| `src/App.tsx`            | App providers、document metadata side effects 和 `RouterProvider` 挂载。                                                                     |
+| `src/router/*`           | React Router 定义、route guards、route fallback UI 和 route-level lazy page declarations。                                                   |
+| `src/layout/*`           | shadcn-admin adapted layout shell、sidebar、header、search、profile 和 sign-out dialog。                                                     |
+| `src/pages/auth`         | 后台登录和 OTP 页面；后台账号只能由已授权管理员在用户管理中创建，schema 来自 `@tetap/schema`，session 来自 `@tetap/hooks`。                  |
+| `src/pages/iam.tsx`      | 用户、角色、权限码、菜单、字段权限、策略、前台在线用户和操作日志页面编排；所有数据来自 backend-admin。                                       |
+| `src/pages/iam/*`        | IAM 页面子模块，当前包含表单控件、角色选择控件、资源 tab section、确认操作按钮、操作日志表格和局部类型/转换 helper，避免继续扩大单文件页面。 |
+| `src/pages/settings.tsx` | 账号、外观、显示和通知设置页面，主题状态来自 `@tetap/hooks`。                                                                                |
+| `src/pages/*`            | Admin 页面组合；只拼装共享能力，不定义共享 primitives。                                                                                      |
+| `vite.config.ts`         | Vite 插件和 `@tetap/config/vite` env 目录配置。                                                                                              |
+| `tsconfig*.json`         | Admin web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                                                                                  |
 
 ## 页面渲染流
 
