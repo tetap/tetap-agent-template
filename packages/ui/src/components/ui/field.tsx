@@ -1,13 +1,13 @@
 'use client';
 
-import { useMemo } from 'react';
+import * as React from 'react';
 import { cva, type VariantProps } from 'class-variance-authority';
 
 import { cn } from '../../lib/utils.js';
 import { Label } from './label.js';
 import { Separator } from './separator.js';
 
-function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
+const FieldSet = React.memo(function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
   return (
     <fieldset
       data-slot="field-set"
@@ -19,9 +19,9 @@ function FieldSet({ className, ...props }: React.ComponentProps<'fieldset'>) {
       {...props}
     />
   );
-}
+});
 
-function FieldLegend({
+const FieldLegend = React.memo(function FieldLegend({
   className,
   variant = 'legend',
   ...props
@@ -34,9 +34,9 @@ function FieldLegend({
       {...props}
     />
   );
-}
+});
 
-function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
+const FieldGroup = React.memo(function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-group"
@@ -47,7 +47,7 @@ function FieldGroup({ className, ...props }: React.ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+});
 
 const fieldVariants = cva('group/field data-[invalid=true]:text-destructive flex w-full gap-3', {
   variants: {
@@ -70,7 +70,24 @@ const fieldVariants = cva('group/field data-[invalid=true]:text-destructive flex
   },
 });
 
-function Field({
+const getFieldErrorMessages = (errors: Array<{ message?: string } | undefined> | undefined) => {
+  const messageCounts = new Map<string, number>();
+
+  return (
+    errors?.flatMap(error => {
+      if (!error?.message) {
+        return [];
+      }
+
+      const count = messageCounts.get(error.message) ?? 0;
+      messageCounts.set(error.message, count + 1);
+
+      return [{ key: count ? `${error.message}-${count}` : error.message, message: error.message }];
+    }) ?? []
+  );
+};
+
+const Field = React.memo(function Field({
   className,
   orientation = 'vertical',
   ...props
@@ -84,9 +101,9 @@ function Field({
       {...props}
     />
   );
-}
+});
 
-function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
+const FieldContent = React.memo(function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-content"
@@ -94,9 +111,9 @@ function FieldContent({ className, ...props }: React.ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+});
 
-function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
+const FieldLabel = React.memo(function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>) {
   return (
     <Label
       data-slot="field-label"
@@ -109,9 +126,9 @@ function FieldLabel({ className, ...props }: React.ComponentProps<typeof Label>)
       {...props}
     />
   );
-}
+});
 
-function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
+const FieldTitle = React.memo(function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="field-label"
@@ -122,9 +139,9 @@ function FieldTitle({ className, ...props }: React.ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+});
 
-function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
+const FieldDescription = React.memo(function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
   return (
     <p
       data-slot="field-description"
@@ -137,9 +154,9 @@ function FieldDescription({ className, ...props }: React.ComponentProps<'p'>) {
       {...props}
     />
   );
-}
+});
 
-function FieldSeparator({
+const FieldSeparator = React.memo(function FieldSeparator({
   children,
   className,
   ...props
@@ -162,9 +179,9 @@ function FieldSeparator({
       )}
     </div>
   );
-}
+});
 
-function FieldError({
+const FieldError = React.memo(function FieldError({
   className,
   children,
   errors,
@@ -172,27 +189,20 @@ function FieldError({
 }: React.ComponentProps<'div'> & {
   errors?: Array<{ message?: string } | undefined>;
 }) {
-  const content = useMemo(() => {
-    if (children) {
-      return children;
-    }
-
-    if (!errors) {
-      return null;
-    }
-
-    if (errors?.length === 1 && errors[0]?.message) {
-      return errors[0].message;
-    }
-
-    return (
+  const errorMessages = children ? [] : getFieldErrorMessages(errors);
+  const content =
+    children ??
+    (errorMessages.length === 1 ? (
+      errorMessages[0]?.message
+    ) : (
       <ul className="ml-4 flex list-disc flex-col gap-1">
-        {errors.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
+        {errorMessages.map(error => (
+          <li key={error.key}>{error.message}</li>
+        ))}
       </ul>
-    );
-  }, [children, errors]);
+    ));
 
-  if (!content) {
+  if (!children && !errorMessages.length) {
     return null;
   }
 
@@ -205,7 +215,7 @@ function FieldError({
       {content}
     </div>
   );
-}
+});
 
 export {
   Field,

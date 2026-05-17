@@ -63,6 +63,7 @@
 - 不写 feature-level CSS 或 bespoke component styles。
 - 页面不创建本地 UI 系统；优先用现有 shadcn/ui 组件和 variants。
 - 保存、错误等短反馈使用 `toast`；固定枚举使用 `Select`；搜索/过滤输入优先用 `InputGroup` 内嵌图标，显式提交时搭配独立 `Button`。
+- `InputGroup` addon 可以将 pointer focus 交给组内 input；字段错误使用 `FieldError` 的 `role="alert"` 输出。
 - 大型表单使用 `DialogContent` 的 viewport 内滚动能力，避免弹窗超出 body。
 - 允许保留 shadcn/ui 生成的组件内部 class 和 design system runtime CSS。
 - 新组件要检查 accessibility、exports、peer dependency 和 docs。

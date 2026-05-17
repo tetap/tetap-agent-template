@@ -13,14 +13,15 @@
 
 ## 内部结构
 
-| Path                 | Responsibility                                                    |
-| -------------------- | ----------------------------------------------------------------- |
-| `src/main.tsx`       | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。    |
-| `src/App.tsx`        | React Router 和 app shell 级组合。                                |
-| `src/pages/home.tsx` | 公共宣传首页；只组合 `@tetap/ui`、`@tetap/hooks` 和 public i18n。 |
-| `src/pages/*`        | 页面组合；只拼装共享能力，不定义共享 primitives。                 |
-| `vite.config.ts`     | Vite 插件和 `@tetap/config/vite` env 目录配置。                   |
-| `tsconfig*.json`     | Web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。             |
+| Path                 | Responsibility                                                                   |
+| -------------------- | -------------------------------------------------------------------------------- |
+| `src/main.tsx`       | React 挂载、`I18nProvider` 注入、`@tetap/ui/styles.css` 引入。                   |
+| `src/App.tsx`        | React Router 和 app shell 级组合。                                               |
+| `src/pages/home.tsx` | 公共宣传首页壳；只组合页面 section，不堆积具体展示组件。                         |
+| `src/pages/home/*`   | 宣传首页的 hero、能力区、流程区和 page-local card composition；组件使用 `memo`。 |
+| `src/pages/*`        | 页面组合；只拼装共享能力，不定义共享 primitives。                                |
+| `vite.config.ts`     | Vite 插件和 `@tetap/config/vite` env 目录配置。                                  |
+| `tsconfig*.json`     | Web TypeScript 配置；`paths` 不依赖弃用的 `baseUrl`。                            |
 
 ## 页面渲染流
 

@@ -48,7 +48,9 @@ The main `@tetap/ui` barrel exports brand logo, layout, overlay, feedback, form,
 
 Use `Select` for fixed enum fields such as permission type, field permission type, policy effect, and data scope. Use `toast` from `@tetap/ui` for save/error feedback instead of page-local alert state.
 
-Use `InputGroup` for compact search and filter controls that need embedded icons or addons; keep the actual submit action as an explicit `Button` when the search should not run on every keystroke.
+Use `InputGroup` for compact search and filter controls that need embedded icons or addons; addons preserve pointer focus
+handoff to the grouped input, and the actual submit action should stay as an explicit `Button` when the search should not
+run on every keystroke.
 
 `DialogContent` is constrained to the viewport and scrolls internally, so large create/edit forms should stay in dialogs instead of overflowing the document body.
 

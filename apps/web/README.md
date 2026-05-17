@@ -26,12 +26,14 @@
 
 ## Internal Structure
 
-| Path             | Responsibility                                       |
-| ---------------- | ---------------------------------------------------- |
-| `src/main.tsx`   | React mount, providers, shared UI stylesheet import. |
-| `src/App.tsx`    | Router and app-level composition.                    |
-| `src/pages/*`    | Page composition with shared packages.               |
-| `vite.config.ts` | Vite plugin setup and `@tetap/config/vite` env dir.  |
+| Path                 | Responsibility                                                     |
+| -------------------- | ------------------------------------------------------------------ |
+| `src/main.tsx`       | React mount, providers, shared UI stylesheet import.               |
+| `src/App.tsx`        | Router and app-level composition.                                  |
+| `src/pages/home.tsx` | Public promotional page shell.                                     |
+| `src/pages/home/*`   | Focused promotional page sections and page-local card composition. |
+| `src/pages/*`        | Page composition with shared packages.                             |
+| `vite.config.ts`     | Vite plugin setup and `@tetap/config/vite` env dir.                |
 
 ## Scripts
 
@@ -45,5 +47,5 @@ pnpm --filter web preview
 
 ## Validation
 
-- UI/page behavior: `pnpm test:browser` or `pnpm test:browser:target -- ui-components`。
+- Public page behavior: `pnpm test:browser:target -- web-home` or `pnpm test:browser`。
 - Full handoff: `pnpm check`。

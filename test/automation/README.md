@@ -60,6 +60,7 @@ ADMIN_AUDIT_BASE_URL=http://127.0.0.1:5174 ADMIN_AUDIT_PASSWORD=... pnpm --filte
 ## Coverage Notes
 
 - `browser:web-admin-dashboard` covers the shadcn-admin adapted shell, sidebar/search rendering, dashboard interaction, sign-in form session storage, admin IAM search controls, loading feedback, super-admin frontend gates, and active-viewport content containment.
+- `browser:ui-components` covers shared Button/Card interaction plus InputGroup addon focus behavior and FieldError alert rendering.
 - `audit:admin-responsive` signs in to a running `apps/web-admin` instance and checks dashboard, system management pages, and 404/500 pages at desktop, tablet, and mobile viewport sizes.
 - `smoke:backend-admin-iam` covers real backend-admin auth and IAM management APIs, including frontend-session separation from admin sessions.
 - `unit:iam-engine` covers protected-resource guards, policy default-deny behavior, field masking, session separation, and operation logs.

@@ -8,7 +8,7 @@ import { Button } from './button.js';
 import { Input } from './input.js';
 import { Textarea } from './textarea.js';
 
-function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
+const InputGroup = React.memo(function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
       data-slot="input-group"
@@ -34,7 +34,7 @@ function InputGroup({ className, ...props }: React.ComponentProps<'div'>) {
       {...props}
     />
   );
-}
+});
 
 const inputGroupAddonVariants = cva(
   "text-muted-foreground flex h-auto cursor-text select-none items-center justify-center gap-2 py-1.5 text-sm font-medium group-data-[disabled=true]/input-group:opacity-50 [&>kbd]:rounded-[calc(var(--radius)-5px)] [&>svg:not([class*='size-'])]:size-4",
@@ -54,27 +54,60 @@ const inputGroupAddonVariants = cva(
   },
 );
 
-function InputGroupAddon({
+const InputGroupAddon = React.memo(function InputGroupAddon({
   className,
   align = 'inline-start',
+  onClick,
+  onKeyDown,
+  tabIndex,
   ...props
 }: React.ComponentProps<'div'> & VariantProps<typeof inputGroupAddonVariants>) {
+  const focusInputGroupControl = React.useCallback((currentTarget: HTMLDivElement, target: EventTarget) => {
+    if ((target as HTMLElement).closest('button, a, input, textarea, select, [role="button"]')) {
+      return;
+    }
+
+    currentTarget.parentElement?.querySelector<HTMLElement>('[data-slot="input-group-control"]')?.focus();
+  }, []);
+  const focusInputGroupControlFromClick = React.useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      onClick?.(event);
+
+      if (event.defaultPrevented) {
+        return;
+      }
+
+      focusInputGroupControl(event.currentTarget, event.target);
+    },
+    [focusInputGroupControl, onClick],
+  );
+  const focusInputGroupControlFromKeyboard = React.useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      onKeyDown?.(event);
+
+      if (event.defaultPrevented || (event.key !== 'Enter' && event.key !== ' ')) {
+        return;
+      }
+
+      event.preventDefault();
+      focusInputGroupControl(event.currentTarget, event.target);
+    },
+    [focusInputGroupControl, onKeyDown],
+  );
+
   return (
     <div
       role="group"
       data-slot="input-group-addon"
       data-align={align}
       className={cn(inputGroupAddonVariants({ align }), className)}
-      onClick={e => {
-        if ((e.target as HTMLElement).closest('button')) {
-          return;
-        }
-        e.currentTarget.parentElement?.querySelector('input')?.focus();
-      }}
+      tabIndex={tabIndex ?? 0}
       {...props}
+      onClick={focusInputGroupControlFromClick}
+      onKeyDown={focusInputGroupControlFromKeyboard}
     />
   );
-}
+});
 
 const inputGroupButtonVariants = cva('flex items-center gap-2 text-sm shadow-none', {
   variants: {
@@ -90,7 +123,7 @@ const inputGroupButtonVariants = cva('flex items-center gap-2 text-sm shadow-non
   },
 });
 
-function InputGroupButton({
+const InputGroupButton = React.memo(function InputGroupButton({
   className,
   type = 'button',
   variant = 'ghost',
@@ -106,9 +139,9 @@ function InputGroupButton({
       {...props}
     />
   );
-}
+});
 
-function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
+const InputGroupText = React.memo(function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
   return (
     <span
       className={cn(
@@ -118,9 +151,9 @@ function InputGroupText({ className, ...props }: React.ComponentProps<'span'>) {
       {...props}
     />
   );
-}
+});
 
-function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>) {
+const InputGroupInput = React.memo(function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>) {
   return (
     <Input
       data-slot="input-group-control"
@@ -131,9 +164,12 @@ function InputGroupInput({ className, ...props }: React.ComponentProps<'input'>)
       {...props}
     />
   );
-}
+});
 
-function InputGroupTextarea({ className, ...props }: React.ComponentProps<'textarea'>) {
+const InputGroupTextarea = React.memo(function InputGroupTextarea({
+  className,
+  ...props
+}: React.ComponentProps<'textarea'>) {
   return (
     <Textarea
       data-slot="input-group-control"
@@ -144,6 +180,6 @@ function InputGroupTextarea({ className, ...props }: React.ComponentProps<'texta
       {...props}
     />
   );
-}
+});
 
 export { InputGroup, InputGroupAddon, InputGroupButton, InputGroupText, InputGroupInput, InputGroupTextarea };
