@@ -58,6 +58,8 @@ run on every keystroke.
 
 - Add shared UI primitives here, not in apps。
 - Use shadcn/ui MCP, shadcn CLI, or shadcn skill before hand-writing primitives。
+- React 19-ready primitives should use `ref` as a regular prop and wrap exported components with `React.memo` when
+  migrating away from generated `forwardRef` wrappers.
 - Do not put feature copy or page-specific styling in this package。
 - UI behavior changes require Browser Mode test consideration。
 
