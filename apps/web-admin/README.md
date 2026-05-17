@@ -33,7 +33,7 @@
 | `src/main.tsx`        | React mount, providers, shared UI stylesheet import.                                                                                               |
 | `src/App.tsx`         | App-level providers, document metadata side effects, and `RouterProvider` mount.                                                                   |
 | `src/router`          | Admin router definitions, route guards, route fallback UI, and route-level lazy page declarations.                                                 |
-| `src/layout`          | shadcn-admin adapted shell, sidebar, header, search, and profile composition.                                                                      |
+| `src/layout`          | shadcn-admin adapted shell, dynamic sidebar, header, command search, theme switch, and user menu composition.                                      |
 | `src/pages/auth`      | Sign-in and OTP pages backed by real backend-admin auth APIs and zustand session state.                                                            |
 | `src/pages/iam.tsx`   | IAM management page orchestration wired to backend-admin users, roles, permissions, menus, sessions, policies, fields, and operation logs.         |
 | `src/pages/iam/*`     | Focused IAM modules: form controls, role pickers, resource sections, confirmation actions, operation-log tables, and local type/transform helpers. |
@@ -43,7 +43,7 @@
 
 ## Reference Adaptation
 
-This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin) for authenticated layout, sidebar navigation, profile dropdowns, command search, auth pages, settings/theme controls, KPI cards, tabs, and security/activity panels. It does not copy that repo's app-local UI system; all primitives come from `@tetap/ui`, session/theme state comes from `@tetap/hooks`, and form/API contracts come from `@tetap/schema`.
+This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-admin) for authenticated layout, sidebar navigation, command search, auth pages, theme controls, KPI cards, tabs, and security/activity panels. It does not copy that repo's app-local UI system; all primitives come from `@tetap/ui`, session/theme state comes from `@tetap/hooks`, and form/API contracts come from `@tetap/schema`.
 
 ## Admin Behavior
 

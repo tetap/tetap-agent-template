@@ -31,7 +31,7 @@ Vitest automation package for repository-level unit, Browser Mode UI functional,
 | `test-selection`       | Unit    | Target and affected-test selection logic.                                  |
 | `ui-components`        | Browser | Shared UI primitives.                                                      |
 | `web-home`             | Browser | Public web promotional landing page.                                       |
-| `web-admin-dashboard`  | Browser | Real admin shell/dashboard/sign-in/settings/IAM UI behavior.               |
+| `web-admin-dashboard`  | Browser | Real admin shell/dashboard/sign-in/IAM UI behavior.                        |
 | `backend-health`       | Smoke   | Public Fastify health runtime.                                             |
 | `backend-admin-health` | Smoke   | Admin Fastify health runtime.                                              |
 | `backend-admin-iam`    | Smoke   | Admin auth, IAM CRUD, protected deletion, and frontend-session separation. |

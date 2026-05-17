@@ -87,7 +87,6 @@ export const enUS = {
       apps: 'Apps',
       chats: 'Chats',
       users: 'Users',
-      settings: 'Settings',
       security: 'Security',
       auth: 'Auth',
       errors: 'Errors',
@@ -106,11 +105,6 @@ export const enUS = {
       policies: 'Policies',
       sessions: 'Online users',
       systemManagement: 'System management',
-      account: 'Account',
-      appearance: 'Appearance',
-      display: 'Display',
-      helpCenter: 'Help Center',
-      notifications: 'Notifications',
       groups: {
         general: 'General',
         pages: 'Pages',
@@ -130,7 +124,6 @@ export const enUS = {
       sidebarClose: 'Close sidebar',
       sidebarToggle: 'Toggle sidebar',
       themeToggle: 'Toggle theme',
-      configToggle: 'Open display settings',
       search: {
         trigger: 'Search',
         placeholder: 'Type a command or search pages...',
@@ -482,26 +475,6 @@ export const enUS = {
       },
     },
     settings: {
-      description: 'Maintain the current admin account, theme, and display preferences.',
-      account: {
-        title: 'Account settings',
-        description: 'Review the current admin account and roles.',
-      },
-      appearance: {
-        title: 'Appearance settings',
-        description: 'Configure the admin light and dark theme.',
-      },
-      display: {
-        title: 'Display settings',
-        description: 'Adjust admin display preferences.',
-      },
-      notifications: {
-        title: 'Notification settings',
-        description: 'Review admin system notification behavior.',
-        enabled: 'Enabled',
-        system: 'System notifications',
-        systemDescription: 'Receive permission and system status notifications.',
-      },
       theme: {
         title: 'Theme',
         description: 'Choose light, dark, or system theme.',

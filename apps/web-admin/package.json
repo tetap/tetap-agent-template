@@ -22,5 +22,5 @@
   "devDependencies": {
     "@tetap/config": "workspace:*"
   },
-  "description": "Dedicated React admin web app for real backend-admin auth, IAM management, dynamic menus, settings, theme, and operation logs."
+  "description": "Dedicated React admin web app for real backend-admin auth, IAM management, dynamic menus, theme, and operation logs."
 }

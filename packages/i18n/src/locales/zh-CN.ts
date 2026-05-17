@@ -78,7 +78,6 @@ export const zhCN = {
       apps: '应用',
       chats: '会话',
       users: '用户',
-      settings: '设置',
       security: '安全',
       auth: '认证',
       errors: '错误页',
@@ -97,11 +96,6 @@ export const zhCN = {
       policies: '策略管理',
       sessions: '在线用户',
       systemManagement: '系统管理',
-      account: '账号',
-      appearance: '外观',
-      display: '显示',
-      helpCenter: '帮助中心',
-      notifications: '通知',
       groups: {
         general: 'General',
         pages: 'Pages',
@@ -121,7 +115,6 @@ export const zhCN = {
       sidebarClose: '关闭侧边栏',
       sidebarToggle: '切换侧边栏',
       themeToggle: '切换主题',
-      configToggle: '打开显示设置',
       search: {
         trigger: '搜索',
         placeholder: '输入命令或搜索页面...',
@@ -470,26 +463,6 @@ export const zhCN = {
       },
     },
     settings: {
-      description: '维护当前后台账号、主题和显示偏好。',
-      account: {
-        title: '账号设置',
-        description: '查看当前后台账号和角色信息。',
-      },
-      appearance: {
-        title: '外观设置',
-        description: '配置后台管理界面的明暗主题。',
-      },
-      display: {
-        title: '显示设置',
-        description: '调整后台管理界面显示偏好。',
-      },
-      notifications: {
-        title: '通知设置',
-        description: '查看后台系统通知策略。',
-        enabled: '已启用',
-        system: '系统通知',
-        systemDescription: '接收后台权限和系统状态相关通知。',
-      },
       theme: {
         title: '主题',
         description: '选择浅色、深色或跟随系统。',
