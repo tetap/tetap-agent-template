@@ -1,5 +1,5 @@
-import { createAppI18n } from './index.js';
-import { defaultLocale, supportedLocales, type Locale } from './locales/index.js';
+import { createAppI18n } from './app.js';
+import { defaultLocale, supportedLocales, type Locale } from './locales/registry.js';
 import { normalizeLocale } from './core.js';
 import type { MissingKeyHandler } from './types.js';
 

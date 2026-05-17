@@ -1,6 +1,6 @@
 import { createContext, createElement, useCallback, useMemo, useState } from 'react';
 import { createI18n, normalizeLocale } from './core.js';
-import { defaultLocale, supportedLocales, type Locale } from './locales/index.js';
+import { defaultLocale, supportedLocales, type Locale } from './locales/registry.js';
 import { enUS } from './locales/en-US.js';
 import { zhCN } from './locales/zh-CN.js';
 import type { DotPath, LocaleResourceShape, MissingKeyHandler, TranslateFunction } from './types.js';

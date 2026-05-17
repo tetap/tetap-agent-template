@@ -20,6 +20,19 @@
 | `@tetap/i18n/node`          | Node request locale resolution and request translator helpers.   |
 | `@tetap/i18n/locales`       | Locale constants and full message key types.                     |
 
+## Internal Structure
+
+| Path                      | Responsibility                                                       |
+| ------------------------- | -------------------------------------------------------------------- |
+| `src/app.ts`              | Full-app translator factory used by the root, React, and Node paths. |
+| `src/core.ts`             | Translation lookup, interpolation, and locale normalization.         |
+| `src/locales/*.ts`        | Locale resources.                                                    |
+| `src/locales/registry.ts` | Internal locale registry and full message types.                     |
+| `src/locales/index.ts`    | Public `@tetap/i18n/locales` entrypoint.                             |
+| `src/react.ts`            | Legacy full-app React provider/context.                              |
+| `src/node.ts`             | Node request locale resolving.                                       |
+| `src/types.ts`            | Dot-path keys, translation tree, and translator types.               |
+
 ## Current Helpers
 
 | Helper / Type                                       | Purpose                                                                  |

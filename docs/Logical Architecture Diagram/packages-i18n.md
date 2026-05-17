@@ -29,14 +29,17 @@
 
 ## 内部结构
 
-| Path                   | Responsibility                                 |
-| ---------------------- | ---------------------------------------------- |
-| `src/core.ts`          | translate、interpolate、locale normalization。 |
-| `src/locales/zh-CN.ts` | 默认首写 locale。                              |
-| `src/locales/en-US.ts` | 与 `zh-CN` 同结构的英文资源。                  |
-| `src/react.ts`         | React provider/context。                       |
-| `src/node.ts`          | Node request locale resolving。                |
-| `src/types.ts`         | dot-path keys、translation tree types。        |
+| Path                      | Responsibility                                                 |
+| ------------------------- | -------------------------------------------------------------- |
+| `src/app.ts`              | full-app translator factory，供 root/react/node 入口直接复用。 |
+| `src/core.ts`             | translate、interpolate、locale normalization。                 |
+| `src/locales/zh-CN.ts`    | 默认首写 locale。                                              |
+| `src/locales/en-US.ts`    | 与 `zh-CN` 同结构的英文资源。                                  |
+| `src/locales/registry.ts` | 内部 locale registry、full message type 和资源映射。           |
+| `src/locales/index.ts`    | `@tetap/i18n/locales` 公开入口；内部模块不从这里反向导入。     |
+| `src/react.ts`            | React provider/context。                                       |
+| `src/node.ts`             | Node request locale resolving。                                |
+| `src/types.ts`            | dot-path keys、translation tree types。                        |
 
 ## 文案流程
 
