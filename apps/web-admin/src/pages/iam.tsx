@@ -1,10 +1,9 @@
-import { useEffect, useState, type ComponentProps, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type ReactNode } from 'react';
 import {
   Database,
   Edit,
   KeyRound,
   LoaderCircle,
-  LogOut,
   MoreHorizontal,
   Plus,
   RefreshCw,
@@ -13,7 +12,7 @@ import {
   Trash2,
   UserPlus,
 } from 'lucide-react';
-import { formatUserDateTime, getUserTimeZone, useAdminSessionStore, useAdminT } from '@tetap/hooks';
+import { getUserTimeZone, useAdminSessionStore, useAdminT } from '@tetap/hooks';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -106,8 +105,13 @@ import {
   TextField,
   type PickerOption,
 } from './iam/form-fields.js';
+import { ConfirmActionButton } from './iam/confirm-action-button.js';
+import { MenusSection } from './iam/menus-section.js';
 import { OperationLogsTable, type OperationLogQueryState } from './iam/operation-logs-table.js';
+import { PermissionsSection } from './iam/permissions-section.js';
 import { AssignedUsersDialog, PermissionChecklist } from './iam/role-pickers.js';
+import { SessionsSection } from './iam/sessions-section.js';
+import { UsersSection } from './iam/users-section.js';
 
 type IamSection = 'users' | 'roles' | 'permissions' | 'menus' | 'sessions' | 'fields' | 'policies' | 'operationLogs';
 type PermissionTypeInput = 'MENU' | 'API' | 'BUTTON' | 'FIELD' | 'DATA';
@@ -145,9 +149,6 @@ const parseCsv = (value: string) =>
 const uniqueStrings = (values: string[]) => Array.from(new Set(values.filter(Boolean)));
 
 const flattenIamMenus = (menu: IamMenuNode): IamMenuNode[] => [menu, ...menu.children.flatMap(flattenIamMenus)];
-
-const flattenIamMenuTree = (menus: IamMenuNode[], depth = 0): (IamMenuNode & { depth: number })[] =>
-  menus.flatMap(menu => [{ ...menu, depth }, ...flattenIamMenuTree(menu.children, depth + 1)]);
 
 const parsePolicyConditions = (value: string) => JSON.parse(value) as IamCreatePolicyRequest['conditions'];
 
@@ -423,7 +424,7 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
     }
   };
 
-  const loadSectionData = async () => {
+  const loadSectionData = useCallback(async () => {
     if (!accessToken) {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -491,47 +492,53 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
       setIsLoading(false);
       setIsRefreshing(false);
     }
-  };
+  }, [accessToken, operationLogQuery, section, t]);
 
-  const revokeSession = async (sessionId: string) => {
-    if (!accessToken) {
-      toast.error(t('webAdmin.iam.states.loginExpired'));
-      return;
-    }
+  const revokeSession = useCallback(
+    async (sessionId: string) => {
+      if (!accessToken) {
+        toast.error(t('webAdmin.iam.states.loginExpired'));
+        return;
+      }
 
-    setIsMutating(true);
+      setIsMutating(true);
 
-    try {
-      await revokeIamSession(accessToken, sessionId);
-      toast.success(t('webAdmin.iam.states.mutationOk'));
-      await loadSectionData();
-    } catch (error) {
-      toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.revokeFailed')));
-    } finally {
-      setIsMutating(false);
-    }
-  };
+      try {
+        await revokeIamSession(accessToken, sessionId);
+        toast.success(t('webAdmin.iam.states.mutationOk'));
+        await loadSectionData();
+      } catch (error) {
+        toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.revokeFailed')));
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [accessToken, loadSectionData, t],
+  );
 
-  const runMutation = async (operation: (token: string) => Promise<unknown>) => {
-    if (!accessToken) {
-      toast.error(t('webAdmin.iam.states.loginExpired'));
-      return false;
-    }
+  const runMutation = useCallback(
+    async (operation: (token: string) => Promise<unknown>) => {
+      if (!accessToken) {
+        toast.error(t('webAdmin.iam.states.loginExpired'));
+        return false;
+      }
 
-    setIsMutating(true);
+      setIsMutating(true);
 
-    try {
-      await operation(accessToken);
-      toast.success(t('webAdmin.iam.states.mutationOk'));
-      await loadSectionData();
-      return true;
-    } catch (error) {
-      toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.mutationFailed')));
-      return false;
-    } finally {
-      setIsMutating(false);
-    }
-  };
+      try {
+        await operation(accessToken);
+        toast.success(t('webAdmin.iam.states.mutationOk'));
+        await loadSectionData();
+        return true;
+      } catch (error) {
+        toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.mutationFailed')));
+        return false;
+      } finally {
+        setIsMutating(false);
+      }
+    },
+    [accessToken, loadSectionData, t],
+  );
 
   const submitUser = () =>
     runMutation(token =>
@@ -636,16 +643,60 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
     setCreateDialog('policies');
   };
 
+  const openCreateUser = useCallback(() => {
+    setCreateDialog('users');
+  }, []);
+
+  const openCreatePermission = useCallback(() => {
+    setCreateDialog('permissions');
+  }, []);
+
+  const openCreateMenu = useCallback(() => {
+    setCreateDialog('menus');
+  }, []);
+
+  const toggleUserStatus = useCallback(
+    (user: UserItem) => {
+      void runMutation(token =>
+        updateIamUser(token, user.id, {
+          status: user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE',
+        }),
+      );
+    },
+    [runMutation],
+  );
+
+  const deleteUser = useCallback(
+    (user: UserItem) => {
+      void runMutation(token => deleteIamUser(token, user.id));
+    },
+    [runMutation],
+  );
+
+  const deletePermission = useCallback(
+    (permission: PermissionItem) => {
+      void runMutation(token => deleteIamPermission(token, permission.id));
+    },
+    [runMutation],
+  );
+
+  const deleteMenu = useCallback(
+    (menu: IamMenuNode) => {
+      void runMutation(token => deleteIamMenu(token, menu.id));
+    },
+    [runMutation],
+  );
+
+  const revokeUserSession = useCallback(
+    (session: IamSession) => {
+      void revokeSession(session.id);
+    },
+    [revokeSession],
+  );
+
   useEffect(() => {
     void loadSectionData();
-  }, [
-    accessToken,
-    section,
-    operationLogQuery.page,
-    operationLogQuery.pageSize,
-    operationLogQuery.search,
-    operationLogQuery.sort,
-  ]);
+  }, [loadSectionData]);
 
   if (isLoading) {
     return (
@@ -700,88 +751,14 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
           />
           <Tabs className="min-w-0" value={section}>
             <TabsContent value="users">
-              <section className="grid min-w-0 gap-4">
-                <Card>
-                  <CardHeader>
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div className="flex flex-col gap-1">
-                        <CardTitle>{t('webAdmin.iam.tables.usersTitle')}</CardTitle>
-                        <CardDescription>{t('webAdmin.iam.tables.usersDescription')}</CardDescription>
-                      </div>
-                      <Button disabled={isMutating || !canManageUsers} onClick={() => setCreateDialog('users')}>
-                        <Plus data-icon="inline-start" />
-                        {t('webAdmin.iam.actions.createUser')}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t('webAdmin.iam.fields.username')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.email')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.roleCodes')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.status')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {data.users.map(user => (
-                          <TableRow key={user.id}>
-                            <TableCell>{user.username}</TableCell>
-                            <TableCell>{user.email}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {user.roleCodes.map(role => (
-                                  <Badge key={role} variant="secondary">
-                                    {role}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={user.status === 'ACTIVE' ? 'default' : 'secondary'}>{user.status}</Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-2">
-                                <Button
-                                  disabled={isMutating || user.isSuperAdmin || !canManageUsers}
-                                  onClick={() =>
-                                    void runMutation(token =>
-                                      updateIamUser(token, user.id, {
-                                        status: user.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE',
-                                      }),
-                                    )
-                                  }
-                                  size="sm"
-                                  variant="outline">
-                                  {isMutating ? (
-                                    <LoaderCircle className="animate-spin" data-icon="inline-start" />
-                                  ) : null}
-                                  {user.status === 'ACTIVE'
-                                    ? t('webAdmin.iam.actions.disableUser')
-                                    : t('webAdmin.iam.actions.activateUser')}
-                                </Button>
-                                <ConfirmActionButton
-                                  description={t('webAdmin.iam.confirm.deleteDescription', { item: user.username })}
-                                  disabled={isMutating || user.isSuperAdmin || !canManageUsers}
-                                  onConfirm={() => void runMutation(token => deleteIamUser(token, user.id))}
-                                  pending={isMutating}
-                                  size="sm"
-                                  title={t('webAdmin.iam.confirm.deleteTitle')}
-                                  variant="outline">
-                                  <Trash2 data-icon="inline-start" />
-                                  {t('webAdmin.iam.actions.delete')}
-                                </ConfirmActionButton>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </section>
+              <UsersSection
+                canManageUsers={canManageUsers}
+                isMutating={isMutating}
+                onCreate={openCreateUser}
+                onDelete={deleteUser}
+                onToggleStatus={toggleUserStatus}
+                users={data.users}
+              />
             </TabsContent>
             <TabsContent value="roles">
               <RoleManagementPanel
@@ -794,189 +771,31 @@ export const AdminIamPage = ({ section = 'users' }: { section?: IamSection }) =>
               />
             </TabsContent>
             <TabsContent value="permissions">
-              <section className="grid min-w-0 gap-4">
-                <Card>
-                  <CardHeader>
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div className="flex flex-col gap-1">
-                        <CardTitle>{t('webAdmin.iam.tables.permissionsTitle')}</CardTitle>
-                        <CardDescription>{t('webAdmin.iam.tables.permissionsDescription')}</CardDescription>
-                      </div>
-                      <Button disabled={isMutating || !canManageIam} onClick={() => setCreateDialog('permissions')}>
-                        <Plus data-icon="inline-start" />
-                        {t('webAdmin.iam.actions.createPermission')}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t('webAdmin.iam.fields.code')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.name')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.type')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.resource')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.action')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {data.permissions.map(permission => (
-                          <TableRow key={permission.id}>
-                            <TableCell>{permission.code}</TableCell>
-                            <TableCell>{permission.name}</TableCell>
-                            <TableCell>
-                              <Badge>{permission.type}</Badge>
-                            </TableCell>
-                            <TableCell>{permission.resource}</TableCell>
-                            <TableCell>{permission.action}</TableCell>
-                            <TableCell>
-                              <ConfirmActionButton
-                                description={t('webAdmin.iam.confirm.deleteDescription', { item: permission.code })}
-                                disabled={isMutating || !canManageIam}
-                                onConfirm={() => void runMutation(token => deleteIamPermission(token, permission.id))}
-                                pending={isMutating}
-                                size="sm"
-                                title={t('webAdmin.iam.confirm.deleteTitle')}
-                                variant="outline">
-                                <Trash2 data-icon="inline-start" />
-                                {t('webAdmin.iam.actions.delete')}
-                              </ConfirmActionButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </section>
+              <PermissionsSection
+                canManageIam={canManageIam}
+                isMutating={isMutating}
+                onCreate={openCreatePermission}
+                onDelete={deletePermission}
+                permissions={data.permissions}
+              />
             </TabsContent>
             <TabsContent value="menus">
-              <section className="grid min-w-0 gap-4">
-                <Card>
-                  <CardHeader>
-                    <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
-                      <div className="flex flex-col gap-1">
-                        <CardTitle>{t('webAdmin.iam.tables.menusTitle')}</CardTitle>
-                        <CardDescription>{t('webAdmin.iam.tables.menusDescription')}</CardDescription>
-                      </div>
-                      <Button disabled={isMutating || !canManageIam} onClick={() => setCreateDialog('menus')}>
-                        <Plus data-icon="inline-start" />
-                        {t('webAdmin.iam.actions.createMenu')}
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>{t('webAdmin.iam.fields.name')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.path')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.component')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.permissionCodes')}</TableHead>
-                          <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {flattenIamMenuTree(data.menus).map(menu => (
-                          <TableRow key={menu.id}>
-                            <TableCell>
-                              <span style={{ paddingInlineStart: `${menu.depth * 16}px` }}>{menu.name}</span>
-                            </TableCell>
-                            <TableCell>{menu.path}</TableCell>
-                            <TableCell>{menu.component}</TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1">
-                                {menu.permissionCodes.map(permission => (
-                                  <Badge key={permission} variant="outline">
-                                    {permission}
-                                  </Badge>
-                                ))}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <ConfirmActionButton
-                                description={t('webAdmin.iam.confirm.deleteDescription', { item: menu.name })}
-                                disabled={isMutating || !canManageIam}
-                                onConfirm={() => void runMutation(token => deleteIamMenu(token, menu.id))}
-                                pending={isMutating}
-                                size="sm"
-                                title={t('webAdmin.iam.confirm.deleteTitle')}
-                                variant="outline">
-                                <Trash2 data-icon="inline-start" />
-                                {t('webAdmin.iam.actions.delete')}
-                              </ConfirmActionButton>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </CardContent>
-                </Card>
-              </section>
+              <MenusSection
+                canManageIam={canManageIam}
+                isMutating={isMutating}
+                menus={data.menus}
+                onCreate={openCreateMenu}
+                onDelete={deleteMenu}
+              />
             </TabsContent>
             <TabsContent value="sessions">
-              <section className="grid min-w-0 gap-4">
-                {data.sessions.length > 0 ? (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>{t('webAdmin.iam.tables.sessionsTitle')}</CardTitle>
-                      <CardDescription>{t('webAdmin.iam.tables.sessionsDescription')}</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>{t('webAdmin.iam.fields.userId')}</TableHead>
-                            <TableHead>{t('webAdmin.iam.fields.email')}</TableHead>
-                            <TableHead>{t('webAdmin.iam.fields.deviceType')}</TableHead>
-                            <TableHead>{t('webAdmin.iam.fields.ip')}</TableHead>
-                            <TableHead>{t('webAdmin.iam.fields.status')}</TableHead>
-                            <TableHead>{t('webAdmin.iam.fields.lastActiveTime')}</TableHead>
-                            <TableHead>{t('webAdmin.iam.fields.actions')}</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {data.sessions.map(session => (
-                            <TableRow key={session.id}>
-                              <TableCell>{session.username ?? session.userId}</TableCell>
-                              <TableCell>{session.email ?? '-'}</TableCell>
-                              <TableCell>{session.deviceType}</TableCell>
-                              <TableCell>{session.ip}</TableCell>
-                              <TableCell>
-                                <Badge>{session.status}</Badge>
-                              </TableCell>
-                              <TableCell>{formatUserDateTime(session.lastActiveTime, timeZone)}</TableCell>
-                              <TableCell>
-                                <ConfirmActionButton
-                                  description={t('webAdmin.iam.confirm.revokeDescription', {
-                                    item: session.username ?? session.userId,
-                                  })}
-                                  disabled={isMutating || session.status !== 'ONLINE' || !canRevokeSessions}
-                                  onConfirm={() => void revokeSession(session.id)}
-                                  pending={isMutating}
-                                  size="sm"
-                                  title={t('webAdmin.iam.confirm.revokeTitle')}
-                                  variant="outline">
-                                  <LogOut data-icon="inline-start" />
-                                  {t('webAdmin.iam.actions.revoke')}
-                                </ConfirmActionButton>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>{t('webAdmin.iam.states.noSessions')}</CardTitle>
-                      <CardDescription>{t('webAdmin.iam.states.noSessionsDescription')}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                )}
-              </section>
+              <SessionsSection
+                canRevokeSessions={canRevokeSessions}
+                isMutating={isMutating}
+                onRevoke={revokeUserSession}
+                sessions={data.sessions}
+                timeZone={timeZone}
+              />
             </TabsContent>
             <TabsContent value="fields">
               <section className="grid min-w-0 gap-4">
@@ -2075,48 +1894,6 @@ const DataScopeDialog = ({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
-};
-
-type ConfirmActionButtonProps = Omit<ComponentProps<typeof Button>, 'onClick'> & {
-  description: string;
-  onConfirm: () => void;
-  pending?: boolean;
-  title: string;
-};
-
-const ConfirmActionButton = ({
-  children,
-  description,
-  disabled,
-  onConfirm,
-  pending,
-  title,
-  ...buttonProps
-}: ConfirmActionButtonProps) => {
-  const t = useAdminT();
-  const [open, setOpen] = useState(false);
-
-  return (
-    <AlertDialog onOpenChange={setOpen} open={open}>
-      <Button disabled={disabled} onClick={() => setOpen(true)} {...buttonProps}>
-        {pending ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-        {children}
-      </Button>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>{title}</AlertDialogTitle>
-          <AlertDialogDescription>{description}</AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-          <AlertDialogAction disabled={pending} onClick={onConfirm}>
-            {pending ? <LoaderCircle className="animate-spin" data-icon="inline-start" /> : null}
-            {t('common.confirm')}
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 };
 
