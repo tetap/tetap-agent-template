@@ -13,7 +13,6 @@ export default tseslint.config(
       '**/node_modules/**',
       '**/.turbo/**',
       '**/.cache/**',
-      '**/.vitepress/cache/**',
       '**/.react-router/**',
       '**/build/**',
       '**/dist/**',
