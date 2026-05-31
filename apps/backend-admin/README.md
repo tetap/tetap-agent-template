@@ -42,6 +42,8 @@ All IAM APIs are protected by the admin auth hook and route permission metadata.
 
 `GET /iam/overview` is intentionally lightweight. It only returns dashboard count metrics; users, roles, permissions, menus, sessions, policies, fields, and operation logs are loaded by their own feature APIs. Operation logs are fetched through the paged `GET /iam/operation-logs?page=&pageSize=&search=&sort=` endpoint.
 
+`POST /auth/login` maps credential failures to explicit unified responses instead of falling through to a generic server error: `40102` for an invalid username or password, `40302` for disabled admin accounts, and `40303` for locked admin accounts.
+
 ```text
 POST   /auth/login
 POST   /auth/refresh

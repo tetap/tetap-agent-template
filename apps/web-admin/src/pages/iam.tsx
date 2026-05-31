@@ -25,7 +25,6 @@ import {
   createIamPermission,
   createIamPolicy,
   createIamUser,
-  BackendAdminRequestError,
   deleteIamFieldPermission,
   deleteIamMenu,
   deleteIamPermission,
@@ -39,6 +38,7 @@ import {
   fetchIamRoles,
   fetchIamSessions,
   fetchIamUsers,
+  resolveBackendAdminErrorMessage,
   revokeIamSession,
   updateIamUser,
   updateIamFieldPermission,
@@ -118,49 +118,6 @@ const hasSectionData = (section: IamSection, data: IamPageData, operationLogs: I
 
 const isSectionLoaded = (section: IamSection, loadedSections: Set<IamSection>) =>
   loadedSections.has(section) || hasSectionData(section, cachedIamPageData, cachedOperationLogData);
-
-const hasIssueMessages = (error: unknown): error is { issues: Array<{ message?: unknown }> } =>
-  Boolean(error && typeof error === 'object' && Array.isArray((error as { issues?: unknown }).issues));
-
-const resolveBackendErrorDetail = (error: BackendAdminRequestError) => {
-  const body = error.body as { data?: unknown; message?: unknown } | null;
-
-  if (typeof body?.data === 'string' && body.data.trim()) {
-    return body.data;
-  }
-
-  if (body?.data && typeof body.data === 'object' && 'issues' in body.data) {
-    const issues = (body.data as { issues?: Array<{ message?: unknown }> }).issues ?? [];
-    const message = issues
-      .map(issue => issue.message)
-      .find((issueMessage): issueMessage is string => typeof issueMessage === 'string');
-
-    if (message) {
-      return message;
-    }
-  }
-
-  return typeof body?.message === 'string' && body.message.trim() ? body.message : undefined;
-};
-
-const resolveBackendErrorMessage = (error: unknown, fallback: string) => {
-  if (error instanceof BackendAdminRequestError) {
-    return resolveBackendErrorDetail(error) ?? fallback;
-  }
-
-  if (hasIssueMessages(error)) {
-    return (
-      error.issues.map(issue => issue.message).find((message): message is string => typeof message === 'string') ??
-      fallback
-    );
-  }
-
-  if (error instanceof SyntaxError && error.message) {
-    return error.message;
-  }
-
-  return fallback;
-};
 
 const iamSectionCopy = {
   users: {
@@ -332,7 +289,7 @@ export const AdminIamPage = memo(function AdminIamPage({ section = 'users' }: { 
       cachedLoadedSections = new Set([...cachedLoadedSections, section]);
       setLoadedSections(new Set(cachedLoadedSections));
     } catch (error) {
-      toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.loadFailed')));
+      toast.error(resolveBackendAdminErrorMessage(error, t('webAdmin.iam.states.loadFailed')));
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);
@@ -353,7 +310,7 @@ export const AdminIamPage = memo(function AdminIamPage({ section = 'users' }: { 
         toast.success(t('webAdmin.iam.states.mutationOk'));
         await loadSectionData();
       } catch (error) {
-        toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.revokeFailed')));
+        toast.error(resolveBackendAdminErrorMessage(error, t('webAdmin.iam.states.revokeFailed')));
       } finally {
         setIsMutating(false);
       }
@@ -376,7 +333,7 @@ export const AdminIamPage = memo(function AdminIamPage({ section = 'users' }: { 
         await loadSectionData();
         return true;
       } catch (error) {
-        toast.error(resolveBackendErrorMessage(error, t('webAdmin.iam.states.mutationFailed')));
+        toast.error(resolveBackendAdminErrorMessage(error, t('webAdmin.iam.states.mutationFailed')));
         return false;
       } finally {
         setIsMutating(false);

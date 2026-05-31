@@ -48,6 +48,7 @@ This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-a
 ## Admin Behavior
 
 - Login uses real `backend-admin` APIs. Admin accounts are created by authorized administrators, not public registration.
+- Sign-in failures surface the `backend-admin` response message in the form and through Sonner; network failures use a service-unavailable message that tells the operator to start `backend-admin`.
 - Sidebar menus come from backend IAM dynamic menus. Dashboard is the top-level home route.
 - Route pages are lazy-loaded through `src/router` so the authenticated shell, IAM pages, dashboard, auth pages, and state pages ship as separate production chunks.
 - The dashboard calls `/iam/overview` for metrics only; feature pages and activity panels fetch their own scoped APIs.
@@ -59,7 +60,7 @@ This app references [satnaing/shadcn-admin](https://github.com/satnaing/shadcn-a
 - Enum inputs such as permission type, field permission type, policy effect, and data scope use `Select`.
 - Role, permission, menu parent, and department selections use searchable paged pickers instead of raw ID inputs.
 - Online users mean real frontend user sessions only. Admin login sessions and seeded demo sessions are not shown or kicked from this UI.
-- Save and error feedback uses `toast` from `@tetap/ui/sonner`; backend-admin error messages are surfaced instead of being collapsed into generic failure text.
+- Save, sign-in, and error feedback uses `toast` from `@tetap/ui/sonner`; backend-admin error messages are surfaced instead of being collapsed into generic failure text.
 
 ## Current Pages
 

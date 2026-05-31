@@ -18,11 +18,21 @@ import {
   FieldLabel,
   Input,
   PasswordInput,
+  toast,
 } from '@tetap/ui';
 import { useAdminSessionStore, useAdminT, useZodForm } from '@tetap/hooks';
+import { resolveBackendAdminErrorMessage } from '../../api/backend-admin.js';
 import { AuthLayout } from './auth-layout.js';
 import { createAdminAuthResult } from './auth-session.js';
 import { getAdminAuthFieldErrorKey } from './form-errors.js';
+
+const resolveSignInErrorMessage = (error: unknown, fallback: string, serviceUnavailable: string) => {
+  if (error instanceof TypeError) {
+    return serviceUnavailable;
+  }
+
+  return resolveBackendAdminErrorMessage(error, fallback);
+};
 
 export const SignInPage = memo(function SignInPage() {
   const t = useAdminT();
@@ -49,8 +59,15 @@ export const SignInPage = memo(function SignInPage() {
         const authResult = await createAdminAuthResult(values.email, values.password, values.rememberMe);
         setContext(authResult);
         void navigate(searchParams.get('redirect') || '/', { replace: true });
-      } catch {
-        setAuthError(t('webAdmin.auth.signIn.loginFailed'));
+      } catch (error) {
+        const message = resolveSignInErrorMessage(
+          error,
+          t('webAdmin.auth.signIn.loginFailed'),
+          t('webAdmin.auth.signIn.loginServiceUnavailable'),
+        );
+
+        setAuthError(message);
+        toast.error(message);
       }
     },
     [navigate, searchParams, setContext, t],

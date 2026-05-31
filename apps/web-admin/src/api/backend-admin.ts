@@ -96,9 +96,64 @@ export class BackendAdminRequestError extends Error {
   }
 }
 
+const hasIssueMessages = (error: unknown): error is { issues: Array<{ message?: unknown }> } =>
+  Boolean(error && typeof error === 'object' && Array.isArray((error as { issues?: unknown }).issues));
+
+const parseJsonResponse = async (response: Response) => {
+  try {
+    return (await response.json()) as unknown;
+  } catch (error) {
+    if (!response.ok) {
+      return null;
+    }
+
+    throw error;
+  }
+};
+
+const resolveBackendAdminErrorDetail = (error: BackendAdminRequestError) => {
+  const body = error.body as { data?: unknown; message?: unknown } | null;
+
+  if (typeof body?.data === 'string' && body.data.trim()) {
+    return body.data;
+  }
+
+  if (body?.data && typeof body.data === 'object' && 'issues' in body.data) {
+    const issues = (body.data as { issues?: Array<{ message?: unknown }> }).issues ?? [];
+    const message = issues
+      .map(issue => issue.message)
+      .find((issueMessage): issueMessage is string => typeof issueMessage === 'string');
+
+    if (message) {
+      return message;
+    }
+  }
+
+  return typeof body?.message === 'string' && body.message.trim() ? body.message : undefined;
+};
+
+export const resolveBackendAdminErrorMessage = (error: unknown, fallback: string) => {
+  if (error instanceof BackendAdminRequestError) {
+    return resolveBackendAdminErrorDetail(error) ?? fallback;
+  }
+
+  if (hasIssueMessages(error)) {
+    return (
+      error.issues.map(issue => issue.message).find((message): message is string => typeof message === 'string') ??
+      fallback
+    );
+  }
+
+  if (error instanceof SyntaxError && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+};
+
 const requestJson = async (path: string, options: RequestInit = {}) => {
   const response = await fetch(joinUrl(path), options);
-  const body = (await response.json()) as unknown;
+  const body = await parseJsonResponse(response);
 
   if (!response.ok) {
     throw new BackendAdminRequestError(response.status, body);

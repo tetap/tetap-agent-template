@@ -1,5 +1,6 @@
 import { useAdminSessionStore } from '@tetap/hooks';
 import { AdminI18nProvider, createAdminI18n } from '@tetap/i18n/admin';
+import { Toaster } from '@tetap/ui';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,6 +23,7 @@ import { AdminStatePage } from '../../../../apps/web-admin/src/pages/state-page.
 
 const i18n = createAdminI18n({ locale: 'en-US' });
 const expiresAt = new Date(Date.now() + 3600 * 1000).toISOString();
+const invalidLoginMessage = 'Invalid username or password.';
 const testMenus = [
   {
     id: 'dashboard',
@@ -95,6 +97,7 @@ const renderWithI18n = (router: ReturnType<typeof createMemoryRouter>) =>
   render(
     <AdminI18nProvider initialLocale="en-US">
       <RouterProvider router={router} />
+      <Toaster richColors />
     </AdminI18nProvider>,
   );
 
@@ -335,10 +338,14 @@ const renderAdminShell = async () => {
   return renderWithI18n(router);
 };
 
-const renderSignIn = async () => {
+const renderSignIn = async (fetchHandler?: (input: RequestInfo | URL) => Promise<Response> | Response) => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (input: RequestInfo | URL) => {
+      if (fetchHandler) {
+        return fetchHandler(input);
+      }
+
       return new Response(JSON.stringify(createAdminApiResponse(input)), {
         headers: { 'content-type': 'application/json' },
         status: 200,
@@ -659,6 +666,33 @@ describe('admin web dashboard browser behavior', () => {
 
     await expect.poll(() => useAdminSessionStore.getState().auth.accessToken).not.toBe('');
     await expect.poll(() => screen.getByText(i18n.t('webAdmin.dashboard.title')).query()).not.toBeNull();
+  });
+
+  it('surfaces backend-admin sign-in failures inline and through Sonner', async () => {
+    const screen = await renderSignIn(
+      async () =>
+        new Response(
+          JSON.stringify({
+            code: 40102,
+            message: invalidLoginMessage,
+            data: null,
+          }),
+          {
+            headers: { 'content-type': 'application/json' },
+            status: 401,
+          },
+        ),
+    );
+
+    await screen.getByLabelText(i18n.t('webAdmin.auth.fields.email')).fill('admin@tetap.local');
+    await screen.getByRole('textbox', { name: i18n.t('webAdmin.auth.fields.password') }).fill('wrong-password');
+    await screen.getByRole('button', { name: i18n.t('webAdmin.auth.actions.signIn') }).click();
+
+    await expect.poll(() => document.querySelector('[role="alert"]')?.textContent ?? '').toContain(invalidLoginMessage);
+    await expect
+      .poll(() => document.querySelector('[data-sonner-toast][data-type="error"]')?.textContent ?? '')
+      .toContain(invalidLoginMessage);
+    expect(useAdminSessionStore.getState().auth.accessToken).toBe('');
   });
 
   it('loads the user management page through the backend-admin API client', async () => {

@@ -1,3 +1,4 @@
+import { apiErrorSchema } from '@tetap/schema';
 import {
   iamCurrentUserResponseSchema,
   iamFieldPermissionMutationResponseSchema,
@@ -45,6 +46,24 @@ describe('backend-admin smoke: IAM auth and management APIs', () => {
     });
 
     try {
+      const invalidLoginResponse = await app.inject({
+        headers: {
+          'accept-language': 'en-US',
+        },
+        method: 'POST',
+        payload: {
+          username: 'admin',
+          password: 'wrong-password',
+          deviceType: 'WEB',
+        },
+        url: '/auth/login',
+      });
+      const invalidLoginBody = apiErrorSchema.parse(invalidLoginResponse.json());
+
+      expect(invalidLoginResponse.statusCode).toBe(401);
+      expect(invalidLoginBody.code).toBe(40102);
+      expect(invalidLoginBody.message).toBe('Invalid username or password.');
+
       const loginResponse = await app.inject({
         headers: {
           'accept-language': 'en-US',

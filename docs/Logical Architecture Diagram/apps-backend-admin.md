@@ -57,6 +57,8 @@ Admin API 同样返回：
 
 Admin 文案使用 `@tetap/i18n/backend-admin` 中的 `backendAdmin.*` key。
 
+登录失败也必须走统一响应和 i18n 文案：账号或密码错误返回 `40102`，禁用账号返回 `40302`，锁定账号返回 `40303`，不得把 IAM credential failure 泄漏成 `500`。
+
 ## IAM 与安全
 
 - Auth plugin 默认保护非 public route。

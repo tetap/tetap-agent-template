@@ -12,8 +12,11 @@ export const ErrorCode = {
   SecurityInvalidSignature: 40111,
   Unauthorized: 40100,
   LoginExpired: 40101,
+  InvalidCredentials: 40102,
   Forbidden: 40300,
   PolicyDenied: 40301,
+  AdminAccountDisabled: 40302,
+  AdminAccountLocked: 40303,
   NotFound: 40400,
   InternalServerError: 50000,
   SecurityServiceUnavailable: 50010,
@@ -78,6 +81,11 @@ export const errorDefinitions = {
     httpStatus: 401,
     messageKey: 'error.loginExpired',
   },
+  [ErrorCode.InvalidCredentials]: {
+    code: ErrorCode.InvalidCredentials,
+    httpStatus: 401,
+    messageKey: 'error.invalidCredentials',
+  },
   [ErrorCode.Forbidden]: {
     code: ErrorCode.Forbidden,
     httpStatus: 403,
@@ -87,6 +95,16 @@ export const errorDefinitions = {
     code: ErrorCode.PolicyDenied,
     httpStatus: 403,
     messageKey: 'error.policyDenied',
+  },
+  [ErrorCode.AdminAccountDisabled]: {
+    code: ErrorCode.AdminAccountDisabled,
+    httpStatus: 403,
+    messageKey: 'error.adminAccountDisabled',
+  },
+  [ErrorCode.AdminAccountLocked]: {
+    code: ErrorCode.AdminAccountLocked,
+    httpStatus: 403,
+    messageKey: 'error.adminAccountLocked',
   },
   [ErrorCode.NotFound]: {
     code: ErrorCode.NotFound,

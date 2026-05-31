@@ -16,6 +16,7 @@
 - 定义 admin browser routes、受保护路由、auth routes 和页面级组合。
 - 消费 `@tetap/ui`、`@tetap/hooks`、`@tetap/i18n/admin`、`@tetap/schema`、`@tetap/config`。
 - 将后台管理接口调用集中指向 `apps/backend-admin` 的契约和 runtime。
+- 登录失败时展示 `backend-admin` 的统一错误 message，并通过表单内 Alert 与 `@tetap/ui/sonner` toast 同步反馈；服务不可达时才提示启动 `backend-admin`。
 - 展示后台管理页面，不沉淀跨项目 UI/样式系统。
 
 ## 服务边界
@@ -76,6 +77,7 @@ sequenceDiagram
 - 使用 `@tetap/schema` 做后台管理表单或 API contract 校验。
 - 引入 `@tetap/ui/styles.css` 作为设计系统 runtime CSS。
 - 使用 `@tetap/ui/sonner` toast 处理保存和错误反馈。
+- 登录页错误反馈使用 `@tetap/ui/sonner`，并保留表单内可持续阅读的错误提示。
 - 对 enum 字段使用 `Select`，对 role/menu/permission/department 等 ID 关联使用可搜索分页选择器。
 
 ## 禁止
